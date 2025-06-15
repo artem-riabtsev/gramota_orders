@@ -1,0 +1,45 @@
+{% extends 'base.html.twig' %}
+
+{% block content %}
+    <h1>Cart index</h1>
+
+    <table class="table table-hover table-bordered align-middle">
+        <thead>
+            <tr>
+                <th>Id</th>
+                <th>Наименование</th>
+                <th>Количество</th>
+                <th>Цена</th>
+                <th>Всего</th>
+                <th>Действия</th>
+            </tr>
+        </thead>
+        <tbody>
+        {% for cart in carts %}
+            <tr>
+                <td>{{ cart.id }}</td>
+                <td>{{ cart.name }}</td>
+                <td>{{ cart.quantity }}</td>
+                <td>{{ cart.price }}</td>
+                <td>{{ cart.totalAmount }}</td>
+                <td>
+                    <div class="d-flex">
+                        <a href="{{ path('app_cart_show', {'id': cart.id}) }}" class="btn btn-sm btn-outline-primary me-2">Просмотр</a>
+                        <a href="{{ path('app_cart_edit', {'id': cart.id}) }}" class="btn btn-sm btn-outline-warning me-2">Редактировать</a>
+                        <form method="post" action="{{ path('app_cart_delete', {'id': cart.id}) }}">
+                            <input type="hidden" name="_token" value="{{ csrf_token('delete' ~ cart.id) }}">
+                            <button class="btn btn-sm btn-outline-danger">Удалить</button>
+                        </form>
+                    </div>
+                </td>
+            </tr>
+        {% else %}
+            <tr>
+                <td colspan="6">Записи ненайдены</td>
+            </tr>
+        {% endfor %}
+        </tbody>
+    </table>
+
+    <a href="{{ path('app_cart_new') }}">Создать новую позицию</a>
+{% endblock %}

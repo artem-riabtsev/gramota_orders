@@ -1,42 +1,44 @@
 {% extends 'base.html.twig' %}
 
-{% block title %}Order{% endblock %}
+{% block content %}
+    <h1>Заказ {{ order.number }}</h1>
 
-{% block body %}
-    <h1>Order</h1>
-
-    <table class="table">
+    <table class="table table-hover table-bordered align-middle">
         <tbody>
             <tr>
                 <th>Id</th>
                 <td>{{ order.id }}</td>
             </tr>
             <tr>
-                <th>Number</th>
+                <th>Номер заказа</th>
                 <td>{{ order.number }}</td>
             </tr>
             <tr>
-                <th>Date</th>
+                <th>Дата заказа</th>
                 <td>{{ order.date ? order.date|date('Y-m-d') : '' }}</td>
             </tr>
             <tr>
-                <th>Amount</th>
+                <th>Сумма заказа</th>
                 <td>{{ order.amount }}</td>
             </tr>
             <tr>
-                <th>Payment_date</th>
+                <th>Дата оплаты</th>
                 <td>{{ order.paymentDate ? order.paymentDate|date('Y-m-d') : '' }}</td>
             </tr>
             <tr>
-                <th>Payment_amount</th>
+                <th>Сумма оплаты</th>
                 <td>{{ order.paymentAmount }}</td>
+            </tr>
+            <tr>
+                <th>Заказчик</th>
+                <td>{{ order.customer.id }}</td>
             </tr>
         </tbody>
     </table>
 
-    <a href="{{ path('app_order_index') }}">back to list</a>
+    <a href="{{ path('app_order_index') }}">Назад</a>
 
-    <a href="{{ path('app_order_edit', {'id': order.id}) }}">edit</a>
+    <a href="{{ path('app_order_edit', {'id': order.id}) }}">Редактировать</a>
 
-    {{ include('order/_delete_form.html.twig') }}
+    {# {{ include('order/_delete_form.html.twig') }} #}
 {% endblock %}

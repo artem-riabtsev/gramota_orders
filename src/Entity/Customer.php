@@ -4,6 +4,9 @@ namespace App\Entity;
 
 use App\Repository\CustomerRepository;
 use Doctrine\ORM\Mapping as ORM;
+use Doctrine\Common\Collections\ArrayCollection;
+use Doctrine\Common\Collections\Collection;
+use App\Entity\Order;
 
 #[ORM\Entity(repositoryClass: CustomerRepository::class)]
 class Customer
@@ -27,6 +30,9 @@ class Customer
 
     #[ORM\Column(length: 255)]
     private ?string $phone = null;
+
+    #[ORM\OneToMany(mappedBy: 'customer', targetEntity: Order::class)]
+    private Collection $orders;
 
     public function getId(): ?int
     {
@@ -91,5 +97,15 @@ class Customer
         $this->phone = $phone;
 
         return $this;
+    }
+
+    public function __construct()
+    {
+        $this->orders = new ArrayCollection();
+    }
+
+    public function getOrders(): Collection
+    {
+        return $this->orders;
     }
 }

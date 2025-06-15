@@ -1,0 +1,36 @@
+{% extends 'base.html.twig' %}
+
+{% block content %}
+    <h1>Cart</h1>
+
+    <table class="table table-hover table-bordered align-middle">
+        <tbody>
+            <tr>
+                <th>Id</th>
+                <td>{{ cart.id }}</td>
+            </tr>
+            <tr>
+                <th>Наименование</th>
+                <td>{{ cart.name }}</td>
+            </tr>
+            <tr>
+                <th>Количество</th>
+                <td>{{ cart.quantity }}</td>
+            </tr>
+            <tr>
+                <th>Цена</th>
+                <td>{{ cart.price }}</td>
+            </tr>
+            <tr>
+                <th>Всего</th>
+                <td>{{ cart.totalAmount }}</td>
+            </tr>
+        </tbody>
+    </table>
+
+    <a href="{{ path('app_cart_index') }}">Назад</a>
+
+    <a href="{{ path('app_cart_edit', {'id': cart.id}) }}">Редактировать</a>
+
+    {# {{ include('cart/_delete_form.html.twig') }} #}
+{% endblock %}

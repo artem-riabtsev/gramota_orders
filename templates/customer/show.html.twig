@@ -1,0 +1,40 @@
+{% extends 'base.html.twig' %}
+
+{% block content %}
+    <h1>Заказчик {{ customer.id }}</h1>
+
+    <table class="table table-hover table-bordered align-middle">
+        <tbody>
+            <tr>
+                <th>Id</th>
+                <td>{{ customer.id }}</td>
+            </tr>
+            <tr>
+                <th>Фамилия</th>
+                <td>{{ customer.surname }}</td>
+            </tr>
+            <tr>
+                <th>Имя</th>
+                <td>{{ customer.name }}</td>
+            </tr>
+            <tr>
+                <th>Отчество</th>
+                <td>{{ customer.patronymic }}</td>
+            </tr>
+            <tr>
+                <th>Email</th>
+                <td>{{ customer.email }}</td>
+            </tr>
+            <tr>
+                <th>Phone</th>
+                <td>{{ customer.phone }}</td>
+            </tr>
+        </tbody>
+    </table>
+
+    <a href="{{ path('app_customer_index') }}">Назад</a>
+
+    <a href="{{ path('app_customer_edit', {'id': customer.id}) }}">Редактировать</a>
+
+    {# {{ include('customer/_delete_form.html.twig') }} #}
+{% endblock %}
