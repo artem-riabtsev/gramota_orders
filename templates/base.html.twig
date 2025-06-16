@@ -71,6 +71,9 @@
             <li class="nav-item"><a class="nav-link {{ app.request.attributes.get('_route') starts with 'app_customer' ? 'active' : '' }}" href="{{ path('app_customer_index') }}">Заказчики</a></li>
             <li class="nav-item"><a class="nav-link {{ app.request.attributes.get('_route') starts with 'app_price' ? 'active' : '' }}" href="{{ path('app_price_index') }}">Прайс</a></li>
         </ul>
+        <form method="post" action="{{ path('app_logout') }}">
+            <button class="btn btn-outline-light" type="submit">Выход</button>
+        </form>
     </div>
 </nav>
 
