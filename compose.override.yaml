@@ -25,5 +25,3 @@ services:
     ports:
       - "3306"
 
-###> symfony/mercure-bundle ###
-###< symfony/mercure-bundle ###

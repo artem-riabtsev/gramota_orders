@@ -1,0 +1,52 @@
+{% extends 'base.html.twig' %}
+
+
+{% block content %}
+<h1>Редактировать заказ</h1>
+
+<div class="card">
+    <div class="card-header">
+        <h5 class="mb-0">Редактировать заказ #{{ order.id }}</h5>
+    </div>
+    <div class="card-body">
+        {{ form_start(form) }}
+
+        <div class="row">
+            <div class="col-md-6 mb-3">
+                {{ form_label(form.number) }}
+                {{ form_widget(form.number, {'attr': {'class': 'form-control'}}) }}
+            </div>
+
+            <div class="col-md-6 mb-3">
+                {{ form_label(form.date) }}
+                {{ form_widget(form.date, {'attr': {'class': 'form-control'}}) }}
+            </div>
+
+            <div class="col-md-6 mb-3">
+                {{ form_label(form.amount) }}
+                {{ form_widget(form.amount, {'attr': {'class': 'form-control'}}) }}
+            </div>
+
+            <div class="col-md-6 mb-3">
+                {{ form_label(form.payment_date) }}
+                {{ form_widget(form.payment_date, {'attr': {'class': 'form-control'}}) }}
+            </div>
+
+            <div class="col-md-6 mb-3">
+                {{ form_label(form.payment_amount) }}
+                {{ form_widget(form.payment_amount, {'attr': {'class': 'form-control'}}) }}
+            </div>
+
+            <div class="col-md-6 mb-3">
+                {{ form_label(form.customer) }}
+                {{ form_widget(form.customer, {'attr': {'class': 'form-control'}}) }}
+            </div>
+        </div>
+
+        <button class="btn btn-success">Сохранить</button>
+        <a href="{{ path('app_order_index') }}" class="btn btn-secondary ms-2">Назад</a>
+
+        {{ form_end(form) }}
+    </div>
+</div>
+{% endblock %}

@@ -1,0 +1,43 @@
+{% extends 'base.html.twig' %}
+
+
+{% block content %}
+<h1>Создать заказчика</h1>
+
+<div class="card">
+    <div class="card-header">
+        <h5 class="mb-0">Новый заказчик</h5>
+    </div>
+    <div class="card-body">
+        {{ form_start(form) }}
+
+        <div class="row">
+            <div class="col-md-6 mb-3">
+                {{ form_label(form.surname) }}
+                {{ form_widget(form.surname, {'attr': {'class': 'form-control'}}) }}
+            </div>
+            <div class="col-md-6 mb-3">
+                {{ form_label(form.name) }}
+                {{ form_widget(form.name, {'attr': {'class': 'form-control'}}) }}
+            </div>
+            <div class="col-md-6 mb-3">
+                {{ form_label(form.patronymic) }}
+                {{ form_widget(form.patronymic, {'attr': {'class': 'form-control'}}) }}
+            </div>
+            <div class="col-md-6 mb-3">
+                {{ form_label(form.email) }}
+                {{ form_widget(form.email, {'attr': {'class': 'form-control'}}) }}
+            </div>
+            <div class="col-md-6 mb-3">
+                {{ form_label(form.phone) }}
+                {{ form_widget(form.phone, {'attr': {'class': 'form-control'}}) }}
+            </div>
+        </div>
+
+        <button class="btn btn-success">Создать</button>
+        <a href="{{ path('app_customer_index') }}" class="btn btn-secondary ms-2">Назад</a>
+
+        {{ form_end(form) }}
+    </div>
+</div>
+{% endblock %}

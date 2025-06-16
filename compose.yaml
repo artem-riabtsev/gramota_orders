@@ -3,7 +3,7 @@ services:
     image: ${IMAGES_PREFIX:-}app-php
     restart: unless-stopped
     environment:
-      SERVER_NAME: ${SERVER_NAME:-localhost}, php:80
+      SERVER_NAME: "${SERVER_NAME:-localhost}, php:80"
       MERCURE_PUBLISHER_JWT_KEY: ${CADDY_MERCURE_JWT_SECRET:-!ChangeThisMercureHubJWTSecretKey!}
       MERCURE_SUBSCRIBER_JWT_KEY: ${CADDY_MERCURE_JWT_SECRET:-!ChangeThisMercureHubJWTSecretKey!}
       DATABASE_URL: mysql://${MARIADB_USER:-local}:${MARIADB_PASSWORD:-local}@database:3306/${MARIADB_DATABASE:-local}?charset=utf8mb4
@@ -12,13 +12,19 @@ services:
       MERCURE_JWT_SECRET: ${CADDY_MERCURE_JWT_SECRET:-!ChangeThisMercureHubJWTSecretKey!}
       SYMFONY_VERSION: ${SYMFONY_VERSION:-}
       STABILITY: ${STABILITY:-stable}
+      APP_ENV: ${APP_ENV}
+      APP_DEBUG: ${APP_DEBUG}
     volumes:
       - caddy_data:/data
       - caddy_config:/config
       - ./public:/app/public
+      - ./certs:/certs:ro
 
   frankenphp:
-    image: dunglas/frankenphp  # Официальный образ FrankenPHP
+    # image: dunglas/frankenphp # Официальный образ FrankenPHP
+    build:
+      context: .
+      target: frankenphp_dev  
     restart: unless-stopped
     ports:
       - "80:80"
@@ -30,8 +36,8 @@ services:
       - caddy_data:/data
       - caddy_config:/config
       - .:/app  # Монтируем папку public Symfony
-      - ./frankenphp/Caddyfile:/etc/caddy/Caddyfile
-      - ./certs:/certs
+      - ./frankenphp/Caddyfile:/etc/frankenphp/Caddyfile
+      - ./certs:/certs:ro
     depends_on:
       - php
 

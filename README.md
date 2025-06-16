@@ -1,14 +1,40 @@
-# Symfony Docker
+# 📦 Gramota Orders — Система управления заказами
 
-A [Docker](https://www.docker.com/)-based installer and runtime for the [Symfony](https://symfony.com) web framework,
-with [FrankenPHP](https://frankenphp.dev) and [Caddy](https://caddyserver.com/) inside!
+**Gramota Orders** — это веб-приложение для учёта заказчиков, заказов и оплат, разработанное на фреймворке [Symfony 7](https://symfony.com/) с использованием [Doctrine ORM](https://www.doctrine-project.org/), шаблонов [Twig](https://twig.symfony.com/) и адаптивного дизайна на базе [Bootstrap 5](https://getbootstrap.com/).
 
-![CI](https://github.com/dunglas/symfony-docker/workflows/CI/badge.svg)
+Приложение запускается в окружении [Docker](https://www.docker.com/) с [FrankenPHP](https://frankenphp.dev) и [Caddy](https://caddyserver.com/).
 
-## Getting Started
+---
 
-1. If not already done, [install Docker Compose](https://docs.docker.com/compose/install/) (v2.10+)
-2. Run `docker compose build --pull --no-cache` to build fresh images
-3. Run `docker compose up --wait` to set up and start a fresh Symfony project
-4. Open `https://localhost` in your favorite web browser and [accept the auto-generated TLS certificate](https://stackoverflow.com/a/15076602/1352334)
-5. Run `docker compose down --remove-orphans` to stop the Docker containers.s
+## 🚀 Возможности
+
+- 👥 Управление заказчиками (создание, редактирование, удаление)
+- 📑 Учёт заказов и оплат
+- 🔒 Аутентификация пользователей
+- 💡 Простой и современный интерфейс
+- 🐳 Docker-окружение без лишних зависимостей
+
+---
+
+## 📦 Требования
+
+- Docker Compose v2.10+
+- Порт 443 (для HTTPS)
+
+---
+
+## ⚙️ Установка и запуск
+
+```bash
+# 1. Клонируйте репозиторий
+git clone https://github.com/yourusername/gramota-orders.git
+cd gramota-orders
+
+# 2. Постройте контейнеры
+docker compose build --pull --no-cache
+
+# 3. Запустите проект
+docker compose up --wait
+
+# 4. Откройте приложение
+https://localhost

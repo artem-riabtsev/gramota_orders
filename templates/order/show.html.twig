@@ -1,0 +1,41 @@
+{% extends 'base.html.twig' %}
+
+{% block content %}
+    <h1>Заказ {{ order.number }}</h1>
+
+    <table class="table table-hover table-bordered align-middle">
+        <tbody>
+            <tr>
+                <th>Id</th>
+                <td>{{ order.id }}</td>
+            </tr>
+            <tr>
+                <th>Номер заказа</th>
+                <td>{{ order.number }}</td>
+            </tr>
+            <tr>
+                <th>Дата заказа</th>
+                <td>{{ order.date ? order.date|date('Y-m-d') : '' }}</td>
+            </tr>
+            <tr>
+                <th>Сумма заказа</th>
+                <td>{{ order.amount }}</td>
+            </tr>
+            <tr>
+                <th>Дата оплаты</th>
+                <td>{{ order.paymentDate ? order.paymentDate|date('Y-m-d') : '' }}</td>
+            </tr>
+            <tr>
+                <th>Сумма оплаты</th>
+                <td>{{ order.paymentAmount }}</td>
+            </tr>
+            <tr>
+                <th>Заказчик</th>
+                <td>{{ order.customer.id }}</td>
+            </tr>
+        </tbody>
+    </table>
+
+    <a href="{{ path('app_order_edit', {'id': order.id}) }}" class="btn btn-primary">Редактировать</a>
+    <a href="{{ path('app_order_index') }}" class="btn btn-secondary">Назад</a>
+{% endblock %}

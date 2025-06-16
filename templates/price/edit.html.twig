@@ -1,0 +1,30 @@
+{% extends 'base.html.twig' %}
+
+{% block content %}
+<h1>Редактировать прайс</h1>
+
+<div class="card">
+    <div class="card-header">
+        <h5 class="mb-0">Редактировать элемент прайса #{{ price.id }}</h5>
+    </div>
+    <div class="card-body">
+        {{ form_start(form) }}
+
+        <div class="row">
+            <div class="col-md-6 mb-3">
+                {{ form_label(form.name) }}
+                {{ form_widget(form.name, {'attr': {'class': 'form-control'}}) }}
+            </div>
+            <div class="col-md-6 mb-3">
+                {{ form_label(form.price) }}
+                {{ form_widget(form.price, {'attr': {'class': 'form-control'}}) }}
+            </div>
+        </div>
+
+        <button class="btn btn-success">Сохранить</button>
+        <a href="{{ path('app_price_index') }}" class="btn btn-secondary ms-2">Назад</a>
+
+        {{ form_end(form) }}
+    </div>
+</div>
+{% endblock %}
