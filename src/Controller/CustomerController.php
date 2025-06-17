@@ -44,9 +44,12 @@ final class CustomerController extends AbstractController
 
     #[Route('/{id}', name: 'app_customer_show', methods: ['GET'])]
     public function show(Customer $customer): Response
-    {
+    {   $completedOrders = $customer->getOrders()->filter(fn($order) => $order->getStatus() === 1);
+        $incompletedOrders = $customer->getOrders()->filter(fn($order) => $order->getStatus() === 0);
         return $this->render('customer/show.html.twig', [
             'customer' => $customer,
+            'completedOrders' => $completedOrders,
+            'incompletedOrders' => $incompletedOrders,
         ]);
     }
 

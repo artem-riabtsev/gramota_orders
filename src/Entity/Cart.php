@@ -26,7 +26,7 @@ class Cart
     #[ORM\Column(type: Types::DECIMAL, precision: 10, scale: 2)]
     private ?string $total_amount = null;
 
-    #[ORM\ManyToOne(targetEntity: Order::class)]
+    #[ORM\ManyToOne(targetEntity: Order::class, inversedBy: 'cart')]
     #[ORM\JoinColumn(name: 'order_id', referencedColumnName: 'id')]
     private Order|null $order = null;
 

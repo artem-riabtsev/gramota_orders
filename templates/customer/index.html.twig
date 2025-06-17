@@ -31,7 +31,7 @@
                         <a href="{{ path('app_customer_edit', {'id': customer.id}) }}" class="btn btn-sm btn-outline-warning me-2">Редактировать</a>
                         <form method="post" action="{{ path('app_customer_delete', {'id': customer.id}) }}">
                             <input type="hidden" name="_token" value="{{ csrf_token('delete' ~ customer.id) }}">
-                            <button class="btn btn-sm btn-outline-danger" {% if customer.orders %}disabled{% endif %}>
+                            <button class="btn btn-sm btn-outline-danger" {% if customer.orders|length > 0 %}disabled{% endif %}>
                                 Удалить
                             </button>
                         </form>

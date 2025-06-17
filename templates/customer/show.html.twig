@@ -34,4 +34,93 @@
 
     <a href="{{ path('app_customer_edit', {'id': customer.id}) }}" class="btn btn-primary">Редактировать</a>
     <a href="{{ path('app_customer_index') }}" class="btn btn-secondary">Назад</a>
+
+    <table class="table table-hover table-bordered align-middle">
+
+        <h2>Незавершенные</h2>
+
+        <thead>
+            <tr>
+                <th>Номер заказа</th>
+                <th>Дата заказа</th>
+                <th>Сумма заказа</th>
+                <th>Дата оплаты</th>
+                <th>Сумма оплаты</th>
+                <th>Действия</th>
+            </tr>
+        </thead>
+        <tbody>
+        {% for order in incompletedOrders %}
+            <tr>
+                <td>{{ order.id }}</td>
+                <td>{{ order.date ? order.date|date('Y-m-d') : '' }}</td>
+                <td>{{ order.amount }}</td>
+                <td>{{ order.paymentDate ? order.paymentDate|date('Y-m-d') : '' }}</td>
+                <td>{{ order.paymentAmount }}</td>
+                <td>
+                    <div class="d-flex">
+                        <a href="{{ path('app_order_show', {'id': order.id}) }}" class="btn btn-sm btn-outline-primary me-2">Просмотр</a>
+                        <a href="{{ path('app_order_edit', {'id': order.id}) }}" class="btn btn-sm btn-outline-warning me-2">Редактировать</a>
+                        <form method="post" action="{{ path('app_order_delete', {'id': order.id}) }}">
+                            <input type="hidden" name="_token" value="{{ csrf_token('delete' ~ order.id) }}">
+                            <button class="btn btn-sm btn-outline-danger"
+                                {% if order.paymentAmount or order.paymentDate %}disabled{% endif %}>
+                                Удалить
+                            </button>
+                        </form>
+                    </div>
+                </td>
+            </tr>
+        {% else %}
+            <tr>
+                <td colspan="7">Заказы ненайдены</td>
+            </tr>
+        {% endfor %}
+        </tbody>
+    </table>
+
+    <table class="table table-hover table-bordered align-middle">
+
+        <h2>Завершенные</h2>
+
+        <thead>
+            <tr>
+                <th>Номер заказа</th>
+                <th>Дата заказа</th>
+                <th>Сумма заказа</th>
+                <th>Дата оплаты</th>
+                <th>Сумма оплаты</th>
+                <th>Действия</th>
+            </tr>
+        </thead>
+        <tbody>
+        {% for order in completedOrders %}
+            <tr>
+                <td>{{ order.id }}</td>
+                <td>{{ order.date ? order.date|date('Y-m-d') : '' }}</td>
+                <td>{{ order.amount }}</td>
+                <td>{{ order.paymentDate ? order.paymentDate|date('Y-m-d') : '' }}</td>
+                <td>{{ order.paymentAmount }}</td>
+                <td>
+                    <div class="d-flex">
+                        <a href="{{ path('app_order_show', {'id': order.id}) }}" class="btn btn-sm btn-outline-primary me-2">Просмотр</a>
+                        <a href="{{ path('app_order_edit', {'id': order.id}) }}" class="btn btn-sm btn-outline-warning me-2">Редактировать</a>
+                        <form method="post" action="{{ path('app_order_delete', {'id': order.id}) }}">
+                            <input type="hidden" name="_token" value="{{ csrf_token('delete' ~ order.id) }}">
+                            <button class="btn btn-sm btn-outline-danger"
+                                {% if order.paymentAmount or order.paymentDate %}disabled{% endif %}>
+                                Удалить
+                            </button>
+                        </form>
+                    </div>
+                </td>
+            </tr>
+        {% else %}
+            <tr>
+                <td colspan="7">Заказы ненайдены</td>
+            </tr>
+        {% endfor %}
+        </tbody>
+    </table>
+
 {% endblock %}

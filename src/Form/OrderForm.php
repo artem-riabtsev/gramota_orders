@@ -14,7 +14,6 @@ class OrderForm extends AbstractType
     public function buildForm(FormBuilderInterface $builder, array $options): void
     {
         $builder
-            ->add('number')
             ->add('date')
             ->add('amount')
             ->add('payment_date')
