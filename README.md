@@ -36,5 +36,9 @@ docker compose build --pull --no-cache
 # 3. Запустите проект
 docker compose up --wait
 
-# 4. Откройте приложение
+# 4. Подписать сертификаты (WSL2, при первом запуске) 
+docker cp $(docker compose ps -q frankenphp):/data/caddy/pki/authorities/local/root.crt /mnt/c/Users/Public/root.crt
+powershell.exe -Command 'Start-Process certutil.exe -ArgumentList "-addstore", "ROOT", "C:\Users\Public\root.crt" -Verb RunAs'
+
+# 5. Откройте приложение
 https://localhost
