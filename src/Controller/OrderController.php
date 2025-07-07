@@ -42,16 +42,12 @@ final class OrderController extends AbstractController
             'status' => $request->query->get('status'),
         ];
 
-        // Удаляем пустые значения
         $filters = array_filter($filters, fn($v) => $v !== null && $v !== '');
 
-        // Получаем отфильтрованные заказы
         $orders = $orderRepository->findByFilters($filters);
 
-        // Получаем список всех заказов (только id)
         $allOrders = $orderRepository->findAll();
 
-        // Получаем список всех заказчиков
         $allCustomers = $customerRepository->findAll();
 
         return $this->render('order/index.html.twig', [
@@ -100,24 +96,20 @@ final class OrderController extends AbstractController
         $form = $this->createForm(OrderForm::class, $order);
         $form->handleRequest($request);
 
-        // Обработка основной формы заказа
         if ($form->isSubmitted() && $form->isValid()) {
             $entityManager->flush();
             return $this->redirectToRoute('app_order_index');
         }
 
-        // Обработка корзины
         if ($request->isMethod('POST') && $request->request->has('cart')) {
             $cartData = $request->request->all('cart');
             $totalAmount = 0;
 
             foreach ($cartData as $key => $item) {
-                // Пропуск пустых наименований
                 if (empty($item['name'])) {
                     continue;
                 }
 
-                // Обработка существующих и новых товаров
                 $cartItem = null;
                 if (str_starts_with($key, 'new_')) {
                     $cartItem = new Cart();
@@ -130,7 +122,6 @@ final class OrderController extends AbstractController
                 $cartItem->setName($item['name']);
                 $cartItem->setQuantity((int)$item['quantity']);
 
-                // Найдём цену из справочника
                 $priceEntity = $priceRepository->findOneBy(['name' => $item['name']]);
                 $price = $priceEntity ? $priceEntity->getPrice() : 0;
 
@@ -178,6 +169,8 @@ final class OrderController extends AbstractController
             if ($order->getStatus() === 0 && $order->getAmount() === $order->getPaymentAmount()) {
                 $order->setStatus(1);
                 $entityManager->flush();
+            } else {
+                $this->addFlash('error', 'Сумма оплаты не соотвествует сумме заказа!');
             }
         }
 

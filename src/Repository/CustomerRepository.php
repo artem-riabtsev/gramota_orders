@@ -16,28 +16,42 @@ class CustomerRepository extends ServiceEntityRepository
         parent::__construct($registry, Customer::class);
     }
 
-    //    /**
-    //     * @return Customer[] Returns an array of Customer objects
-    //     */
-    //    public function findByExampleField($value): array
-    //    {
-    //        return $this->createQueryBuilder('c')
-    //            ->andWhere('c.exampleField = :val')
-    //            ->setParameter('val', $value)
-    //            ->orderBy('c.id', 'ASC')
-    //            ->setMaxResults(10)
-    //            ->getQuery()
-    //            ->getResult()
-    //        ;
-    //    }
+    public function findByFilters(array $filters)
+    {
+        $qb = $this->createQueryBuilder('o');
 
-    //    public function findOneBySomeField($value): ?Customer
-    //    {
-    //        return $this->createQueryBuilder('c')
-    //            ->andWhere('c.exampleField = :val')
-    //            ->setParameter('val', $value)
-    //            ->getQuery()
-    //            ->getOneOrNullResult()
-    //        ;
-    //    }
+        if (isset($filters['id'])) {
+            $qb->andWhere('o.id = :id')
+                ->setParameter('id', (int)$filters['id']);
+        }
+
+        if (isset($filters['surname'])) {
+            $qb->andWhere('o.surname = :surname')
+                ->setParameter('surname', (string)$filters['surname']);
+        }
+
+        if (isset($filters['name'])) {
+            $qb->andWhere('o.name = :name')
+                ->setParameter('name', (string)$filters['name']);
+        }
+
+        if (isset($filters['patronymic'])) {
+            $qb->andWhere('o.patronymic = :patronymic')
+                ->setParameter('patronymic', (string)$filters['patronymic']);
+        }
+
+        if (isset($filters['email'])) {
+            $qb->andWhere('o.email = :email')
+                ->setParameter('email', (string)$filters['email']);
+        }
+
+        if (isset($filters['phone'])) {
+            $qb->andWhere('o.phone = :phone')
+                ->setParameter('phone', (string)$filters['phone']);
+        }
+
+        $qb->orderBy('o.id', 'DESC');
+
+        return $qb->getQuery()->getResult();
+    }
 }

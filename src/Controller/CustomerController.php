@@ -14,11 +14,31 @@ use Symfony\Component\Routing\Attribute\Route;
 #[Route('/customer')]
 final class CustomerController extends AbstractController
 {
+
     #[Route(name: 'app_customer_index', methods: ['GET'])]
-    public function index(CustomerRepository $customerRepository): Response
-    {
+    public function index(
+        Request $request,
+        CustomerRepository $customerRepository
+    ): Response {
+        $filters = [
+            'id' => $request->query->get('id'),
+            'surname' => $request->query->get('surname'),
+            'name' => $request->query->get('name'),
+            'patronymic' => $request->query->get('patronymic'),
+            'email' => $request->query->get('email'),
+            'phone' => $request->query->get('phone'),
+        ];
+
+        $filters = array_filter($filters, fn($v) => $v !== null && $v !== '');
+
+        $customers = $customerRepository->findByFilters($filters);
+
+        $allCustomers = $customerRepository->findAll();
+
         return $this->render('customer/index.html.twig', [
-            'customers' => $customerRepository->findAll(),
+            'customers' => $customers,
+            'filters' => $filters,
+            'allCustomers' => $allCustomers,
         ]);
     }
 

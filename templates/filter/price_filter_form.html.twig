@@ -1,0 +1,60 @@
+<div class="collapse" id="filterCollapse">
+    <div class="card card-body mb-4">
+        <form method="get" action="{{ path('app_price_index') }}">
+            <div class="row g-3">
+                <div class="col-md-2">
+                    <label for="filterId" class="form-label">ID</label>
+                    <select id="filterId" name="id" class="form-select">
+                        <option value="">Все</option>
+                        {% set usedIds = [] %}
+                        {% for p in allCustomers %}
+                            {% if p.id not in usedIds %}
+                                <option value="{{ p.id }}" {% if filters.id is defined and filters.id == p.id %}selected{% endif %}>
+                                    {{ p.id }}
+                                </option>
+                                {% set usedIds = usedIds|merge([p.id]) %}
+                            {% endif %}
+                        {% endfor %}
+                    </select>
+                </div>
+
+                <div class="col-md-4">
+                    <label for="filterName" class="form-label">Наименование</label>
+                    <select id="filterName" name="name" class="form-select">
+                        <option value="">Все</option>
+                        {% set usedNames = [] %}
+                        {% for p in allCustomers %}
+                            {% if p.name is not null and p.name not in usedNames %}
+                                <option value="{{ p.name }}" {% if filters.name is defined and filters.name == p.name %}selected{% endif %}>
+                                    {{ p.name }}
+                                </option>
+                                {% set usedNames = usedNames|merge([p.name]) %}
+                            {% endif %}
+                        {% endfor %}
+                    </select>
+                </div>
+
+                <div class="col-md-3">
+                    <label for="filterPrice" class="form-label">Стоимость</label>
+                    <select id="filterPrice" name="price" class="form-select">
+                        <option value="">Все</option>
+                        {% set usedPrices = [] %}
+                        {% for p in allCustomers %}
+                            {% if p.price is not null and p.price not in usedPrices %}
+                                <option value="{{ p.price }}" {% if filters.price is defined and filters.price == p.price %}selected{% endif %}>
+                                    {{ p.price }}
+                                </option>
+                                {% set usedPrices = usedPrices|merge([p.price]) %}
+                            {% endif %}
+                        {% endfor %}
+                    </select>
+                </div>
+
+                <div class="col-12">
+                    <button type="submit" class="btn btn-primary">Применить фильтр</button>
+                    <a href="{{ path('app_customer_index') }}" class="btn btn-secondary">Сбросить</a>
+                </div>
+            </div>
+        </form>
+    </div>
+</div>
