@@ -12,8 +12,8 @@ class PriceForm extends AbstractType
     public function buildForm(FormBuilderInterface $builder, array $options): void
     {
         $builder
-            ->add('name')
-            ->add('price')
+            ->add('name', null, ['label' => 'Наименование'])
+            ->add('price', null, ['label' => 'Стоимость'])
         ;
     }
 

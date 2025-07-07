@@ -23,7 +23,7 @@ class Order
     private ?\DateTime $date = null;
 
     #[ORM\Column(type: Types::DECIMAL, precision: 10, scale: 2)]
-    private ?string $amount = null;
+    private ?string $amount = '0.00';
 
     #[ORM\Column(type: Types::DATE_MUTABLE, nullable: true)]
     private ?\DateTime $payment_date = null;
@@ -34,7 +34,7 @@ class Order
     #[ORM\Column(type: 'integer', options: ['default' => 0])]
     private int $status = 0;
 
-    #[ORM\ManyToOne(targetEntity: Customer::class)]
+    #[ORM\ManyToOne(targetEntity: Customer::class, inversedBy: "orders")]
     #[ORM\JoinColumn(name: 'customer_id', referencedColumnName: 'id')]
     private Customer|null $customer = null;
 

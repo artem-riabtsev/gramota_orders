@@ -5,7 +5,6 @@ namespace App\Controller;
 use App\Entity\Order;
 use App\Form\OrderForm;
 use App\Repository\OrderRepository;
-use App\Repository\CartRepository;
 use App\Repository\PriceRepository;
 use App\Entity\Cart;
 use Doctrine\ORM\EntityManagerInterface;
@@ -13,6 +12,7 @@ use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
 use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\HttpFoundation\Response;
 use Symfony\Component\Routing\Attribute\Route;
+use App\Repository\CustomerRepository;
 
 final class OrderController extends AbstractController
 {
@@ -23,10 +23,42 @@ final class OrderController extends AbstractController
     }
 
     #[Route('/order', name: 'app_order_index', methods: ['GET'])]
-    public function index(OrderRepository $orderRepository): Response
-    {
+    public function index(
+        Request $request,
+        OrderRepository $orderRepository,
+        CustomerRepository $customerRepository
+    ): Response {
+        $filters = [
+            'id' => $request->query->get('id'),
+            'date_from' => $request->query->get('date_from'),
+            'date_to' => $request->query->get('date_to'),
+            'amount_min' => $request->query->get('amount_min'),
+            'amount_max' => $request->query->get('amount_max'),
+            'payment_date_from' => $request->query->get('payment_date_from'),
+            'payment_date_to' => $request->query->get('payment_date_to'),
+            'payment_amount_min' => $request->query->get('payment_amount_min'),
+            'payment_amount_max' => $request->query->get('payment_amount_max'),
+            'customer_id' => $request->query->get('customer_id'),
+            'status' => $request->query->get('status'),
+        ];
+
+        // Удаляем пустые значения
+        $filters = array_filter($filters, fn($v) => $v !== null && $v !== '');
+
+        // Получаем отфильтрованные заказы
+        $orders = $orderRepository->findByFilters($filters);
+
+        // Получаем список всех заказов (только id)
+        $allOrders = $orderRepository->findAll();
+
+        // Получаем список всех заказчиков
+        $allCustomers = $customerRepository->findAll();
+
         return $this->render('order/index.html.twig', [
-            'orders' => $orderRepository->findAll(),
+            'orders' => $orders,
+            'filters' => $filters,
+            'allOrders' => $allOrders,
+            'allCustomers' => $allCustomers,
         ]);
     }
 
@@ -57,25 +89,6 @@ final class OrderController extends AbstractController
             'order' => $order,
         ]);
     }
-
-    // #[Route('/order/{id}/edit', name: 'app_order_edit', methods: ['GET', 'POST'])]
-    // public function edit(Request $request, Order $order, EntityManagerInterface $entityManager): Response
-    // {
-    //     $form = $this->createForm(OrderForm::class, $order);
-    //     $form->handleRequest($request);
-        
-
-    //     if ($form->isSubmitted() && $form->isValid()) {
-    //         $entityManager->flush();
-
-    //         return $this->redirectToRoute('app_order_index', [], Response::HTTP_SEE_OTHER);
-    //     }
-
-    //     return $this->render('order/edit.html.twig', [
-    //         'order' => $order,
-    //         'form' => $form,
-    //     ]);
-    // }
 
     #[Route('/order/{id}/edit', name: 'app_order_edit', methods: ['GET', 'POST'])]
     public function edit(
@@ -153,6 +166,19 @@ final class OrderController extends AbstractController
 
             $entityManager->remove($order);
             $entityManager->flush();
+        }
+
+        return $this->redirectToRoute('app_order_index', [], Response::HTTP_SEE_OTHER);
+    }
+
+    #[Route('/order/{id}/complete', name: 'app_order_complete', methods: ['POST'])]
+    public function complete(Request $request, Order $order, EntityManagerInterface $entityManager): Response
+    {
+        if ($this->isCsrfTokenValid('complete'.$order->getId(), $request->getPayload()->getString('_token'))) {
+            if ($order->getStatus() === 0 && $order->getAmount() === $order->getPaymentAmount()) {
+                $order->setStatus(1);
+                $entityManager->flush();
+            }
         }
 
         return $this->redirectToRoute('app_order_index', [], Response::HTTP_SEE_OTHER);
