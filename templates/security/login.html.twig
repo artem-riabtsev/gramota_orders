@@ -26,5 +26,8 @@
 
         <button type="submit" class="btn btn-primary w-100">Войти</button>
     </form>
+    {% for message in app.flashes('error') %}
+        <div class="alert alert-danger">{{ message }}</div>
+    {% endfor %}
 </div>
 {% endblock %}

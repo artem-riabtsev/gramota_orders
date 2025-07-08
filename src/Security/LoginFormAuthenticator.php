@@ -33,19 +33,6 @@ class LoginFormAuthenticator extends AbstractLoginFormAuthenticator
             && $request->isMethod('POST');
     }
 
-    // public function authenticate(Request $request): Passport
-    // {
-    //     $username = $request->request->get('username', '');
-    //     $password = $request->request->get('password', '');
-    //     $csrfToken = $request->request->get('_csrf_token');
-
-    //     return new Passport(
-    //         new UserBadge($username),
-    //         new PasswordCredentials($password),
-    //         [new CsrfTokenBadge('authenticate', $csrfToken)]
-    //     );
-    // }
-
     public function authenticate(Request $request): Passport
     {
         $username = $request->request->get('username', '');
