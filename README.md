@@ -27,7 +27,7 @@
 
 ```bash
 # 1. Клонируйте репозиторий
-git clone https://github.com/yourusername/gramota-orders.git
+git clone https://github.com/artem-riabtsev/gramota_orders
 cd gramota-orders
 
 # 2. Постройте контейнеры
