@@ -39,6 +39,19 @@ class UserCrudController extends AbstractCrudController
             ->renderExpanded()
             ->onlyOnForms(),
         ArrayField::new('roles')->onlyOnIndex(),
+        TextField::new('surname'),
+        TextField::new('name'),
+        TextField::new('patronymic'),
+        TextField::new('email'),
+        TextField::new('phone'),
+        ChoiceField::new('is_approved')
+            ->setChoices([
+                'true' => true,
+                'false' => false,
+            ])
+            ->renderExpanded()
+            ->onlyOnForms(),
+        ArrayField::new('is_approved')->onlyOnIndex(),
     ];
 }
 
