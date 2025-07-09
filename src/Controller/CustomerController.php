@@ -14,39 +14,97 @@ use Symfony\Component\Routing\Attribute\Route;
 #[Route('/customer')]
 final class CustomerController extends AbstractController
 {
+
     #[Route(name: 'app_customer_index', methods: ['GET'])]
-    public function index(CustomerRepository $customerRepository): Response
-    {
+    public function index(
+        Request $request,
+        CustomerRepository $customerRepository
+    ): Response {
+        $filters = [
+            'id' => $request->query->get('id'),
+            'surname' => $request->query->get('surname'),
+            'name' => $request->query->get('name'),
+            'patronymic' => $request->query->get('patronymic'),
+            'email' => $request->query->get('email'),
+            'phone' => $request->query->get('phone'),
+        ];
+
+        $filters = array_filter($filters, fn($v) => $v !== null && $v !== '');
+
+        $customers = $customerRepository->findByFilters($filters);
+
+        $allCustomers = $customerRepository->findAll();
+
         return $this->render('customer/index.html.twig', [
-            'customers' => $customerRepository->findAll(),
+            'customers' => $customers,
+            'filters' => $filters,
+            'allCustomers' => $allCustomers,
         ]);
     }
 
-    #[Route('/new', name: 'app_customer_new', methods: ['GET', 'POST'])]
-    public function new(Request $request, EntityManagerInterface $entityManager): Response
+    #[Route('/customer/new', name: 'app_customer_new')]
+    public function new(Request $request, EntityManagerInterface $em): Response
     {
+        $from = $request->query->get('from');
+        if ($from) {
+            $request->getSession()->set('from', $from);
+        }
+
         $customer = new Customer();
         $form = $this->createForm(CustomerForm::class, $customer);
         $form->handleRequest($request);
 
         if ($form->isSubmitted() && $form->isValid()) {
-            $entityManager->persist($customer);
-            $entityManager->flush();
+            $em->persist($customer);
+            $em->flush();
 
-            return $this->redirectToRoute('app_customer_index', [], Response::HTTP_SEE_OTHER);
+            $from = $request->getSession()->get('from');
+            if ($from === 'order') {
+                return $this->redirectToRoute('app_order_new', [
+                    'customer' => $customer->getId()
+                ]);
+            }
+
+            return $this->redirectToRoute('app_customer_index');
         }
 
         return $this->render('customer/new.html.twig', [
-            'customer' => $customer,
             'form' => $form,
         ]);
     }
 
-    #[Route('/{id}', name: 'app_customer_show', methods: ['GET'])]
-    public function show(Customer $customer): Response
+    #[Route('/select', name: 'app_customer_select')]
+    public function select(Request $request, CustomerRepository $customerRepository): Response
     {
+        $query = $request->query->get('q');
+
+        if ($query) {
+            $customers = $customerRepository->createQueryBuilder('c')
+                ->where('LOWER(c.surname) LIKE :q')
+                ->orWhere('LOWER(c.name) LIKE :q')
+                ->orWhere('LOWER(c.patronymic) LIKE :q')
+                ->orWhere('LOWER(c.email) LIKE :q')
+                ->setParameter('q', '%' . strtolower($query) . '%')
+                ->orderBy('c.surname', 'ASC')
+                ->getQuery()
+                ->getResult();
+        } else {
+            $customers = $customerRepository->findBy([], ['surname' => 'ASC']);
+        }
+
+        return $this->render('customer/select.html.twig', [
+            'customers' => $customers,
+        ]);
+    }
+
+    #[Route('/{id}', name: 'app_customer_show', methods: ['GET'], requirements: ['id' => '\d+'])]
+    public function show(Customer $customer): Response
+    {   $completedOrders = $customer->getOrders()->filter(fn($order) => $order->getStatus() === 1);
+        $incompletedOrders = $customer->getOrders()->filter(fn($order) => $order->getStatus() === 0);
         return $this->render('customer/show.html.twig', [
             'customer' => $customer,
+            'completedOrders' => $completedOrders,
+            'incompletedOrders' => $incompletedOrders,
         ]);
     }
 
@@ -84,4 +142,6 @@ final class CustomerController extends AbstractController
 
         return $this->redirectToRoute('app_customer_index', [], Response::HTTP_SEE_OTHER);
     }
+
+
 }

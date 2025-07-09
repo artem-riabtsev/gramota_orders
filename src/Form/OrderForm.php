@@ -14,14 +14,22 @@ class OrderForm extends AbstractType
     public function buildForm(FormBuilderInterface $builder, array $options): void
     {
         $builder
-            ->add('number')
-            ->add('date')
-            ->add('amount')
-            ->add('payment_date')
-            ->add('payment_amount')
+            ->add('date', null, ['label' => 'Дата заказа'])
+            ->add('amount', null, ['label' => 'Сумма заказа'])
+            ->add('payment_date', null, ['label' => 'Дата оплаты'])
+            ->add('payment_amount', null, ['label' => 'Сумма оплаты'])
             ->add('customer', EntityType::class, [
                 'class' => Customer::class,
-                'choice_label' => 'id',
+                'choice_label' => function (Customer $customer) {
+                    return sprintf('%s %s %s (%s)', 
+                        $customer->getSurname(),
+                        $customer->getName(),
+                        $customer->getPatronymic(),
+                        $customer->getEmail()
+                    );
+                },
+                'label' => 'Заказчик',
+                'disabled' => true,
             ])
         ;
     }

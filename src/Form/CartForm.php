@@ -14,13 +14,14 @@ class CartForm extends AbstractType
     public function buildForm(FormBuilderInterface $builder, array $options): void
     {
         $builder
-            ->add('name')
-            ->add('quantity')
-            ->add('price')
-            ->add('total_amount')
+            ->add('name', null, ['label' => 'Наименование'])
+            ->add('quantity', null, ['label' => 'Количество'])
+            ->add('price', null, ['label' => 'Цена'])
+            ->add('total_amount', null, ['label' => 'Всего'])
             ->add('order', EntityType::class, [
                 'class' => Order::class,
                 'choice_label' => 'id',
+                'label' => 'Заказ'
             ])
         ;
     }

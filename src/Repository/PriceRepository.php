@@ -16,28 +16,27 @@ class PriceRepository extends ServiceEntityRepository
         parent::__construct($registry, Price::class);
     }
 
-    //    /**
-    //     * @return Price[] Returns an array of Price objects
-    //     */
-    //    public function findByExampleField($value): array
-    //    {
-    //        return $this->createQueryBuilder('p')
-    //            ->andWhere('p.exampleField = :val')
-    //            ->setParameter('val', $value)
-    //            ->orderBy('p.id', 'ASC')
-    //            ->setMaxResults(10)
-    //            ->getQuery()
-    //            ->getResult()
-    //        ;
-    //    }
+    public function findByFilters(array $filters)
+    {
+        $qb = $this->createQueryBuilder('o');
 
-    //    public function findOneBySomeField($value): ?Price
-    //    {
-    //        return $this->createQueryBuilder('p')
-    //            ->andWhere('p.exampleField = :val')
-    //            ->setParameter('val', $value)
-    //            ->getQuery()
-    //            ->getOneOrNullResult()
-    //        ;
-    //    }
+        if (isset($filters['id'])) {
+            $qb->andWhere('o.id = :id')
+                ->setParameter('id', (int)$filters['id']);
+        }
+
+        if (isset($filters['name'])) {
+            $qb->andWhere('o.name = :name')
+                ->setParameter('name', (string)$filters['name']);
+        }
+
+        if (isset($filters['price'])) {
+            $qb->andWhere('o.price = :price')
+                ->setParameter('price', (string)$filters['price']);
+        }
+
+        $qb->orderBy('o.id', 'DESC');
+
+        return $qb->getQuery()->getResult();
+    }
 }

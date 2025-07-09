@@ -14,11 +14,28 @@ use Symfony\Component\Routing\Attribute\Route;
 #[Route('/price')]
 final class PriceController extends AbstractController
 {
+
     #[Route(name: 'app_price_index', methods: ['GET'])]
-    public function index(PriceRepository $priceRepository): Response
-    {
+    public function index(
+        Request $request,
+        PriceRepository $priceRepository
+    ): Response {
+        $filters = [
+            'id' => $request->query->get('id'),
+            'name' => $request->query->get('name'),
+            'price' => $request->query->get('price'),
+        ];
+
+        $filters = array_filter($filters, fn($v) => $v !== null && $v !== '');
+
+        $prices = $priceRepository->findByFilters($filters);
+
+        $allPrices = $priceRepository->findAll();
+
         return $this->render('price/index.html.twig', [
-            'prices' => $priceRepository->findAll(),
+            'prices' => $prices,
+            'filters' => $filters,
+            'allCustomers' => $allPrices,
         ]);
     }
 
@@ -39,14 +56,6 @@ final class PriceController extends AbstractController
         return $this->render('price/new.html.twig', [
             'price' => $price,
             'form' => $form,
-        ]);
-    }
-
-    #[Route('/{id}', name: 'app_price_show', methods: ['GET'])]
-    public function show(Price $price): Response
-    {
-        return $this->render('price/show.html.twig', [
-            'price' => $price,
         ]);
     }
 

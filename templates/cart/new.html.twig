@@ -11,11 +11,13 @@
         {{ form_start(form) }}
 
         <div class="row">
-            {% for field in form if field.vars.name != '_token' %}
-                <div class="col-md-6 mb-3">
-                    {{ form_label(field) }}
-                    {{ form_widget(field, {'attr': {'class': 'form-control'}}) }}
-                </div>
+            {% for field in form %}
+                {% if field.vars.name != '_token' %}
+                    <div class="col-md-6 mb-3">
+                        {{ form_label(field) }}
+                        {{ form_widget(field, {'attr': {'class': 'form-control'}}) }}
+                    </div>
+                {% endif %}
             {% endfor %}
         </div>
 
