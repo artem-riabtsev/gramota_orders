@@ -30,7 +30,14 @@
             <td>{{ order.amount }}</td>
             <td>{{ order.paymentDate ? order.paymentDate|date('d.m.Y') : '' }}</td>
             <td>{{ order.paymentAmount }}</td>
-            <td>{{ order.customer.id }}</td>
+            <td>
+                {# <a href="{{ path('app_customer_show', {'id': order.customer.id}) }}">{{ order.customer.surname }}</a> #}
+                <a href="{{ path('app_customer_show', {'id': order.customer.id}) }}"
+                class="text-muted"
+                style="text-decoration: underline; text-decoration-thickness: 1px;">
+                    {{ order.customer.surname }}
+                </a>
+                            </td>
             <td class='{{ order.status == 0 ? 'table-danger' : 'table-success' }}'>
                 {{ order.status == 0 ? 'Незавершен' : 'Завершен' }}
             </td>
