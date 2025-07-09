@@ -32,27 +32,6 @@
                 {{ form_label(form.customer) }}
                 {{ form_widget(form.customer, {'attr': {'class': 'form-control'}}) }}
             </div>
-
-            {# <div class="col-md-6 mb-3">
-                <label>Заказчик</label>
-                {{ form_widget(form.customer_id, {'id': 'customer-id'}) }}
-
-                <div class="d-flex justify-content-between align-items-center mb-2">
-                    <span id="selected-customer-name">Не выбран</span>
-                    <button type="button" class="btn btn-outline-primary btn-sm" onclick="toggleCustomerList()">Выбрать</button>
-                </div>
-
-                <div id="customer-list" class="list-group" style="max-height: 200px; overflow-y: auto; display: none;">
-                    {% for customer in customers %}
-                        <a href="#" class="list-group-item list-group-item-action"
-                        data-id="{{ customer.id }}"
-                        data-name="{{ customer.name }}"
-                        onclick="selectCustomer(event, this)">
-                            {{ customer.name }}
-                        </a>
-                    {% endfor %}
-                </div>
-            </div> #}
         </div>
 
         <button class="btn btn-success">Создать</button>
@@ -61,28 +40,5 @@
         {{ form_end(form) }}
     </div>
 </div>
-// <script>
-//     function toggleCustomerList() {
-//         const list = document.getElementById('customer-list');
-//         list.style.display = list.style.display === 'none' ? 'block' : 'none';
-//     }
-
-//     function selectCustomer(event, el) {
-//         event.preventDefault();
-//         const id = el.dataset.id;
-//         const name = el.dataset.name;
-
-//         document.getElementById('customer-id').value = id;
-//         document.getElementById('selected-customer-name').innerText = name;
-
-//         // Подсветка активного
-//         const all = document.querySelectorAll('#customer-list .list-group-item');
-//         all.forEach(item => item.classList.remove('active'));
-//         el.classList.add('active');
-
-//         // Скрываем список после выбора
-//         document.getElementById('customer-list').style.display = 'none';
-//     }
-// </script>
 {% endblock %}
 

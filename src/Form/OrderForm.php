@@ -20,8 +20,16 @@ class OrderForm extends AbstractType
             ->add('payment_amount', null, ['label' => 'Сумма оплаты'])
             ->add('customer', EntityType::class, [
                 'class' => Customer::class,
-                'choice_label' => 'id',
-                'label' => 'Заказчик'
+                'choice_label' => function (Customer $customer) {
+                    return sprintf('%s %s %s (%s)', 
+                        $customer->getSurname(),
+                        $customer->getName(),
+                        $customer->getPatronymic(),
+                        $customer->getEmail()
+                    );
+                },
+                'label' => 'Заказчик',
+                'disabled' => true,
             ])
         ;
     }

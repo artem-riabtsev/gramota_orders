@@ -1,0 +1,27 @@
+{% extends 'base.html.twig' %}
+
+{% block content %}
+<div class="container mt-4">
+    <h4>Выберите заказчика</h4>
+
+    <form method="get" class="mb-3">
+        <input type="text"
+               name="q"
+               class="form-control"
+               placeholder="Поиск по ФИО или email"
+               value="{{ app.request.get('q') }}">
+    </form>
+
+    <div class="list-group" style="max-height: 300px; overflow-y: auto;">
+        {% for customer in customers %}
+            <a href="{{ path('app_order_new', {'customer': customer.id}) }}"
+               class="list-group-item list-group-item-action">
+                {{ customer.surname }} {{ customer.name }} {{ customer.patronymic }} ({{ customer.email }})
+            </a>
+        {% else %}
+            <div class="list-group-item text-muted">Ничего не найдено</div>
+            <a href="{{ path('app_customer_new', {'from': 'order'}) }}" class="btn btn-primary">Создать нового заказчика</a>
+        {% endfor %}
+    </div>
+</div>
+{% endblock %}

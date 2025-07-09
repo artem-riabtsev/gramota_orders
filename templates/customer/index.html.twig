@@ -52,5 +52,5 @@
         </tbody>
     </table>
 
-    <a href="{{ path('app_customer_new') }}" class="btn btn-primary">Создать нового заказчика</a>
+    <a href="{{ path('app_customer_new', {'from': 'customer_index'}) }}" class="btn btn-primary">Создать нового заказчика</a>
 {% endblock %}

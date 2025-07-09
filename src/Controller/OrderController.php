@@ -59,11 +59,22 @@ final class OrderController extends AbstractController
     }
 
     #[Route('/order/new', name: 'app_order_new', methods: ['GET', 'POST'])]
-    public function new(Request $request, EntityManagerInterface $entityManager): Response
+    public function new(Request $request, EntityManagerInterface $entityManager, CustomerRepository $customerRepository): Response
     {
         $order = new Order();
+
+        $customerId = $request->query->get('customer');
+        if ($customerId) {
+            $customer = $customerRepository->find($customerId);
+            if ($customer) {
+                $order->setCustomer($customer);
+            }
+        }
+        
+
         $form = $this->createForm(OrderForm::class, $order);
         $form->handleRequest($request);
+
 
         if ($form->isSubmitted() && $form->isValid()) {
             $entityManager->persist($order);
