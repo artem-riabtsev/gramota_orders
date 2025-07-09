@@ -35,8 +35,7 @@
         </div>
 
         <button class="btn btn-success">Создать</button>
-        <a href="{{ path('app_customer_index') }}" class="btn btn-secondary ms-2">Назад</a>
-
+        <a href="{{ app.request.get('from') == 'order' ? path('app_customer_select') : path('app_customer_index') }}" class="btn btn-secondary ms-2">Назад</a>
         {{ form_end(form) }}
     </div>
 </div>
