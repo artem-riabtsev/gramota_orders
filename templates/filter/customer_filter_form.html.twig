@@ -1,76 +1,23 @@
-<div class="collapse" id="filterCollapse">
-    <div class="card card-body mb-4">
-        <form method="get" action="{{ path('app_customer_index') }}">
-            <div class="row g-3">
-                <div class="col-md-2">
-                    <label for="filterId" class="form-label">ID</label>
-                    <select id="filterId" name="id" class="form-select">
-                        <option value="">Все</option>
-                        {% set usedIds = [] %}
-                        {% for c in allCustomers %}
-                            {% if c.id not in usedIds %}
-                                <option value="{{ c.id }}" {% if filters.id is defined and filters.id == c.id %}selected{% endif %}>
-                                    {{ c.id }}
-                                </option>
-                                {% set usedIds = usedIds|merge([c.id]) %}
-                            {% endif %}
-                        {% endfor %}
-                    </select>
-                </div>
 
-                <div class="col-md-2">
-                    <label for="filterName" class="form-label"ФИО</label>
-                    <select id="filterName" name="name" class="form-select">
-                        <option value="">Все</option>
-                        {% set usedNames = [] %}
-                        {% for c in allCustomers %}
-                            {% if c.name is not null and c.name not in usedNames %}
-                                <option value="{{ c.name }}" {% if filters.name is defined and filters.name == c.name %}selected{% endif %}>
-                                    {{ c.name }}
-                                </option>
-                                {% set usedNames = usedNames|merge([c.name]) %}
-                            {% endif %}
-                        {% endfor %}
-                    </select>
-                </div>
+<div class="card card-body mb-4">
+    <form method="get" action="{{ path('app_customer_index') }}">
+        <div class="row g-3">
 
-                <div class="col-md-3">
-                    <label for="filterEmail" class="form-label">Email</label>
-                    <select id="filterEmail" name="email" class="form-select">
-                        <option value="">Все</option>
-                        {% set usedEmails = [] %}
-                        {% for c in allCustomers %}
-                            {% if c.email is not null and c.email not in usedEmails %}
-                                <option value="{{ c.email }}" {% if filters.email is defined and filters.email == c.email %}selected{% endif %}>
-                                    {{ c.email }}
-                                </option>
-                                {% set usedEmails = usedEmails|merge([c.email]) %}
-                            {% endif %}
-                        {% endfor %}
-                    </select>
-                </div>
-
-                <div class="col-md-3">
-                    <label for="filterPhone" class="form-label">Телефон</label>
-                    <select id="filterPhone" name="phone" class="form-select">
-                        <option value="">Все</option>
-                        {% set usedPhones = [] %}
-                        {% for c in allCustomers %}
-                            {% if c.phone is not null and c.phone not in usedPhones %}
-                                <option value="{{ c.phone }}" {% if filters.phone is defined and filters.phone == c.phone %}selected{% endif %}>
-                                    {{ c.phone }}
-                                </option>
-                                {% set usedPhones = usedPhones|merge([c.phone]) %}
-                            {% endif %}
-                        {% endfor %}
-                    </select>
-                </div>
-
-                <div class="col-12">
-                    <button type="submit" class="btn btn-primary">Применить фильтр</button>
-                    <a href="{{ path('app_customer_index') }}" class="btn btn-secondary">Сбросить</a>
-                </div>
+            <div class="col-md-4">
+                <input
+                    type="text"
+                    id="filterQuery"
+                    name="q"
+                    value="{{ filters.query ?? '' }}"
+                    class="form-control"
+                    placeholder="Введите ФИО или email"
+                >
             </div>
-        </form>
-    </div>
+
+            <div class="col-12">
+                <button type="submit" class="btn btn-primary">Поиск</button>
+                <a href="{{ path('app_customer_index') }}" class="btn btn-secondary">Сбросить</a>
+            </div>
+        </div>
+    </form>
 </div>

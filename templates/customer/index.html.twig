@@ -5,22 +5,8 @@
     <h1>Заказчики</h1>
 
     <div class="mb-3">
-        <button class="btn btn-secondary" type="button" data-bs-toggle="collapse" data-bs-target="#filterCollapse" aria-expanded="false" aria-controls="filterCollapse">
-            Показать / скрыть фильтр
-        </button>
         <a href="{{ path('app_customer_new', {'from': 'customer_index'}) }}" class="btn btn-primary">Создать нового заказчика</a>
     </div>
-
-    <form method="get" class="mb-3" style="display: flex; gap: 20px">
-        <input type="text"
-            name="q"
-            class="form-control"
-            placeholder="Поиск по ФИО или email"
-            value="{{ app.request.get('q') }}">
-        {% if app.request.get('q') %}
-            <a href="{{ path('app_customer_index') }}" class="btn btn-info">Очистить</a>
-        {% endif %}
-    </form>
 
     {% include 'filter/customer_filter_form.html.twig' %}
 
@@ -35,30 +21,36 @@
             </tr>
         </thead>
         <tbody>
-        {% for customer in customers %}
-            <tr>
-                <td>{{ customer.id }}</td>
-                <td>{{ customer.name }}</td>
-                <td>{{ customer.email }}</td>
-                <td>{{ customer.phone }}</td>
-                <td>
-                    <div class="d-flex">
-                        <a href="{{ path('app_customer_show', {'id': customer.id}) }}" class="btn btn-sm btn-outline-primary me-2">Просмотр</a>
-                        <a href="{{ path('app_customer_edit', {'id': customer.id}) }}" class="btn btn-sm btn-outline-warning me-2">Редактировать</a>
-                        <form method="post" action="{{ path('app_customer_delete', {'id': customer.id}) }}">
-                            <input type="hidden" name="_token" value="{{ csrf_token('delete' ~ customer.id) }}">
-                            <button class="btn btn-sm btn-outline-danger" {% if customer.orders|length > 0 %}disabled{% endif %}>
-                                Удалить
-                            </button>
-                        </form>
-                    </div>
-                </td>
-            </tr>
+        {% if app.request.get('q') %}
+            {% for customer in customers %}
+                <tr>
+                    <td>{{ customer.id }}</td>
+                    <td>{{ customer.name }}</td>
+                    <td>{{ customer.email }}</td>
+                    <td>{{ customer.phone }}</td>
+                    <td>
+                        <div class="d-flex">
+                            <a href="{{ path('app_customer_show', {'id': customer.id}) }}" class="btn btn-sm btn-outline-primary me-2">Просмотр</a>
+                            <a href="{{ path('app_customer_edit', {'id': customer.id}) }}" class="btn btn-sm btn-outline-warning me-2">Редактировать</a>
+                            <form method="post" action="{{ path('app_customer_delete', {'id': customer.id}) }}">
+                                <input type="hidden" name="_token" value="{{ csrf_token('delete' ~ customer.id) }}">
+                                <button class="btn btn-sm btn-outline-danger" {% if customer.orders|length > 0 %}disabled{% endif %}>
+                                    Удалить
+                                </button>
+                            </form>
+                        </div>
+                    </td>
+                </tr>
+            {% else %}
+                <tr>
+                    <td colspan="7">Заказчики ненайдены</td>
+                </tr>
+            {% endfor %}
         {% else %}
             <tr>
-                <td colspan="7">Заказчики ненайдены</td>
+                <td colspan="7">Поиск неосуществлен</td>
             </tr>
-        {% endfor %}
+        {% endif %}
         </tbody>
     </table>
 

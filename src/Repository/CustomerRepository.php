@@ -16,31 +16,15 @@ class CustomerRepository extends ServiceEntityRepository
         parent::__construct($registry, Customer::class);
     }
 
-    public function findByFilters(array $filters)
+    public function findByNameOrEmail(?string $query): array
     {
-        $qb = $this->createQueryBuilder('o');
+        $qb = $this->createQueryBuilder('c');
 
-        if (isset($filters['id'])) {
-            $qb->andWhere('o.id = :id')
-                ->setParameter('id', (int)$filters['id']);
+        if ($query) {
+            $qb->where('LOWER(c.name) LIKE :q')
+            ->orWhere('LOWER(c.email) LIKE :q')
+            ->setParameter('q', '%' . strtolower($query) . '%');
         }
-
-        if (isset($filters['name'])) {
-            $qb->andWhere('o.name = :name')
-                ->setParameter('name', (string)$filters['name']);
-        }
-
-        if (isset($filters['email'])) {
-            $qb->andWhere('o.email = :email')
-                ->setParameter('email', (string)$filters['email']);
-        }
-
-        if (isset($filters['phone'])) {
-            $qb->andWhere('o.phone = :phone')
-                ->setParameter('phone', (string)$filters['phone']);
-        }
-
-        $qb->orderBy('o.id', 'DESC');
 
         return $qb->getQuery()->getResult();
     }

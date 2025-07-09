@@ -20,23 +20,21 @@ final class CustomerController extends AbstractController
         Request $request,
         CustomerRepository $customerRepository
     ): Response {
-        $filters = [
-            'id' => $request->query->get('id'),
-            'name' => $request->query->get('name'),
-            'email' => $request->query->get('email'),
-            'phone' => $request->query->get('phone'),
-        ];
+        $query = $request->query->get('q');
 
-        $filters = array_filter($filters, fn($v) => $v !== null && $v !== '');
+        if ($query) {
+            $customers = $customerRepository->findByNameOrEmail($query);
+        } else {
+            $customers =[];
+        }
 
-        $customers = $customerRepository->findByFilters($filters);
-
-        $allCustomers = $customerRepository->findAll();
+        
 
         return $this->render('customer/index.html.twig', [
             'customers' => $customers,
-            'filters' => $filters,
-            'allCustomers' => $allCustomers,
+            'filters' => [
+                'query' => $query,
+            ],
         ]);
     }
 
