@@ -25,19 +25,9 @@ class CustomerRepository extends ServiceEntityRepository
                 ->setParameter('id', (int)$filters['id']);
         }
 
-        if (isset($filters['surname'])) {
-            $qb->andWhere('o.surname = :surname')
-                ->setParameter('surname', (string)$filters['surname']);
-        }
-
         if (isset($filters['name'])) {
             $qb->andWhere('o.name = :name')
                 ->setParameter('name', (string)$filters['name']);
-        }
-
-        if (isset($filters['patronymic'])) {
-            $qb->andWhere('o.patronymic = :patronymic')
-                ->setParameter('patronymic', (string)$filters['patronymic']);
         }
 
         if (isset($filters['email'])) {

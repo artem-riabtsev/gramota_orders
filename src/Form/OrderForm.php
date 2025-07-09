@@ -22,9 +22,7 @@ class OrderForm extends AbstractType
                 'class' => Customer::class,
                 'choice_label' => function (Customer $customer) {
                     return sprintf('%s %s %s (%s)', 
-                        $customer->getSurname(),
                         $customer->getName(),
-                        $customer->getPatronymic(),
                         $customer->getEmail()
                     );
                 },

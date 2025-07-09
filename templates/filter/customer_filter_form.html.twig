@@ -19,23 +19,7 @@
                 </div>
 
                 <div class="col-md-2">
-                    <label for="filterSurname" class="form-label">Фамилия</label>
-                    <select id="filterSurname" name="surname" class="form-select">
-                        <option value="">Все</option>
-                        {% set usedSurnames = [] %}
-                        {% for c in allCustomers %}
-                            {% if c.surname is not null and c.surname not in usedSurnames %}
-                                <option value="{{ c.surname }}" {% if filters.surname is defined and filters.surname == c.surname %}selected{% endif %}>
-                                    {{ c.surname }}
-                                </option>
-                                {% set usedSurnames = usedSurnames|merge([c.surname]) %}
-                            {% endif %}
-                        {% endfor %}
-                    </select>
-                </div>
-
-                <div class="col-md-2">
-                    <label for="filterName" class="form-label">Имя</label>
+                    <label for="filterName" class="form-label"ФИО</label>
                     <select id="filterName" name="name" class="form-select">
                         <option value="">Все</option>
                         {% set usedNames = [] %}
@@ -45,22 +29,6 @@
                                     {{ c.name }}
                                 </option>
                                 {% set usedNames = usedNames|merge([c.name]) %}
-                            {% endif %}
-                        {% endfor %}
-                    </select>
-                </div>
-
-                <div class="col-md-2">
-                    <label for="filterPatronymic" class="form-label">Отчество</label>
-                    <select id="filterPatronymic" name="patronymic" class="form-select">
-                        <option value="">Все</option>
-                        {% set usedPatronymics = [] %}
-                        {% for c in allCustomers %}
-                            {% if c.patronymic is not null and c.patronymic not in usedPatronymics %}
-                                <option value="{{ c.patronymic }}" {% if filters.patronymic is defined and filters.patronymic == c.patronymic %}selected{% endif %}>
-                                    {{ c.patronymic }}
-                                </option>
-                                {% set usedPatronymics = usedPatronymics|merge([c.patronymic]) %}
                             {% endif %}
                         {% endfor %}
                     </select>

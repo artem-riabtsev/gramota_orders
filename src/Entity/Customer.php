@@ -17,13 +17,7 @@ class Customer
     private ?int $id = null;
 
     #[ORM\Column(length: 255)]
-    private ?string $surname = null;
-
-    #[ORM\Column(length: 255)]
     private ?string $name = null;
-
-    #[ORM\Column(length: 255, nullable: true)]
-    private ?string $patronymic = null;
 
     #[ORM\Column(length: 255)]
     private ?string $email = null;
@@ -39,18 +33,6 @@ class Customer
         return $this->id;
     }
 
-    public function getSurname(): ?string
-    {
-        return $this->surname;
-    }
-
-    public function setSurname(string $surname): static
-    {
-        $this->surname = $surname;
-
-        return $this;
-    }
-
     public function getName(): ?string
     {
         return $this->name;
@@ -59,18 +41,6 @@ class Customer
     public function setName(string $name): static
     {
         $this->name = $name;
-
-        return $this;
-    }
-
-    public function getPatronymic(): ?string
-    {
-        return $this->patronymic;
-    }
-
-    public function setPatronymic(?string $patronymic): static
-    {
-        $this->patronymic = $patronymic;
 
         return $this;
     }

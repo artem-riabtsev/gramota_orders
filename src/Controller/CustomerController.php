@@ -22,9 +22,7 @@ final class CustomerController extends AbstractController
     ): Response {
         $filters = [
             'id' => $request->query->get('id'),
-            'surname' => $request->query->get('surname'),
             'name' => $request->query->get('name'),
-            'patronymic' => $request->query->get('patronymic'),
             'email' => $request->query->get('email'),
             'phone' => $request->query->get('phone'),
         ];
@@ -80,16 +78,14 @@ final class CustomerController extends AbstractController
 
         if ($query) {
             $customers = $customerRepository->createQueryBuilder('c')
-                ->where('LOWER(c.surname) LIKE :q')
                 ->orWhere('LOWER(c.name) LIKE :q')
-                ->orWhere('LOWER(c.patronymic) LIKE :q')
                 ->orWhere('LOWER(c.email) LIKE :q')
                 ->setParameter('q', '%' . strtolower($query) . '%')
-                ->orderBy('c.surname', 'ASC')
+                ->orderBy('c.name', 'ASC')
                 ->getQuery()
                 ->getResult();
         } else {
-            $customers = $customerRepository->findBy([], ['surname' => 'ASC']);
+            $customers = $customerRepository->findBy([], ['name' => 'ASC']);
         }
 
         return $this->render('customer/select.html.twig', [
