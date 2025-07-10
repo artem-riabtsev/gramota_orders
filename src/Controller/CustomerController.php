@@ -28,13 +28,9 @@ final class CustomerController extends AbstractController
             $customers =[];
         }
 
-        
-
         return $this->render('customer/index.html.twig', [
             'customers' => $customers,
-            'filters' => [
-                'query' => $query,
-            ],
+            'query' => $query,
         ]);
     }
 

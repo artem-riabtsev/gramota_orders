@@ -76,6 +76,11 @@
             });
         {% endfor %}
     {% endfor %}
+
+    // доработать кнопки назад таким способом, напоминалка
+    // <a href="{{ app.request.headers.get('referer') ?: path('app_order_index') }}" class="btn btn-secondary">
+    //     Назад
+    // </a>
 </script>
 </body>
 </html>

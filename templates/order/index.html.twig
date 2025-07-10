@@ -3,11 +3,7 @@
 {% block content %}
 <h1>Заказы</h1>
 
-<button class="btn btn-secondary mb-3" type="button" data-bs-toggle="collapse" data-bs-target="#filterCollapse" aria-expanded="false" aria-controls="filterCollapse">
-    Показать / скрыть фильтр
-</button>
-
-{% include 'filter/order_filter_form.html.twig' %}
+{% include 'search/search_form.html.twig' %}
 
 <table class="table table-hover table-bordered align-middle">
     <thead>
@@ -46,6 +42,7 @@
                     <a href="{{ path('app_order_edit', {'id': order.id}) }}" class="btn btn-sm btn-outline-warning me-2">Корзина</a>
                     <form method="post" action="{{ path('app_order_complete', {'id': order.id}) }}" class="me-2">
                         <input type="hidden" name="_token" value="{{ csrf_token('complete' ~ order.id) }}">
+                        <input type="hidden" name="q" value="{{ query }}">
                         <button class="btn btn-sm btn-outline-success">Завершить</button>
                     </form>
                     {% else %}
@@ -68,5 +65,4 @@
     {% endfor %}
     </tbody>
 </table>
-<a href="{{ path('app_customer_select') }}" class="btn btn-primary">Создать новый заказ</a>
 {% endblock %}

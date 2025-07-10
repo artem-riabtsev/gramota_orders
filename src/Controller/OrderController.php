@@ -26,36 +26,23 @@ final class OrderController extends AbstractController
     public function index(
         Request $request,
         OrderRepository $orderRepository,
-        CustomerRepository $customerRepository
     ): Response {
-        $filters = [
-            'id' => $request->query->get('id'),
-            'date_from' => $request->query->get('date_from'),
-            'date_to' => $request->query->get('date_to'),
-            'amount_min' => $request->query->get('amount_min'),
-            'amount_max' => $request->query->get('amount_max'),
-            'payment_date_from' => $request->query->get('payment_date_from'),
-            'payment_date_to' => $request->query->get('payment_date_to'),
-            'payment_amount_min' => $request->query->get('payment_amount_min'),
-            'payment_amount_max' => $request->query->get('payment_amount_max'),
-            'customer_id' => $request->query->get('customer_id'),
-            'status' => $request->query->get('status'),
-        ];
+        
+        $query = $request->query->get('q');
 
-        $filters = array_filter($filters, fn($v) => $v !== null && $v !== '');
+        if ($query) {
+            $orders = $orderRepository->findByIdAndCustomerId($query);
+        } else {
+            $orders = $orderRepository->findLastMonthOrders();
+        }
 
-        $orders = $orderRepository->findByFilters($filters);
-
-        $allOrders = $orderRepository->findAll();
-
-        $allCustomers = $customerRepository->findAll();
+        // dd($orders);
 
         return $this->render('order/index.html.twig', [
             'orders' => $orders,
-            'filters' => $filters,
-            'allOrders' => $allOrders,
-            'allCustomers' => $allCustomers,
+            'query' => $query,
         ]);
+
     }
 
     #[Route('/order/new', name: 'app_order_new', methods: ['GET', 'POST'])]
@@ -185,6 +172,9 @@ final class OrderController extends AbstractController
             }
         }
 
-        return $this->redirectToRoute('app_order_index', [], Response::HTTP_SEE_OTHER);
+        $q = $request->request->get('q'); // <-- достаём q из запроса
+        $routeParams = $q ? ['q' => $q] : [];
+
+        return $this->redirectToRoute('app_order_index', $routeParams, Response::HTTP_SEE_OTHER);
     }
 }

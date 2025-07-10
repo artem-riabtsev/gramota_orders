@@ -21,7 +21,7 @@ class OrderForm extends AbstractType
             ->add('customer', EntityType::class, [
                 'class' => Customer::class,
                 'choice_label' => function (Customer $customer) {
-                    return sprintf('%s %s %s (%s)', 
+                    return sprintf('%s (%s)', 
                         $customer->getName(),
                         $customer->getEmail()
                     );

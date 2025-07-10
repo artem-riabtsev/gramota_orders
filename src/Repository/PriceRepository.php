@@ -16,26 +16,14 @@ class PriceRepository extends ServiceEntityRepository
         parent::__construct($registry, Price::class);
     }
 
-    public function findByFilters(array $filters)
+    public function findByName(? string $query): array 
     {
-        $qb = $this->createQueryBuilder('o');
+        $qb = $this->createQueryBuilder('c');
 
-        if (isset($filters['id'])) {
-            $qb->andWhere('o.id = :id')
-                ->setParameter('id', (int)$filters['id']);
+        if ($query) {
+            $qb->where('LOWER(c.name) LIKE :q')
+            ->setParameter('q', '%' . strtolower($query) . '%');
         }
-
-        if (isset($filters['name'])) {
-            $qb->andWhere('o.name = :name')
-                ->setParameter('name', (string)$filters['name']);
-        }
-
-        if (isset($filters['price'])) {
-            $qb->andWhere('o.price = :price')
-                ->setParameter('price', (string)$filters['price']);
-        }
-
-        $qb->orderBy('o.id', 'DESC');
 
         return $qb->getQuery()->getResult();
     }
