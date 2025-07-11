@@ -102,37 +102,35 @@ final class OrderController extends AbstractController
             $totalAmount = 0;
 
             foreach ($cartData as $key => $item) {
-                if (empty($item['name'])) {
+                if (empty($item['product_id'])) {
                     continue;
                 }
 
                 $cartItem = null;
 
-                if (str_starts_with($key, 'new_')) {
+                $priceEntity = $priceRepository->find($item['product_id']);
+                if (!$priceEntity) {
+                    continue;
+                }
 
+                if (str_starts_with($key, 'new_')) {
                     $cartItem = new Cart();
                     $cartItem->setOrder($order);
-
-                    $priceEntity = $priceRepository->findOneBy(['name' => $item['name']]);
-                    $price = $priceEntity ? $priceEntity->getPrice() : 0;
-
-                    if (!empty($item['price'])) {
-                        $price = (float) str_replace(',', '.', $item['price']);
-                    }
-
                 } else {
                     $cartItem = $order->getCart()->filter(fn($c) => $c->getId() == $key)->first();
                     if (!$cartItem) {
                         continue;
                     }
-
-                    $price = !empty($item['price']) ? (float) str_replace(',', '.', $item['price']) : 0;
                 }
 
-                $quantity = isset($item['quantity']) ? (int) $item['quantity'] : 1;
-                $cartItem->setName($item['name']);
-                $cartItem->setQuantity($quantity);
+                $quantity = isset($item['quantity']) ? (int)$item['quantity'] : 1;
+
+                $cartItem->setProduct($priceEntity);
+
+                $price = !empty($item['price']) ? (float) str_replace(',', '.', $item['price']) : (float) $priceEntity->getPrice();
                 $cartItem->setPrice($price);
+                $cartItem->setQuantity($quantity);
+
                 if (isset($item['total_amount'])) {
                     $manualTotal = (float) str_replace(',', '.', $item['total_amount']);
                     $cartItem->setTotalAmount($manualTotal);

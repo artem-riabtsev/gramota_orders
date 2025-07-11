@@ -5,6 +5,7 @@ namespace App\Entity;
 use App\Repository\PriceRepository;
 use Doctrine\DBAL\Types\Types;
 use Doctrine\ORM\Mapping as ORM;
+use Doctrine\Common\Collections\Collection;
 
 #[ORM\Entity(repositoryClass: PriceRepository::class)]
 class Price
@@ -19,6 +20,10 @@ class Price
 
     #[ORM\Column(type: Types::DECIMAL, precision: 10, scale: 2)]
     private ?string $price = null;
+
+    // Price.php
+    #[ORM\OneToMany(mappedBy: 'product', targetEntity: Cart::class)]
+    private Collection $carts;
 
     public function getId(): ?int
     {

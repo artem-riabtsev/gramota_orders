@@ -36,7 +36,6 @@
                 <th>Номер заказа</th>
                 <th>Дата заказа</th>
                 <th>Сумма заказа</th>
-                <th>Дата оплаты</th>
                 <th>Сумма оплаты</th>
                 <th>Действия</th>
             </tr>
@@ -47,7 +46,6 @@
                 <td>{{ order.id }}</td>
                 <td>{{ order.date ? order.date|date('Y-m-d') : '' }}</td>
                 <td>{{ order.amount }}</td>
-                <td>{{ order.paymentDate ? order.paymentDate|date('Y-m-d') : '' }}</td>
                 <td>{{ order.paymentAmount }}</td>
                 <td>
                     <div class="d-flex">
@@ -80,7 +78,6 @@
                 <th>Номер заказа</th>
                 <th>Дата заказа</th>
                 <th>Сумма заказа</th>
-                <th>Дата оплаты</th>
                 <th>Сумма оплаты</th>
                 <th>Действия</th>
             </tr>
@@ -91,7 +88,6 @@
                 <td>{{ order.id }}</td>
                 <td>{{ order.date ? order.date|date('Y-m-d') : '' }}</td>
                 <td>{{ order.amount }}</td>
-                <td>{{ order.paymentDate ? order.paymentDate|date('Y-m-d') : '' }}</td>
                 <td>{{ order.paymentAmount }}</td>
                 <td>
                     <div class="d-flex">
