@@ -25,9 +25,6 @@ class Order
     #[ORM\Column(type: Types::DECIMAL, precision: 10, scale: 2)]
     private ?string $amount = '0.00';
 
-    #[ORM\Column(type: Types::DATE_MUTABLE, nullable: true)]
-    private ?\DateTime $payment_date = null;
-
     #[ORM\Column(type: Types::DECIMAL, precision: 10, scale: 2, nullable: true)]
     private ?string $payment_amount = null;
 
@@ -66,18 +63,6 @@ class Order
     public function setAmount(string $amount): static
     {
         $this->amount = $amount;
-
-        return $this;
-    }
-
-    public function getPaymentDate(): ?\DateTime
-    {
-        return $this->payment_date;
-    }
-
-    public function setPaymentDate(?\DateTime $payment_date): static
-    {
-        $this->payment_date = $payment_date;
 
         return $this;
     }

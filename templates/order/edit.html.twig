@@ -19,10 +19,6 @@
                 {{ form_widget(form.amount, {'attr': {'class': 'form-control'}}) }}
             </div>
             <div class="col-md-6 mb-3">
-                {{ form_label(form.payment_date) }}
-                {{ form_widget(form.payment_date, {'attr': {'class': 'form-control'}}) }}
-            </div>
-            <div class="col-md-6 mb-3">
                 {{ form_label(form.payment_amount) }}
                 {{ form_widget(form.payment_amount, {'attr': {'class': 'form-control'}}) }}
             </div>
@@ -66,10 +62,10 @@
                         <input type="number" name="cart[{{ cartItem.id }}][quantity]" value="{{ cartItem.quantity }}" class="form-control quantity" min="1" required>
                     </td>
                     <td>
-                        <input type="text" name="cart[{{ cartItem.id }}][price]" value="{{ cartItem.price }}" class="form-control price" readonly>
+                        <input type="text" name="cart[{{ cartItem.id }}][price]" value="{{ cartItem.price }}" class="form-control price" required>
                     </td>
                     <td>
-                        <input type="text" name="cart[{{ cartItem.id }}][total_amount]" value="{{ cartItem.totalAmount }}" class="form-control total-amount" readonly>
+                        <input type="text" name="cart[{{ cartItem.id }}][total_amount]" value="{{ cartItem.totalAmount }}" class="form-control total-amount" required>
                     </td>
                     <td>
                         <button type="button" class="btn btn-sm btn-outline-danger remove-row">✖</button>
@@ -84,6 +80,23 @@
     <button type="submit" class="btn btn-primary">Сохранить корзину</button>
 </form>
 
+<!-- Шаблон строки -->
+<script type="text/template" id="cart-row-template">
+<tr>
+    <td>
+        <select name="cart[__index__][name]" class="form-select product-name" required>
+            {% for price in prices %}
+                <option value="{{ price.name }}">{{ price.name }}</option>
+            {% endfor %}
+        </select>
+    </td>
+    <td><input type="number" name="cart[__index__][quantity]" value="1" min="1" class="form-control quantity" required></td>
+    <td><input type="text" name="cart[__index__][price]" class="form-control price" required></td>
+    <td><input type="text" name="cart[__index__][total_amount]" class="form-control total-amount" required></td>
+    <td><button type="button" class="btn btn-sm btn-outline-danger remove-row">✖</button></td>
+</tr>
+</script>
+
 <script>
     const prices = {
         {% for price in prices %}
@@ -91,46 +104,58 @@
         {% endfor %}
     };
 
-    function bindCartRowEvents(row) {
+    function bindCartRowEvents(row, skipInitPrice = false) {
         const nameInput = row.querySelector('.product-name');
         const priceInput = row.querySelector('.price');
         const qtyInput = row.querySelector('.quantity');
         const totalInput = row.querySelector('.total-amount');
 
-        function update() {
+        let userModifiedPrice = false;
+
+        function updateFromName() {
             const name = nameInput.value;
-            const price = parseFloat(prices[name] || 0);
+            if (!userModifiedPrice) {
+                const price = parseFloat(prices[name] || 0);
+                priceInput.value = price.toFixed(2);
+            }
+            updateTotal();
+        }
+
+        function updateTotal() {
+            const price = parseFloat(priceInput.value || 0);
             const qty = parseInt(qtyInput.value || 0);
-            priceInput.value = price.toFixed(2);
             totalInput.value = (price * qty).toFixed(2);
         }
 
-        nameInput.addEventListener('change', update);
-        qtyInput.addEventListener('input', update);
-        update();
+        nameInput.addEventListener('change', () => {
+            userModifiedPrice = false;
+            updateFromName();
+        });
+
+        qtyInput.addEventListener('input', updateTotal);
+        priceInput.addEventListener('input', () => {
+            userModifiedPrice = true;
+            updateTotal();
+        });
+
+        if (!skipInitPrice) {
+            updateFromName();
+        }
     }
 
-    document.querySelectorAll('#cart-table tbody tr').forEach(bindCartRowEvents);
+    document.querySelectorAll('#cart-table tbody tr').forEach(row => bindCartRowEvents(row, true));
 
     document.getElementById('add-row').addEventListener('click', () => {
-        const tableBody = document.querySelector('#cart-table tbody');
+        const template = document.getElementById('cart-row-template').innerHTML;
         const index = Date.now();
-        const row = document.createElement('tr');
-        row.innerHTML = `
-            <td>
-                <select name="cart[new_${index}][name]" class="form-select product-name" required>
-                    {% for price in prices %}
-                        <option value="{{ price.name }}">{{ price.name }}</option>
-                    {% endfor %}
-                </select>
-            </td>
-            <td><input type="number" name="cart[new_${index}][quantity]" value="1" min="1" class="form-control quantity" required></td>
-            <td><input type="text" name="cart[new_${index}][price]" class="form-control price" readonly></td>
-            <td><input type="text" name="cart[new_${index}][total_amount]" class="form-control total-amount" readonly></td>
-            <td><button type="button" class="btn btn-sm btn-outline-danger remove-row">✖</button></td>
-        `;
-        tableBody.appendChild(row);
-        bindCartRowEvents(row);
+        const html = template.replace(/__index__/g, 'new_' + index);
+
+        const rowWrapper = document.createElement('tbody');
+        rowWrapper.innerHTML = html;
+        const newRow = rowWrapper.firstElementChild;
+
+        document.querySelector('#cart-table tbody').appendChild(newRow);
+        bindCartRowEvents(newRow);
     });
 
     document.addEventListener('click', function (e) {

@@ -16,7 +16,6 @@ class OrderForm extends AbstractType
         $builder
             ->add('date', null, ['label' => 'Дата заказа'])
             ->add('amount', null, ['label' => 'Сумма заказа'])
-            ->add('payment_date', null, ['label' => 'Дата оплаты'])
             ->add('payment_amount', null, ['label' => 'Сумма оплаты'])
             ->add('customer', EntityType::class, [
                 'class' => Customer::class,

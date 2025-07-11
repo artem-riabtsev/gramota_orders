@@ -36,8 +36,6 @@ final class OrderController extends AbstractController
             $orders = $orderRepository->findLastMonthOrders();
         }
 
-        // dd($orders);
-
         return $this->render('order/index.html.twig', [
             'orders' => $orders,
             'query' => $query,
@@ -109,23 +107,41 @@ final class OrderController extends AbstractController
                 }
 
                 $cartItem = null;
+
                 if (str_starts_with($key, 'new_')) {
+
                     $cartItem = new Cart();
                     $cartItem->setOrder($order);
+
+                    $priceEntity = $priceRepository->findOneBy(['name' => $item['name']]);
+                    $price = $priceEntity ? $priceEntity->getPrice() : 0;
+
+                    if (!empty($item['price'])) {
+                        $price = (float) str_replace(',', '.', $item['price']);
+                    }
+
                 } else {
                     $cartItem = $order->getCart()->filter(fn($c) => $c->getId() == $key)->first();
-                    if (!$cartItem) continue;
+                    if (!$cartItem) {
+                        continue;
+                    }
+
+                    $price = !empty($item['price']) ? (float) str_replace(',', '.', $item['price']) : 0;
                 }
 
+                $quantity = isset($item['quantity']) ? (int) $item['quantity'] : 1;
                 $cartItem->setName($item['name']);
-                $cartItem->setQuantity((int)$item['quantity']);
-
-                $priceEntity = $priceRepository->findOneBy(['name' => $item['name']]);
-                $price = $priceEntity ? $priceEntity->getPrice() : 0;
-
+                $cartItem->setQuantity($quantity);
                 $cartItem->setPrice($price);
-                $cartItem->setTotalAmount($price * $cartItem->getQuantity());
-                $totalAmount += $cartItem->getTotalAmount();
+                if (isset($item['total_amount'])) {
+                    $manualTotal = (float) str_replace(',', '.', $item['total_amount']);
+                    $cartItem->setTotalAmount($manualTotal);
+                    $totalAmount += $manualTotal;
+                } else {
+                    $computed = $price * $quantity;
+                    $cartItem->setTotalAmount($computed);
+                    $totalAmount += $computed;
+                }
 
                 $entityManager->persist($cartItem);
             }
@@ -172,7 +188,7 @@ final class OrderController extends AbstractController
             }
         }
 
-        $q = $request->request->get('q'); // <-- достаём q из запроса
+        $q = $request->request->get('q');
         $routeParams = $q ? ['q' => $q] : [];
 
         return $this->redirectToRoute('app_order_index', $routeParams, Response::HTTP_SEE_OTHER);

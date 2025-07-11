@@ -27,8 +27,6 @@ class OrderRepository extends ServiceEntityRepository
             ->setParameter('q', '%' . strtolower($query) . '%');
         }
 
-        // dd($qb->getQuery()->getSQL());
-
         return $qb->getQuery()->getResult();
     }
 
@@ -40,6 +38,7 @@ class OrderRepository extends ServiceEntityRepository
             ->where('o.date >= :oneMonthAgo')
             ->setParameter('oneMonthAgo', $oneMonthAgo)
             ->orderBy('o.date', 'DESC')
+            ->setMaxResults(50)
             ->getQuery()
             ->getResult();
     }
