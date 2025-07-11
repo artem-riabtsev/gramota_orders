@@ -38,6 +38,9 @@ class Order
     #[ORM\OneToMany(mappedBy: 'order', targetEntity: Cart::class, cascade: ['persist', 'remove'], orphanRemoval: true)]
     private Collection $cart;
 
+    #[ORM\OneToMany(mappedBy: 'order', targetEntity: Payment::class)]
+    private Collection $payments;
+
     public function getId(): ?int
     {
         return $this->id;
@@ -106,6 +109,7 @@ class Order
     {
         $this->date = new \DateTime();
         $this->cart = new ArrayCollection();
+        $this->payments = new ArrayCollection();
     }
 
     public function getCart(): Collection
@@ -128,6 +132,32 @@ class Order
         if ($this->cart->removeElement($item)) {
             if ($item->getOrder() === $this) {
                 $item->setOrder(null);
+            }
+        }
+
+        return $this;
+    }
+
+        public function getPayments(): Collection
+    {
+        return $this->payments;
+    }
+
+    public function addPayment(Payment $payment): static
+    {
+        if (!$this->payments->contains($payment)) {
+            $this->payments[] = $payment;
+            $payment->setOrder($this);
+        }
+
+        return $this;
+    }
+
+    public function removePayment(Payment $payment): static
+    {
+        if ($this->payments->removeElement($payment)) {
+            if ($payment->getOrder() === $this) {
+                $payment->setOrder(null);
             }
         }
 
