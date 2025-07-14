@@ -26,7 +26,7 @@ class Order
     private ?string $amount = '0.00';
 
     #[ORM\Column(type: Types::DECIMAL, precision: 10, scale: 2, nullable: true)]
-    private ?string $payment_amount = null;
+    private ?string $payment_amount = '0.00';
 
     #[ORM\Column(type: 'integer', options: ['default' => 0])]
     private int $status = 0;

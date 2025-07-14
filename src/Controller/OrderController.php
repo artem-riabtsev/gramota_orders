@@ -162,8 +162,8 @@ final class OrderController extends AbstractController
     {
         if ($this->isCsrfTokenValid('delete'.$order->getId(), $request->getPayload()->getString('_token'))) {
 
-            if ($order->getPaymentAmount()) {
-            $this->addFlash('danger', 'Нельзя удалить заказ, у которого есть оплата.');
+            if (count($order->getPayments()) > 0) {
+            $this->addFlash('error', 'Нельзя удалить заказ, у которого есть платежи.');
             return $this->redirectToRoute('app_order_index');
         }
 
@@ -178,12 +178,16 @@ final class OrderController extends AbstractController
     public function complete(Request $request, Order $order, EntityManagerInterface $entityManager): Response
     {
         if ($this->isCsrfTokenValid('complete'.$order->getId(), $request->getPayload()->getString('_token'))) {
-            if ($order->getStatus() === 0 && $order->getAmount() === $order->getPaymentAmount()) {
-                $order->setStatus(1);
-                $entityManager->flush();
-            } else {
-                $this->addFlash('error', 'Сумма оплаты не соотвествует сумме заказа!');
-            }
+            if (count($order->getPayments()) === 0) {
+            $this->addFlash('error', 'Заказ не содержит платежей!');
+    
+        } elseif ($order->getAmount() !== $order->getPaymentAmount()) {
+            $this->addFlash('error', 'Сумма оплаты не соответствует сумме заказа!');
+        
+        } elseif ($order->getStatus() === 0) {
+            $order->setStatus(1);
+            $entityManager->flush();
+        }
         }
 
         $q = $request->request->get('q');

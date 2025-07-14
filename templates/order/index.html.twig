@@ -49,7 +49,7 @@
                     <form method="post" action="{{ path('app_order_delete', {'id': order.id}) }}">
                         <input type="hidden" name="_token" value="{{ csrf_token('delete' ~ order.id) }}">
                         <button class="btn btn-sm btn-outline-danger"
-                            {% if order.paymentAmount %}disabled{% endif %}>
+                            {% if order.payments|length > 0 %}disabled{% endif %}>
                             Удалить
                         </button>
                     </form>
