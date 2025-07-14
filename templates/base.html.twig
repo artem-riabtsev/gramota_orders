@@ -22,6 +22,7 @@
                 <li class="nav-item"><a class="nav-link {{ app.request.attributes.get('_route') starts with 'app_order' ? 'active' : '' }}" href="{{ path('app_order_index') }}">Заказы</a></li>
                 <li class="nav-item"><a class="nav-link {{ app.request.attributes.get('_route') starts with 'app_customer' ? 'active' : '' }}" href="{{ path('app_customer_index') }}">Заказчики</a></li>
                 <li class="nav-item"><a class="nav-link {{ app.request.attributes.get('_route') starts with 'app_price' ? 'active' : '' }}" href="{{ path('app_price_index') }}">Прайс</a></li>
+                <li class="nav-item"><a class="nav-link {{ app.request.attributes.get('_route') starts with 'app_payment' ? 'active' : '' }}" href="{{ path('app_payment_index') }}">Платежи</a></li>
             </ul>
 
             {% if app.request.attributes.get('_route') == 'app_login' %}
