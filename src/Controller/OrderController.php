@@ -74,6 +74,22 @@ final class OrderController extends AbstractController
         ]);
     }
 
+    #[Route('/order/select', name: 'app_order_select')]
+    public function select(Request $request, OrderRepository $orderRepository): Response
+    {
+        $query = $request->query->get('q');
+
+        if ($query) {
+            $orders = $orderRepository->findById($query);
+        } else {
+            $orders = $orderRepository->findBy([], ['id' => 'ASC']);
+        }
+
+        return $this->render('order/select.html.twig', [
+            'orders' => $orders,
+        ]);
+    }
+
     #[Route('/order/{id}', name: 'app_order_show', methods: ['GET'])]
     public function show(Order $order): Response
     {

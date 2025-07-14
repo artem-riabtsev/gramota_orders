@@ -23,9 +23,11 @@ class CustomerRepository extends ServiceEntityRepository
         if ($query) {
             $qb->where('LOWER(c.name) LIKE :q')
             ->orWhere('LOWER(c.email) LIKE :q')
-            ->setParameter('q', '%' . strtolower($query) . '%');
+            ->setParameter('q', '%' . strtolower($query) . '%')
+            ->orderBy('c.name', 'ASC');
         }
 
         return $qb->getQuery()->getResult();
     }
+
 }

@@ -71,13 +71,7 @@ final class CustomerController extends AbstractController
         $query = $request->query->get('q');
 
         if ($query) {
-            $customers = $customerRepository->createQueryBuilder('c')
-                ->orWhere('LOWER(c.name) LIKE :q')
-                ->orWhere('LOWER(c.email) LIKE :q')
-                ->setParameter('q', '%' . strtolower($query) . '%')
-                ->orderBy('c.name', 'ASC')
-                ->getQuery()
-                ->getResult();
+            $customers = $customerRepository->findByNameOrEmail($query);
         } else {
             $customers = $customerRepository->findBy([], ['name' => 'ASC']);
         }

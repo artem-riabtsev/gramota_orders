@@ -18,7 +18,7 @@ class PaymentRepository extends ServiceEntityRepository
     }
 
     public function recalculateOrderPaymentAmount(Order $order): void
-{
+    {
     $em = $this->getEntityManager();
 
     $totalAmount = (float) $this->createQueryBuilder('p')
@@ -31,7 +31,7 @@ class PaymentRepository extends ServiceEntityRepository
     $order->setPaymentAmount($totalAmount);
 
     $em->flush();
-}
+    }
 
     public function updateOrderPaymentAmount(int $paymentId, float $amountUpdated): void
     {
@@ -49,7 +49,6 @@ class PaymentRepository extends ServiceEntityRepository
             throw new \RuntimeException("Order not found for payment ID $paymentId");
         }
 
-        // $orderId = $order->getId();
         $amountOld = $payment->getAmount();
 
         $totalAmount = (float) $this->createQueryBuilder('p')
@@ -64,6 +63,31 @@ class PaymentRepository extends ServiceEntityRepository
         $order->setPaymentAmount($correctedAmount);
 
         $em->flush();
+    }
+
+    public function findByOrderId(?string $query): array
+    {
+        $qb = $this->createQueryBuilder('c');
+
+        if ($query) {
+            $qb->where('IDENTITY(c.order) LIKE :q')
+            ->setParameter('q', '%' . $query . '%');
+        }
+
+        return $qb->getQuery()->getResult();
+    }
+
+    public function findLastMonthOrders(): array
+    {
+        $oneMonthAgo = new \DateTime('-1 month');
+
+        return $this->createQueryBuilder('o')
+            ->where('o.date >= :oneMonthAgo')
+            ->setParameter('oneMonthAgo', $oneMonthAgo)
+            ->orderBy('o.date', 'DESC')
+            ->setMaxResults(50)
+            ->getQuery()
+            ->getResult();
     }
 
 }

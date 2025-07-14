@@ -17,7 +17,7 @@ class OrderRepository extends ServiceEntityRepository
         parent::__construct($registry, Order::class);
     }
 
-    public function findByIdAndCustomerId (?string $query): array
+    public function findByIdAndCustomerId(?string $query): array
     {
         $qb = $this->createQueryBuilder('c')
         ->leftJoin('c.customer', 'customer');
@@ -28,6 +28,17 @@ class OrderRepository extends ServiceEntityRepository
         }
 
         return $qb->getQuery()->getResult();
+    }
+
+        public function findById(?string $query): array
+    {
+        return $this->createQueryBuilder('o')
+            ->where('CAST(o.id AS CHAR) LIKE :q')
+            ->setParameter('q', '%' . $query . '%')
+            ->orderBy('o.id', 'ASC')
+            ->getQuery()
+            ->getResult();
+
     }
 
         public function findLastMonthOrders(): array

@@ -19,6 +19,7 @@ class PaymentForm extends AbstractType
             ->add('order', EntityType::class, [
                 'class' => Order::class,
                 'choice_label' => 'id',
+                'disabled' => true,
             ])
         ;
     }

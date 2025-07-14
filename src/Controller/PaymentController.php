@@ -2,31 +2,56 @@
 
 namespace App\Controller;
 
+use App\Entity\Order;
 use App\Entity\Payment;
 use App\Form\PaymentForm;
-use App\Form\PaymentType;
 use App\Repository\PaymentRepository;
+use App\Repository\OrderRepository;
 use Doctrine\ORM\EntityManagerInterface;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
 use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\HttpFoundation\Response;
 use Symfony\Component\Routing\Attribute\Route;
+use \DateTime;
 
 #[Route('/payment')]
 final class PaymentController extends AbstractController
 {
     #[Route(name: 'app_payment_index', methods: ['GET'])]
-    public function index(PaymentRepository $paymentRepository): Response
+    public function index(Request $request ,PaymentRepository $paymentRepository): Response
     {
+        $query = $request->query->get('q');
+
+        if ($query) {
+            $payments = $paymentRepository->findByOrderId($query);
+        } else {
+            $payments = $paymentRepository->findLastMonthOrders();
+        }
+
         return $this->render('payment/index.html.twig', [
-            'payments' => $paymentRepository->findAll(),
+            'payments' => $payments,
+            'query' => $query,
         ]);
     }
 
     #[Route('/new', name: 'app_payment_new', methods: ['GET', 'POST'])]
-    public function new(Request $request, EntityManagerInterface $entityManager, PaymentRepository $paymentRepository): Response
-    {
+    public function new(
+        Request $request, 
+        EntityManagerInterface $entityManager, 
+        PaymentRepository $paymentRepository,
+        OrderRepository $orderRepository
+    ): Response {
         $payment = new Payment();
+
+        $orderId = $request->query->get('order');
+        if ($orderId) {
+            $order = $orderRepository->find($orderId);
+            if ($order) {
+                $payment->setOrder($order);
+            }
+        }
+
+        $payment->setDate(new DateTime());
         $form = $this->createForm(PaymentForm::class, $payment);
         $form->handleRequest($request);
 
