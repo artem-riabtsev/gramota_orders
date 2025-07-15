@@ -20,25 +20,17 @@ final class CustomerController extends AbstractController
         Request $request,
         CustomerRepository $customerRepository
     ): Response {
-        $filters = [
-            'id' => $request->query->get('id'),
-            'surname' => $request->query->get('surname'),
-            'name' => $request->query->get('name'),
-            'patronymic' => $request->query->get('patronymic'),
-            'email' => $request->query->get('email'),
-            'phone' => $request->query->get('phone'),
-        ];
+        $query = $request->query->get('q');
 
-        $filters = array_filter($filters, fn($v) => $v !== null && $v !== '');
-
-        $customers = $customerRepository->findByFilters($filters);
-
-        $allCustomers = $customerRepository->findAll();
+        if ($query) {
+            $customers = $customerRepository->findByNameOrEmail($query);
+        } else {
+            $customers =[];
+        }
 
         return $this->render('customer/index.html.twig', [
             'customers' => $customers,
-            'filters' => $filters,
-            'allCustomers' => $allCustomers,
+            'query' => $query,
         ]);
     }
 
@@ -79,17 +71,9 @@ final class CustomerController extends AbstractController
         $query = $request->query->get('q');
 
         if ($query) {
-            $customers = $customerRepository->createQueryBuilder('c')
-                ->where('LOWER(c.surname) LIKE :q')
-                ->orWhere('LOWER(c.name) LIKE :q')
-                ->orWhere('LOWER(c.patronymic) LIKE :q')
-                ->orWhere('LOWER(c.email) LIKE :q')
-                ->setParameter('q', '%' . strtolower($query) . '%')
-                ->orderBy('c.surname', 'ASC')
-                ->getQuery()
-                ->getResult();
+            $customers = $customerRepository->findByNameOrEmail($query);
         } else {
-            $customers = $customerRepository->findBy([], ['surname' => 'ASC']);
+            $customers = $customerRepository->findBy([], ['name' => 'ASC']);
         }
 
         return $this->render('customer/select.html.twig', [

@@ -20,23 +20,20 @@ final class PriceController extends AbstractController
         Request $request,
         PriceRepository $priceRepository
     ): Response {
-        $filters = [
-            'id' => $request->query->get('id'),
-            'name' => $request->query->get('name'),
-            'price' => $request->query->get('price'),
-        ];
+        
+        $query = $request->query->get('q');
 
-        $filters = array_filter($filters, fn($v) => $v !== null && $v !== '');
-
-        $prices = $priceRepository->findByFilters($filters);
-
-        $allPrices = $priceRepository->findAll();
+        if ($query) {
+            $prices = $priceRepository->findByName($query);
+        } else {
+            $prices = [];
+        }
 
         return $this->render('price/index.html.twig', [
             'prices' => $prices,
-            'filters' => $filters,
-            'allCustomers' => $allPrices,
+            'query' => $query,
         ]);
+
     }
 
     #[Route('/new', name: 'app_price_new', methods: ['GET', 'POST'])]

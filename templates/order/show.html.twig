@@ -18,16 +18,12 @@
                 <td>{{ order.amount }}</td>
             </tr>
             <tr>
-                <th>Дата оплаты</th>
-                <td>{{ order.paymentDate ? order.paymentDate|date('Y-m-d') : '' }}</td>
-            </tr>
-            <tr>
                 <th>Сумма оплаты</th>
                 <td>{{ order.paymentAmount }}</td>
             </tr>
             <tr>
                 <th>Заказчик</th>
-                <td>{{ order.customer.surname }} {{ order.customer.name }} {{ order.customer.patronymic }} ({{ order.customer.email }})</td>
+                {{ order.customer.name }} ({{ order.customer.email }})</td>
             </tr>
         </tbody>
     </table>

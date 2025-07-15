@@ -10,16 +10,8 @@
                 <td>{{ customer.id }}</td>
             </tr>
             <tr>
-                <th>Фамилия</th>
-                <td>{{ customer.surname }}</td>
-            </tr>
-            <tr>
-                <th>Имя</th>
+                <th>ФИО</th>
                 <td>{{ customer.name }}</td>
-            </tr>
-            <tr>
-                <th>Отчество</th>
-                <td>{{ customer.patronymic }}</td>
             </tr>
             <tr>
                 <th>Email</th>
@@ -44,7 +36,6 @@
                 <th>Номер заказа</th>
                 <th>Дата заказа</th>
                 <th>Сумма заказа</th>
-                <th>Дата оплаты</th>
                 <th>Сумма оплаты</th>
                 <th>Действия</th>
             </tr>
@@ -55,7 +46,6 @@
                 <td>{{ order.id }}</td>
                 <td>{{ order.date ? order.date|date('Y-m-d') : '' }}</td>
                 <td>{{ order.amount }}</td>
-                <td>{{ order.paymentDate ? order.paymentDate|date('Y-m-d') : '' }}</td>
                 <td>{{ order.paymentAmount }}</td>
                 <td>
                     <div class="d-flex">
@@ -64,7 +54,7 @@
                         <form method="post" action="{{ path('app_order_delete', {'id': order.id}) }}">
                             <input type="hidden" name="_token" value="{{ csrf_token('delete' ~ order.id) }}">
                             <button class="btn btn-sm btn-outline-danger"
-                                {% if order.paymentAmount or order.paymentDate %}disabled{% endif %}>
+                                {% if order.paymentAmount %}disabled{% endif %}>
                                 Удалить
                             </button>
                         </form>
@@ -88,7 +78,6 @@
                 <th>Номер заказа</th>
                 <th>Дата заказа</th>
                 <th>Сумма заказа</th>
-                <th>Дата оплаты</th>
                 <th>Сумма оплаты</th>
                 <th>Действия</th>
             </tr>
@@ -97,9 +86,8 @@
         {% for order in completedOrders %}
             <tr>
                 <td>{{ order.id }}</td>
-                <td>{{ order.date ? order.date|date('Y-m-d') : '' }}</td>
+                <td>{{ order.date ? order.date|date('d.m.Y') : '' }}</td>
                 <td>{{ order.amount }}</td>
-                <td>{{ order.paymentDate ? order.paymentDate|date('Y-m-d') : '' }}</td>
                 <td>{{ order.paymentAmount }}</td>
                 <td>
                     <div class="d-flex">

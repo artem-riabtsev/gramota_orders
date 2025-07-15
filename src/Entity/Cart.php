@@ -14,8 +14,9 @@ class Cart
     #[ORM\Column]
     private ?int $id = null;
 
-    #[ORM\Column(length: 255)]
-    private ?string $name = null;
+    #[ORM\ManyToOne(targetEntity: Price::class)]
+    #[ORM\JoinColumn(name: 'product_id', referencedColumnName: 'id', nullable: false)]
+    private ?Price $product = null;
 
     #[ORM\Column]
     private ?int $quantity = null;
@@ -35,15 +36,14 @@ class Cart
         return $this->id;
     }
 
-    public function getName(): ?string
+    public function getProduct(): ?Price
     {
-        return $this->name;
+        return $this->product;
     }
 
-    public function setName(string $name): static
+    public function setProduct(?Price $product): self
     {
-        $this->name = $name;
-
+        $this->product = $product;
         return $this;
     }
 

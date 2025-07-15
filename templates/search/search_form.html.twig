@@ -1,0 +1,53 @@
+{% set config = {
+    'app_customer_index': {
+        'placeholder': 'Введите ФИО или email',
+        'new_route': 'app_customer_new',
+        'new_text': 'Создать нового заказчика',
+        'arg': {'from': 'customer_index'}
+    },
+    'app_order_index': {
+        'placeholder': 'Введите номер или заказчика',
+        'new_route': 'app_customer_select',
+        'new_text': 'Создать новый заказ',
+        'arg': []
+    },
+    'app_payment_index': {
+        'placeholder': 'Введите номер',
+        'new_route': 'app_order_select',
+        'new_text': 'Создать новый платеж',
+        'arg': []
+    },
+    'default': {
+        'placeholder': 'Введите название позиции',
+        'new_route': 'app_price_new',
+        'new_text': 'Создать новую позицию',
+        'arg': []
+    }
+} %}
+
+{% set currentRoute = app.request.attributes.get('_route') %}
+{% set currentConfig = config[currentRoute] ?? config['default'] %}
+
+<div class="card card-body mb-4">
+    <form method="get" action="{{ path(app.request.attributes.get('_route')) }}">
+        <div class="row g-3">
+
+            <div class="col-md-4">
+                <input
+                    type="text"
+                    id="filterQuery"
+                    name="q"
+                    value="{{ query ?? '' }}"
+                    class="form-control"
+                    placeholder="{{ currentConfig.placeholder }}"
+                >
+            </div>
+
+            <div class="col-12">
+                <button type="submit" class="btn btn-primary">Поиск</button>
+                <a href="{{ path(app.request.attributes.get('_route')) }}" class="btn btn-secondary">Сбросить</a>
+                <a href="{{ path(currentConfig.new_route, currentConfig.arg) }}" class="btn btn-primary">{{ currentConfig.new_text }}</a>
+            </div>
+        </div>
+    </form>
+</div>

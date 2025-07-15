@@ -25,11 +25,8 @@ class Order
     #[ORM\Column(type: Types::DECIMAL, precision: 10, scale: 2)]
     private ?string $amount = '0.00';
 
-    #[ORM\Column(type: Types::DATE_MUTABLE, nullable: true)]
-    private ?\DateTime $payment_date = null;
-
     #[ORM\Column(type: Types::DECIMAL, precision: 10, scale: 2, nullable: true)]
-    private ?string $payment_amount = null;
+    private ?string $payment_amount = '0.00';
 
     #[ORM\Column(type: 'integer', options: ['default' => 0])]
     private int $status = 0;
@@ -40,6 +37,9 @@ class Order
 
     #[ORM\OneToMany(mappedBy: 'order', targetEntity: Cart::class, cascade: ['persist', 'remove'], orphanRemoval: true)]
     private Collection $cart;
+
+    #[ORM\OneToMany(mappedBy: 'order', targetEntity: Payment::class)]
+    private Collection $payments;
 
     public function getId(): ?int
     {
@@ -66,18 +66,6 @@ class Order
     public function setAmount(string $amount): static
     {
         $this->amount = $amount;
-
-        return $this;
-    }
-
-    public function getPaymentDate(): ?\DateTime
-    {
-        return $this->payment_date;
-    }
-
-    public function setPaymentDate(?\DateTime $payment_date): static
-    {
-        $this->payment_date = $payment_date;
 
         return $this;
     }
@@ -121,6 +109,7 @@ class Order
     {
         $this->date = new \DateTime();
         $this->cart = new ArrayCollection();
+        $this->payments = new ArrayCollection();
     }
 
     public function getCart(): Collection
@@ -143,6 +132,32 @@ class Order
         if ($this->cart->removeElement($item)) {
             if ($item->getOrder() === $this) {
                 $item->setOrder(null);
+            }
+        }
+
+        return $this;
+    }
+
+        public function getPayments(): Collection
+    {
+        return $this->payments;
+    }
+
+    public function addPayment(Payment $payment): static
+    {
+        if (!$this->payments->contains($payment)) {
+            $this->payments[] = $payment;
+            $payment->setOrder($this);
+        }
+
+        return $this;
+    }
+
+    public function removePayment(Payment $payment): static
+    {
+        if ($this->payments->removeElement($payment)) {
+            if ($payment->getOrder() === $this) {
+                $payment->setOrder(null);
             }
         }
 

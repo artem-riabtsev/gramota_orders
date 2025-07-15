@@ -2,26 +2,32 @@
 
 namespace App\Form;
 
-use App\Entity\Customer;
+use App\Entity\Order;
+use App\Entity\Payment;
+use Symfony\Bridge\Doctrine\Form\Type\EntityType;
 use Symfony\Component\Form\AbstractType;
 use Symfony\Component\Form\FormBuilderInterface;
 use Symfony\Component\OptionsResolver\OptionsResolver;
 
-class CustomerForm extends AbstractType
+class PaymentForm extends AbstractType
 {
     public function buildForm(FormBuilderInterface $builder, array $options): void
     {
         $builder
-            ->add('name', null, ['label' => 'ФИО'])
-            ->add('email')
-            ->add('phone', null, ['label' => 'Телефон'])
+            ->add('date')
+            ->add('amount')
+            ->add('order', EntityType::class, [
+                'class' => Order::class,
+                'choice_label' => 'id',
+                'disabled' => true,
+            ])
         ;
     }
 
     public function configureOptions(OptionsResolver $resolver): void
     {
         $resolver->setDefaults([
-            'data_class' => Customer::class,
+            'data_class' => Payment::class,
         ]);
     }
 }

@@ -26,36 +26,21 @@ final class OrderController extends AbstractController
     public function index(
         Request $request,
         OrderRepository $orderRepository,
-        CustomerRepository $customerRepository
     ): Response {
-        $filters = [
-            'id' => $request->query->get('id'),
-            'date_from' => $request->query->get('date_from'),
-            'date_to' => $request->query->get('date_to'),
-            'amount_min' => $request->query->get('amount_min'),
-            'amount_max' => $request->query->get('amount_max'),
-            'payment_date_from' => $request->query->get('payment_date_from'),
-            'payment_date_to' => $request->query->get('payment_date_to'),
-            'payment_amount_min' => $request->query->get('payment_amount_min'),
-            'payment_amount_max' => $request->query->get('payment_amount_max'),
-            'customer_id' => $request->query->get('customer_id'),
-            'status' => $request->query->get('status'),
-        ];
+        
+        $query = $request->query->get('q');
 
-        $filters = array_filter($filters, fn($v) => $v !== null && $v !== '');
-
-        $orders = $orderRepository->findByFilters($filters);
-
-        $allOrders = $orderRepository->findAll();
-
-        $allCustomers = $customerRepository->findAll();
+        if ($query) {
+            $orders = $orderRepository->findByIdAndCustomerId($query);
+        } else {
+            $orders = $orderRepository->findLastMonthOrders();
+        }
 
         return $this->render('order/index.html.twig', [
             'orders' => $orders,
-            'filters' => $filters,
-            'allOrders' => $allOrders,
-            'allCustomers' => $allCustomers,
+            'query' => $query,
         ]);
+
     }
 
     #[Route('/order/new', name: 'app_order_new', methods: ['GET', 'POST'])]
@@ -89,6 +74,22 @@ final class OrderController extends AbstractController
         ]);
     }
 
+    #[Route('/order/select', name: 'app_order_select')]
+    public function select(Request $request, OrderRepository $orderRepository): Response
+    {
+        $query = $request->query->get('q');
+
+        if ($query) {
+            $orders = $orderRepository->findById($query);
+        } else {
+            $orders = $orderRepository->findBy([], ['id' => 'ASC']);
+        }
+
+        return $this->render('order/select.html.twig', [
+            'orders' => $orders,
+        ]);
+    }
+
     #[Route('/order/{id}', name: 'app_order_show', methods: ['GET'])]
     public function show(Order $order): Response
     {
@@ -117,28 +118,44 @@ final class OrderController extends AbstractController
             $totalAmount = 0;
 
             foreach ($cartData as $key => $item) {
-                if (empty($item['name'])) {
+                if (empty($item['product_id'])) {
                     continue;
                 }
 
                 $cartItem = null;
+
+                $priceEntity = $priceRepository->find($item['product_id']);
+                if (!$priceEntity) {
+                    continue;
+                }
+
                 if (str_starts_with($key, 'new_')) {
                     $cartItem = new Cart();
                     $cartItem->setOrder($order);
                 } else {
                     $cartItem = $order->getCart()->filter(fn($c) => $c->getId() == $key)->first();
-                    if (!$cartItem) continue;
+                    if (!$cartItem) {
+                        continue;
+                    }
                 }
 
-                $cartItem->setName($item['name']);
-                $cartItem->setQuantity((int)$item['quantity']);
+                $quantity = isset($item['quantity']) ? (int)$item['quantity'] : 1;
 
-                $priceEntity = $priceRepository->findOneBy(['name' => $item['name']]);
-                $price = $priceEntity ? $priceEntity->getPrice() : 0;
+                $cartItem->setProduct($priceEntity);
 
+                $price = !empty($item['price']) ? (float) str_replace(',', '.', $item['price']) : (float) $priceEntity->getPrice();
                 $cartItem->setPrice($price);
-                $cartItem->setTotalAmount($price * $cartItem->getQuantity());
-                $totalAmount += $cartItem->getTotalAmount();
+                $cartItem->setQuantity($quantity);
+
+                if (isset($item['total_amount'])) {
+                    $manualTotal = (float) str_replace(',', '.', $item['total_amount']);
+                    $cartItem->setTotalAmount($manualTotal);
+                    $totalAmount += $manualTotal;
+                } else {
+                    $computed = $price * $quantity;
+                    $cartItem->setTotalAmount($computed);
+                    $totalAmount += $computed;
+                }
 
                 $entityManager->persist($cartItem);
             }
@@ -161,8 +178,8 @@ final class OrderController extends AbstractController
     {
         if ($this->isCsrfTokenValid('delete'.$order->getId(), $request->getPayload()->getString('_token'))) {
 
-            if ($order->getPaymentAmount()) {
-            $this->addFlash('danger', 'Нельзя удалить заказ, у которого есть оплата.');
+            if (count($order->getPayments()) > 0) {
+            $this->addFlash('error', 'Нельзя удалить заказ, у которого есть платежи.');
             return $this->redirectToRoute('app_order_index');
         }
 
@@ -177,14 +194,21 @@ final class OrderController extends AbstractController
     public function complete(Request $request, Order $order, EntityManagerInterface $entityManager): Response
     {
         if ($this->isCsrfTokenValid('complete'.$order->getId(), $request->getPayload()->getString('_token'))) {
-            if ($order->getStatus() === 0 && $order->getAmount() === $order->getPaymentAmount()) {
-                $order->setStatus(1);
-                $entityManager->flush();
-            } else {
-                $this->addFlash('error', 'Сумма оплаты не соотвествует сумме заказа!');
-            }
+            if (count($order->getPayments()) === 0) {
+            $this->addFlash('error', 'Заказ не содержит платежей!');
+    
+        } elseif ($order->getAmount() !== $order->getPaymentAmount()) {
+            $this->addFlash('error', 'Сумма оплаты не соответствует сумме заказа!');
+        
+        } elseif ($order->getStatus() === 0) {
+            $order->setStatus(1);
+            $entityManager->flush();
+        }
         }
 
-        return $this->redirectToRoute('app_order_index', [], Response::HTTP_SEE_OTHER);
+        $q = $request->request->get('q');
+        $routeParams = $q ? ['q' => $q] : [];
+
+        return $this->redirectToRoute('app_order_index', $routeParams, Response::HTTP_SEE_OTHER);
     }
 }

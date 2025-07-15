@@ -12,26 +12,33 @@
 <nav class="navbar navbar-expand-lg navbar-dark bg-dark">
     <div class="container-fluid">
         <a class="navbar-brand" href="{{ path('app_order_index') }}">Gramota Orders</a>
-        <ul class="navbar-nav me-auto mb-2 mb-lg-0">
-            <li class="nav-item"><a class="nav-link {{ app.request.attributes.get('_route') starts with 'app_order' ? 'active' : '' }}" href="{{ path('app_order_index') }}">Заказы</a></li>
-            <li class="nav-item"><a class="nav-link {{ app.request.attributes.get('_route') starts with 'app_customer' ? 'active' : '' }}" href="{{ path('app_customer_index') }}">Заказчики</a></li>
-            <li class="nav-item"><a class="nav-link {{ app.request.attributes.get('_route') starts with 'app_price' ? 'active' : '' }}" href="{{ path('app_price_index') }}">Прайс</a></li>
-        </ul>
-        
-        {% if app.request.attributes.get('_route') == 'app_login' %}
-          <form action="{{ path('app_register') }}">
-            <button class="btn btn-outline-light" type="submit">Зарегистрироваться</button>
-          </form>
-        {% elseif app.request.attributes.get('_route') == 'app_register' %}
-          <form action="{{ path('app_login') }}">
-            <button class="btn btn-outline-light" type="submit">Вход</button>
-          </form>
-        {% else %}
-          <form method="post" action="{{ path('app_logout') }}">
-            <button class="btn btn-outline-light" type="submit">Выход</button>
-          </form>
-        {% endif %}
-        
+
+        <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#mainNavbar" aria-controls="mainNavbar" aria-expanded="false" aria-label="Toggle navigation">
+            <span class="navbar-toggler-icon"></span>
+        </button>
+
+        <div class="collapse navbar-collapse" id="mainNavbar">
+            <ul class="navbar-nav me-auto mb-2 mb-lg-0">
+                <li class="nav-item"><a class="nav-link {{ app.request.attributes.get('_route') starts with 'app_order' ? 'active' : '' }}" href="{{ path('app_order_index') }}">Заказы</a></li>
+                <li class="nav-item"><a class="nav-link {{ app.request.attributes.get('_route') starts with 'app_customer' ? 'active' : '' }}" href="{{ path('app_customer_index') }}">Заказчики</a></li>
+                <li class="nav-item"><a class="nav-link {{ app.request.attributes.get('_route') starts with 'app_price' ? 'active' : '' }}" href="{{ path('app_price_index') }}">Прайс</a></li>
+                <li class="nav-item"><a class="nav-link {{ app.request.attributes.get('_route') starts with 'app_payment' ? 'active' : '' }}" href="{{ path('app_payment_index') }}">Платежи</a></li>
+            </ul>
+
+            {% if app.request.attributes.get('_route') == 'app_login' %}
+              <form action="{{ path('app_register') }}">
+                <button class="btn btn-outline-light" type="submit">Зарегистрироваться</button>
+              </form>
+            {% elseif app.request.attributes.get('_route') == 'app_register' %}
+              <form action="{{ path('app_login') }}">
+                <button class="btn btn-outline-light" type="submit">Вход</button>
+              </form>
+            {% else %}
+              <form method="post" action="{{ path('app_logout') }}">
+                <button class="btn btn-outline-light" type="submit">Выход</button>
+              </form>
+            {% endif %}
+        </div>
     </div>
 </nav>
 
@@ -70,6 +77,11 @@
             });
         {% endfor %}
     {% endfor %}
+
+    // доработать кнопки назад таким способом, напоминалка
+    // <a href="{{ app.request.headers.get('referer') ?: path('app_order_index') }}" class="btn btn-secondary">
+    //     Назад
+    // </a>
 </script>
 </body>
 </html>
