@@ -55,23 +55,11 @@ final class OrderController extends AbstractController
                 $order->setCustomer($customer);
             }
         }
-        
 
-        $form = $this->createForm(OrderForm::class, $order);
-        $form->handleRequest($request);
+        $entityManager->persist($order);
+        $entityManager->flush();
 
-
-        if ($form->isSubmitted() && $form->isValid()) {
-            $entityManager->persist($order);
-            $entityManager->flush();
-
-            return $this->redirectToRoute('app_order_edit', ['id' => $order->getId()], Response::HTTP_SEE_OTHER);
-        }
-
-        return $this->render('order/new.html.twig', [
-            'order' => $order,
-            'form' => $form,
-        ]);
+        return $this->redirectToRoute('app_order_edit', ['id' => $order->getId()], Response::HTTP_SEE_OTHER);
     }
 
     #[Route('/order/select', name: 'app_order_select')]

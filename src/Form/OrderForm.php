@@ -15,7 +15,10 @@ class OrderForm extends AbstractType
     {
         $builder
             ->add('date', null, ['label' => 'Дата заказа'])
-            ->add('amount', null, ['label' => 'Сумма заказа'])
+            ->add('amount', null, [
+                'label' => 'Сумма заказа',
+                'disabled' => true,
+                ])
             ->add('payment_amount', null, [
                 'label' => 'Сумма оплаты',
                 'disabled' => true,
