@@ -97,55 +97,53 @@ final class OrderController extends AbstractController
         $form->handleRequest($request);
 
         if ($form->isSubmitted() && $form->isValid()) {
-            $entityManager->flush();
-            return $this->redirectToRoute('app_order_index');
-        }
+            if ($request->request->has('deleted_items') && !empty($request->request->get('deleted_items'))) {
+                $deletedIds = array_filter(explode(',', $request->request->get('deleted_items')));
+                foreach ($deletedIds as $id) {
+                    $cartItem = $entityManager->getRepository(Cart::class)->find($id);
+                    if ($cartItem && $cartItem->getOrder() === $order) {
+                        $entityManager->remove($cartItem);
+                        $order->getCart()->removeElement($cartItem);
+                    }
+                }
+            }
 
-        if ($request->isMethod('POST') && $request->request->has('cart')) {
-            $cartData = $request->request->all('cart');
             $totalAmount = 0;
+            $cartData = $request->request->all('cart', []);
 
             foreach ($cartData as $key => $item) {
-                if (empty($item['product_id'])) {
-                    continue;
-                }
-
-                $cartItem = null;
+                if (empty($item['product_id'])) continue;
 
                 $priceEntity = $priceRepository->find($item['product_id']);
-                if (!$priceEntity) {
-                    continue;
-                }
+                if (!$priceEntity) continue;
 
                 if (str_starts_with($key, 'new_')) {
                     $cartItem = new Cart();
                     $cartItem->setOrder($order);
                 } else {
-                    $cartItem = $order->getCart()->filter(fn($c) => $c->getId() == $key)->first();
-                    if (!$cartItem) {
-                        continue;
-                    }
+                    $cartItem = $order->getCart()->filter(fn($c) => $c->getId() == $key)->first() ?? new Cart();
+                    $cartItem->setOrder($order);
                 }
 
-                $quantity = isset($item['quantity']) ? (int)$item['quantity'] : 1;
+                $quantity = max(1, (int)($item['quantity'] ?? 1));
+                $price = (float)str_replace(',', '.', $item['price'] ?? $priceEntity->getPrice());
 
-                $cartItem->setProduct($priceEntity);
-
-                $price = !empty($item['price']) ? (float) str_replace(',', '.', $item['price']) : (float) $priceEntity->getPrice();
-                $cartItem->setPrice($price);
-                $cartItem->setQuantity($quantity);
-
-                if (isset($item['total_amount'])) {
-                    $manualTotal = (float) str_replace(',', '.', $item['total_amount']);
-                    $cartItem->setTotalAmount($manualTotal);
-                    $totalAmount += $manualTotal;
-                } else {
-                    $computed = $price * $quantity;
-                    $cartItem->setTotalAmount($computed);
-                    $totalAmount += $computed;
-                }
+                $cartItem
+                    ->setProduct($priceEntity)
+                    ->setPrice($price)
+                    ->setQuantity($quantity)
+                    ->setTotalAmount($price * $quantity);
 
                 $entityManager->persist($cartItem);
+                $totalAmount += $cartItem->getTotalAmount();
+            }
+
+            if (empty($cartData)) {
+                $totalAmount = 0;
+                foreach ($order->getCart() as $cartItem) {
+                    $entityManager->remove($cartItem);
+                }
+                $order->getCart()->clear();
             }
 
             $order->setAmount($totalAmount);
@@ -156,7 +154,7 @@ final class OrderController extends AbstractController
 
         return $this->render('order/edit.html.twig', [
             'order' => $order,
-            'form' => $form,
+            'form' => $form->createView(),
             'prices' => $priceRepository->findAll(),
         ]);
     }
