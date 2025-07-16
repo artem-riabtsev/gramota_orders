@@ -55,23 +55,11 @@ final class OrderController extends AbstractController
                 $order->setCustomer($customer);
             }
         }
-        
 
-        $form = $this->createForm(OrderForm::class, $order);
-        $form->handleRequest($request);
+        $entityManager->persist($order);
+        $entityManager->flush();
 
-
-        if ($form->isSubmitted() && $form->isValid()) {
-            $entityManager->persist($order);
-            $entityManager->flush();
-
-            return $this->redirectToRoute('app_order_edit', ['id' => $order->getId()], Response::HTTP_SEE_OTHER);
-        }
-
-        return $this->render('order/new.html.twig', [
-            'order' => $order,
-            'form' => $form,
-        ]);
+        return $this->redirectToRoute('app_order_edit', ['id' => $order->getId()], Response::HTTP_SEE_OTHER);
     }
 
     #[Route('/order/select', name: 'app_order_select')]
@@ -109,55 +97,70 @@ final class OrderController extends AbstractController
         $form->handleRequest($request);
 
         if ($form->isSubmitted() && $form->isValid()) {
+            // Обработка данных формы
+            $entityManager->persist($order);
             $entityManager->flush();
-            return $this->redirectToRoute('app_order_index');
+
+            return $this->redirectToRoute('app_order_edit', ['id' => $order->getId()]);
         }
 
-        if ($request->isMethod('POST') && $request->request->has('cart')) {
-            $cartData = $request->request->all('cart');
+        if ($request->isMethod('POST')) {
+            // Получаем текущие позиции заказа
+            $currentCartItems = $order->getCart()->toArray();
+            $deletedItems = $request->request->all('deleted_items') ?? [];
             $totalAmount = 0;
 
-            foreach ($cartData as $key => $item) {
-                if (empty($item['product_id'])) {
-                    continue;
+            // Обработка удаленных элементов
+            foreach ($deletedItems as $id) {
+                $cartItem = $entityManager->getRepository(Cart::class)->find($id);
+                if ($cartItem && $cartItem->getOrder() === $order) {
+                    $entityManager->remove($cartItem);
+                    // Удаляем из массива текущих позиций
+                    $currentCartItems = array_filter($currentCartItems, fn($item) => $item->getId() != $id);
                 }
+            }
 
-                $cartItem = null;
+            // Считаем сумму для неудаленных позиций
+            foreach ($currentCartItems as $cartItem) {
+                $totalAmount += $cartItem->getTotalAmount();
+            }
+
+            // Обработка новых/измененных позиций
+            $cartData = $request->request->all('cart') ?? [];
+            foreach ($cartData as $key => $item) {
+                if (empty($item['product_id'])) continue;
 
                 $priceEntity = $priceRepository->find($item['product_id']);
-                if (!$priceEntity) {
-                    continue;
-                }
+                if (!$priceEntity) continue;
 
                 if (str_starts_with($key, 'new_')) {
                     $cartItem = new Cart();
                     $cartItem->setOrder($order);
                 } else {
-                    $cartItem = $order->getCart()->filter(fn($c) => $c->getId() == $key)->first();
+                    $cartItem = $entityManager->getRepository(Cart::class)->find($key);
                     if (!$cartItem) {
-                        continue;
+                        $cartItem = new Cart();
+                        $cartItem->setOrder($order);
                     }
                 }
 
-                $quantity = isset($item['quantity']) ? (int)$item['quantity'] : 1;
+                $quantity = max(1, (int)($item['quantity'] ?? 1));
+                $price = (float)str_replace(',', '.', $item['price'] ?? $priceEntity->getPrice());
+                $cartItemOld = $cartItem->getTotalAmount();
 
-                $cartItem->setProduct($priceEntity);
-
-                $price = !empty($item['price']) ? (float) str_replace(',', '.', $item['price']) : (float) $priceEntity->getPrice();
-                $cartItem->setPrice($price);
-                $cartItem->setQuantity($quantity);
-
-                if (isset($item['total_amount'])) {
-                    $manualTotal = (float) str_replace(',', '.', $item['total_amount']);
-                    $cartItem->setTotalAmount($manualTotal);
-                    $totalAmount += $manualTotal;
-                } else {
-                    $computed = $price * $quantity;
-                    $cartItem->setTotalAmount($computed);
-                    $totalAmount += $computed;
-                }
+                $cartItem
+                    ->setProduct($priceEntity)
+                    ->setPrice($price)
+                    ->setQuantity($quantity)
+                    ->setTotalAmount($price * $quantity);
 
                 $entityManager->persist($cartItem);
+                $totalAmount = $totalAmount - $cartItemOld + $cartItem->getTotalAmount();
+            }
+
+            // Если корзина пуста - сумма 0
+            if (empty($currentCartItems) && empty($cartData)) {
+                $totalAmount = 0;
             }
 
             $order->setAmount($totalAmount);
@@ -168,7 +171,7 @@ final class OrderController extends AbstractController
 
         return $this->render('order/edit.html.twig', [
             'order' => $order,
-            'form' => $form,
+            'form' => $form->createView(),
             'prices' => $priceRepository->findAll(),
         ]);
     }
