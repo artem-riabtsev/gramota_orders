@@ -28,24 +28,39 @@
 {% set currentRoute = app.request.attributes.get('_route') %}
 {% set currentConfig = config[currentRoute] ?? config['default'] %}
 
-<div class="card card-body mb-4">
+<div class="mb-4">
     <form method="get" action="{{ path(app.request.attributes.get('_route')) }}">
         <div class="row g-3">
 
-            <div class="col-md-4">
-                <input
-                    type="text"
-                    id="filterQuery"
-                    name="q"
-                    value="{{ query ?? '' }}"
-                    class="form-control"
-                    placeholder="{{ currentConfig.placeholder }}"
-                >
+            <div class="col-md-4 d-flex" style="gap: 8px;">
+                <div class="input-group" style="width: 300px;">
+                    <input
+                        type="text"
+                        id="filterQuery"
+                        name="q"
+                        value="{{ query ?? '' }}"
+                        class="form-control"
+                        placeholder="{{ currentConfig.placeholder }}"
+                        style="box-shadow: none; outline: none;"
+                    >
+                    <button class="btn btn-outline-primary border-0 shadow-none" 
+                        type="submit" 
+                        title="Поиск"
+                        style="background-color: #6c757d;"
+                        onmouseover="this.style.backgroundColor='#5a6268'" 
+                        onmouseout="this.style.backgroundColor='#6c757d'"
+                    >
+                        <i class="bi bi-search text-white"></i>
+                    </button>
+                </div>
+                {% if app.request.get('q') %}
+                    <a href="{{ path(app.request.attributes.get('_route')) }}" class="btn btn-sm btn-outline-secondary d-flex justify-content-center align-items-center gap-1" style="width: 40px;">
+                        <i class="bi bi-x-circle"></i>
+                    </a>
+                {% endif %}
             </div>
 
             <div class="col-12">
-                <button type="submit" class="btn btn-primary">Поиск</button>
-                <a href="{{ path(app.request.attributes.get('_route')) }}" class="btn btn-secondary">Сбросить</a>
                 <a href="{{ path(currentConfig.new_route, currentConfig.arg) }}" class="btn btn-primary">{{ currentConfig.new_text }}</a>
             </div>
         </div>
