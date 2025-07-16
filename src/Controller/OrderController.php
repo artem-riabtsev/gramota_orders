@@ -97,20 +97,36 @@ final class OrderController extends AbstractController
         $form->handleRequest($request);
 
         if ($form->isSubmitted() && $form->isValid()) {
-            if ($request->request->has('deleted_items') && !empty($request->request->get('deleted_items'))) {
-                $deletedIds = array_filter(explode(',', $request->request->get('deleted_items')));
-                foreach ($deletedIds as $id) {
-                    $cartItem = $entityManager->getRepository(Cart::class)->find($id);
-                    if ($cartItem && $cartItem->getOrder() === $order) {
-                        $entityManager->remove($cartItem);
-                        $order->getCart()->removeElement($cartItem);
-                    }
+            // Обработка данных формы
+            $entityManager->persist($order);
+            $entityManager->flush();
+
+            return $this->redirectToRoute('app_order_edit', ['id' => $order->getId()]);
+        }
+
+        if ($request->isMethod('POST')) {
+            // Получаем текущие позиции заказа
+            $currentCartItems = $order->getCart()->toArray();
+            $deletedItems = $request->request->all('deleted_items') ?? [];
+            $totalAmount = 0;
+
+            // Обработка удаленных элементов
+            foreach ($deletedItems as $id) {
+                $cartItem = $entityManager->getRepository(Cart::class)->find($id);
+                if ($cartItem && $cartItem->getOrder() === $order) {
+                    $entityManager->remove($cartItem);
+                    // Удаляем из массива текущих позиций
+                    $currentCartItems = array_filter($currentCartItems, fn($item) => $item->getId() != $id);
                 }
             }
 
-            $totalAmount = 0;
-            $cartData = $request->request->all('cart', []);
+            // Считаем сумму для неудаленных позиций
+            foreach ($currentCartItems as $cartItem) {
+                $totalAmount += $cartItem->getTotalAmount();
+            }
 
+            // Обработка новых/измененных позиций
+            $cartData = $request->request->all('cart') ?? [];
             foreach ($cartData as $key => $item) {
                 if (empty($item['product_id'])) continue;
 
@@ -121,12 +137,16 @@ final class OrderController extends AbstractController
                     $cartItem = new Cart();
                     $cartItem->setOrder($order);
                 } else {
-                    $cartItem = $order->getCart()->filter(fn($c) => $c->getId() == $key)->first() ?? new Cart();
-                    $cartItem->setOrder($order);
+                    $cartItem = $entityManager->getRepository(Cart::class)->find($key);
+                    if (!$cartItem) {
+                        $cartItem = new Cart();
+                        $cartItem->setOrder($order);
+                    }
                 }
 
                 $quantity = max(1, (int)($item['quantity'] ?? 1));
                 $price = (float)str_replace(',', '.', $item['price'] ?? $priceEntity->getPrice());
+                $cartItemOld = $cartItem->getTotalAmount();
 
                 $cartItem
                     ->setProduct($priceEntity)
@@ -135,15 +155,12 @@ final class OrderController extends AbstractController
                     ->setTotalAmount($price * $quantity);
 
                 $entityManager->persist($cartItem);
-                $totalAmount += $cartItem->getTotalAmount();
+                $totalAmount = $totalAmount - $cartItemOld + $cartItem->getTotalAmount();
             }
 
-            if (empty($cartData)) {
+            // Если корзина пуста - сумма 0
+            if (empty($currentCartItems) && empty($cartData)) {
                 $totalAmount = 0;
-                foreach ($order->getCart() as $cartItem) {
-                    $entityManager->remove($cartItem);
-                }
-                $order->getCart()->clear();
             }
 
             $order->setAmount($totalAmount);
