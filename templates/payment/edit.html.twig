@@ -3,11 +3,8 @@
 {% block title %}Редактировать платеж{% endblock %}
 
 {% block content %}
-    <h1>Редактировать платеж #{{ payment.id }}</h1>
+    <h1>Редактировать платеж {{ payment.id }}</h1>
     <div class="card">
-        <div class="card-header">
-            <h5 class="mb-0">Редактировать платеж #{{ payment.id }}</h5>
-        </div>
         <div class="card-body">
             {{ form_start(form) }}
 
@@ -27,7 +24,9 @@
             </div>
 
             <button class="btn btn-success">Сохранить</button>
-            <a href="{{ path('app_payment_index') }}" class="btn btn-secondary ms-2">Назад</a>
+            <a href="{{ app.request.headers.get('referer') ?: path('app_order_index') }}" class="btn btn-secondary">
+                Назад
+            </a>
 
             {{ form_end(form) }}
     </div>

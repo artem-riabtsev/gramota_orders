@@ -14,7 +14,7 @@ class OrderForm extends AbstractType
     public function buildForm(FormBuilderInterface $builder, array $options): void
     {
         $builder
-            ->add('date', null, ['label' => 'Дата заказа'])
+            // ->add('date', null, ['label' => 'Дата заказа'])
             // ->add('amount', null, [
             //     'label' => 'Сумма заказа',
             //     'disabled' => true,

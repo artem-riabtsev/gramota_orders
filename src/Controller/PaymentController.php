@@ -13,7 +13,6 @@ use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\HttpFoundation\Response;
 use Symfony\Component\Routing\Attribute\Route;
 use \DateTime;
-// use function bccomp;
 
 #[Route('/payment')]
 final class PaymentController extends AbstractController
@@ -71,14 +70,6 @@ final class PaymentController extends AbstractController
 
     }
 
-    #[Route('/{id}', name: 'app_payment_show', methods: ['GET'])]
-    public function show(Payment $payment): Response
-    {
-        return $this->render('payment/show.html.twig', [
-            'payment' => $payment,
-        ]);
-    }
-
     #[Route('/{id}/edit', name: 'app_payment_edit', methods: ['GET', 'POST'])]
     public function edit(Request $request, $id, Payment $payment, OrderRepository $orderRepository, EntityManagerInterface $entityManager, PaymentRepository $paymentRepository): Response
     {
@@ -119,9 +110,24 @@ final class PaymentController extends AbstractController
     public function delete(Request $request, Payment $payment, EntityManagerInterface $entityManager, PaymentRepository $paymentRepository): Response
     {
         if ($this->isCsrfTokenValid('delete'.$payment->getId(), $request->getPayload()->getString('_token'))) {
+            $order = $payment->getOrder();
             $entityManager->remove($payment);
             $entityManager->flush();
             $paymentRepository->recalculateOrderPaymentAmount($payment->getOrder());
+            $orderPaymentAmount = $order->getPaymentAmount();
+            $orderAmount = $order->getAmount();
+            if (bccomp($orderPaymentAmount, '0', 2) === 0 && bccomp($orderPaymentAmount, $orderAmount, 2) === -1) {
+                $order->setStatus(1); // не оплачен
+            } elseif (bccomp($orderPaymentAmount, '0', 2) === 1 && bccomp($orderPaymentAmount, $orderAmount, 2) === -1) {
+                $order->setStatus(2); // частично оплачен
+            } elseif (bccomp($orderPaymentAmount, $orderAmount, 2) === 0) {
+                $order->setStatus(4); // оплачен
+            } elseif (bccomp($orderPaymentAmount, $orderAmount, 2) === 1) {
+                $order->setStatus(3); // переплата
+            }
+
+            $entityManager->persist($order);
+            $entityManager->flush();
         }
 
         return $this->redirectToRoute('app_payment_index', [], Response::HTTP_SEE_OTHER);

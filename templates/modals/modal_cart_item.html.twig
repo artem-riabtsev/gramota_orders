@@ -1,0 +1,143 @@
+<div class="modal fade" id="itemModal" tabindex="-1" aria-hidden="true">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title" id="modalTitle">Новая позиция</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <form id="itemForm" method="post" action="{{ path('app_order_edit', {'id': order.id}) }}">
+                <input type="hidden" name="_token" value="{{ csrf_token('edit' ~ order.id) }}">
+                <input type="hidden" name="item_id" id="itemId">
+                <div class="modal-body">
+                    <div class="mb-3">
+                        <label for="product" class="form-label">Товар</label>
+                        <select id="product" name="cart[__ID__][product_id]" class="form-select" required>
+                            <option value="" disabled selected>Выберите позицию</option>
+                            {% for price in prices %}
+                                <option value="{{ price.id }}" data-price="{{ price.price }}">{{ price.name }}</option>
+                            {% endfor %}
+                        </select>
+                    </div>
+                    <div class="mb-3">
+                        <label for="quantity" class="form-label">Количество</label>
+                        <input type="number" class="form-control" id="quantity" name="cart[__ID__][quantity]" min="1" value="1" required>
+                    </div>
+                    <div class="mb-3">
+                        <label for="price" class="form-label">Цена</label>
+                        <input type="text" class="form-control" id="price" name="cart[__ID__][price]" required>
+                    </div>
+                    <div class="mb-3">
+                        <label for="total" class="form-label">Всего</label>
+                        <input type="text" class="form-control" id="total" name="cart[__ID__][total_amount]" required>
+                    </div>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Отмена</button>
+                    <button type="submit" class="btn btn-primary">Сохранить</button>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    const modal = new bootstrap.Modal('#itemModal');
+    const itemForm = document.getElementById('itemForm');
+    const modalTitle = document.getElementById('modalTitle');
+    const itemIdInput = document.getElementById('itemId');
+    const productSelect = document.getElementById('product');
+    const quantityInput = document.getElementById('quantity');
+    const priceInput = document.getElementById('price');
+    const totalInput = document.getElementById('total');
+
+    // Обновление общей суммы
+    function updateTotal() {
+        const price = parseFloat(priceInput.value) || 0;
+        const quantity = parseInt(quantityInput.value) || 1;
+        totalInput.value = (price * quantity).toFixed(2);
+    }
+
+    // Обратный пересчёт цены по "Всего"
+    function updatePriceFromTotal() {
+        const total = parseFloat(totalInput.value) || 0;
+        const quantity = parseInt(quantityInput.value) || 1;
+        if (quantity > 0) {
+            priceInput.value = (total / quantity).toFixed(2);
+        }
+    }
+
+    // Инициализация модалки для добавления
+    document.getElementById('add-item')?.addEventListener('click', function() {
+        modalTitle.textContent = 'Добавить позицию';
+        itemIdInput.value = '';
+
+        // Очищаем выбор продукта
+        productSelect.selectedIndex = 0;
+        productSelect.value = '';
+
+        // Очищаем остальные поля
+        quantityInput.value = '1';
+        priceInput.value = '';
+        totalInput.value = '';
+    });
+
+    // Редактирование позиции
+    document.querySelectorAll('.edit-item').forEach(btn => {
+        btn.addEventListener('click', function() {
+            const itemId = this.dataset.id;
+            const row = document.querySelector(`tr[data-id="${itemId}"]`);
+            
+            if (!row) return;
+            
+            modalTitle.textContent = 'Редактирование позиции';
+            itemIdInput.value = itemId;
+            productSelect.value = row.querySelector('td:first-child').dataset.productId;
+            quantityInput.value = row.querySelector('td:nth-child(2)').textContent;
+            priceInput.value = row.querySelector('td:nth-child(3)').textContent;
+            updateTotal();
+            
+            modal.show();
+        });
+    });
+
+    // Обработчики изменений
+    quantityInput.addEventListener('input', updateTotal);
+    priceInput.addEventListener('input', updateTotal);
+    totalInput.addEventListener('input', updatePriceFromTotal);
+
+    productSelect.addEventListener('change', function() {
+        const selectedOption = this.options[this.selectedIndex];
+        
+        if (!selectedOption?.dataset?.price) return;
+        
+        const price = parseFloat(selectedOption.dataset.price);
+        quantityInput.value = '1';
+        priceInput.value = price.toFixed(2);
+        updateTotal();
+    });
+
+    // Обработка отправки формы
+    itemForm.addEventListener('submit', function(e) {
+        e.preventDefault();
+        const formData = new FormData(this);
+        const itemId = formData.get('item_id') || 'new_' + Date.now();
+        
+        const newFormData = new FormData();
+        newFormData.append('_token', formData.get('_token'));
+        newFormData.append(`cart[${itemId}][product_id]`, formData.get('cart[__ID__][product_id]'));
+        newFormData.append(`cart[${itemId}][quantity]`, formData.get('cart[__ID__][quantity]'));
+        newFormData.append(`cart[${itemId}][price]`, formData.get('cart[__ID__][price]'));
+        newFormData.append(`cart[${itemId}][total_amount]`, formData.get('cart[__ID__][total_amount]'));
+        
+        fetch(this.action, {
+            method: 'POST',
+            body: newFormData
+        }).then(response => {
+            if (response.redirected) {
+                window.location.href = response.url;
+            }
+        }).catch(error => console.error('Error:', error));
+    });
+});
+</script>

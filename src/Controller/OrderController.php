@@ -96,12 +96,13 @@ final class OrderController extends AbstractController
         $form = $this->createForm(OrderForm::class, $order);
         $form->handleRequest($request);
 
-        if ($form->isSubmitted() && $form->isValid()) {
-            // Обработка данных формы
-            $entityManager->persist($order);
-            $entityManager->flush();
-
-            return $this->redirectToRoute('app_order_edit', ['id' => $order->getId()]);
+        if ($request->isMethod('POST') && $request->request->has('order_date')) {
+            $newDate = \DateTime::createFromFormat('Y-m-d', $request->request->get('order_date'));
+            if ($newDate) {
+                $order->setDate($newDate);
+                $entityManager->flush();
+                return $this->redirectToRoute('app_order_edit', ['id' => $order->getId()]);
+            }
         }
 
         if ($request->isMethod('POST')) {
@@ -165,7 +166,7 @@ final class OrderController extends AbstractController
 
             // Если корзина пуста - сумма 0
             if (empty($currentCartItems) && empty($cartData)) {
-                $totalAmount = 0;
+                $totalAmount = '0';
             }
 
             $order->setAmount($totalAmount);
@@ -175,9 +176,9 @@ final class OrderController extends AbstractController
             } elseif (bccomp($payment_amount, '0', 2) === 1 && bccomp($payment_amount, $totalAmount, 2) === -1) {
                 $order->setStatus(2); // частично оплачен
             } elseif (bccomp($payment_amount, $totalAmount, 2) === 0) {
-                $order->setStatus(3); // оплачен
+                $order->setStatus(4); // оплачен
             } elseif (bccomp($payment_amount, $totalAmount, 2) === 1) {
-                $order->setStatus(4); // переплата
+                $order->setStatus(3); // переплата
             }
 
             $entityManager->flush();
@@ -208,26 +209,4 @@ final class OrderController extends AbstractController
 
         return $this->redirectToRoute('app_order_index', [], Response::HTTP_SEE_OTHER);
     }
-
-    // #[Route('/order/{id}/complete', name: 'app_order_complete', methods: ['POST'])]
-    // public function complete(Request $request, Order $order, EntityManagerInterface $entityManager): Response
-    // {
-    //     if ($this->isCsrfTokenValid('complete'.$order->getId(), $request->getPayload()->getString('_token'))) {
-    //         if (count($order->getPayments()) === 0) {
-    //         $this->addFlash('error', 'Заказ не содержит платежей!');
-    
-    //     } elseif ($order->getAmount() !== $order->getPaymentAmount()) {
-    //         $this->addFlash('error', 'Сумма оплаты не соответствует сумме заказа!');
-        
-    //     } elseif ($order->getStatus() === 0) {
-    //         $order->setStatus(1);
-    //         $entityManager->flush();
-    //     }
-    //     }
-
-    //     $q = $request->request->get('q');
-    //     $routeParams = $q ? ['q' => $q] : [];
-
-    //     return $this->redirectToRoute('app_order_index', $routeParams, Response::HTTP_SEE_OTHER);
-    // }
 }

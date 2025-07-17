@@ -39,17 +39,16 @@
                 <td>{{ payment.amount }}</td>
                 <td>
                     <div class="d-flex">
-                        <a href="{{ path('app_payment_show', {'id': payment.id}) }}" class="btn btn-sm btn-outline-primary me-2">Просмотр</a>
                         <a href="{{ path('app_payment_edit', {'id': payment.id}) }}" class="btn btn-sm btn-outline-warning me-2">Редактировать</a>
-                                            <button
-                        type="button"
-                        class="btn btn-sm btn-outline-danger remove-item"
-                        data-id="{{ payment.id }}"
-                        data-token="{{ csrf_token('delete' ~ payment.id) }}"
-                        data-url="{{ path('app_payment_delete', {'id': payment.id}) }}"
-                    >
-                        Удалить
-                    </button>
+                        <button
+                            type="button"
+                            class="btn btn-sm btn-outline-danger remove-item"
+                            data-id="{{ payment.id }}"
+                            data-token="{{ csrf_token('delete' ~ payment.id) }}"
+                            data-url="{{ path('app_payment_delete', {'id': payment.id}) }}"
+                        >
+                            Удалить
+                        </button>
                     </div>
                 </td>
             </tr>
