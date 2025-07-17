@@ -1,0 +1,56 @@
+<div class="modal fade" id="dateModal" tabindex="-1" aria-hidden="true">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title">Изменить дату заказа</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <form method="post" action="{{ path('app_order_edit', {'id': order.id}) }}">
+                <input type="hidden" name="_token" value="{{ csrf_token('edit' ~ order.id) }}">
+                <div class="modal-body">
+                    <label for="order_date" class="form-label">Новая дата</label>
+                    <input 
+                        type="date" 
+                        id="order_date" 
+                        name="order_date" 
+                        class="form-control" 
+                        value="{{ order.date|date('Y-m-d') }}" 
+                        required
+                    >
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Отмена</button>
+                    <button type="submit" class="btn btn-primary">Сохранить</button>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    const dateModal = new bootstrap.Modal(document.getElementById('dateModal'));
+    
+    // Открытие модалки по клику на кнопку (если она есть на странице)
+    if (document.getElementById('edit-date-btn')) {
+        document.getElementById('edit-date-btn').addEventListener('click', () => {
+            dateModal.show();
+        });
+    }
+
+    // Отправка формы даты
+    const dateForm = document.querySelector('#dateModal form');
+    if (dateForm) {
+        dateForm.addEventListener('submit', function(e) {
+            e.preventDefault();
+            fetch(this.action, {
+                method: 'POST',
+                body: new FormData(this)
+            }).then(() => {
+                dateModal.hide();
+                window.location.reload(); // Обновляем страницу
+            });
+        });
+    }
+});
+</script>

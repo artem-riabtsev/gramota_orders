@@ -1,3 +1,4 @@
+
 {% extends 'base.html.twig' %}
 
 {% block content %}
@@ -19,7 +20,7 @@
         {% if orders is not empty %}
             {% for order in orders %}
                 <button type="button"
-                        class="list-group-item list-group-item-action"
+                        class="list-group-item list-group-item-action order-item"
                         data-id="{{ order.id }}">
                     Заказ #{{ order.id }} — {{ order.customer.name }}
                 </button>
@@ -30,44 +31,47 @@
     </div>
 
     <div id="confirm-block" class="mb-3 d-none">
-        <button class="btn btn-success" id="confirm-selection">Подтвердить</button>
+        <button class="btn btn-success" id="confirm-selection">Выбрать</button>
     </div>
-
-    <a href="{{ path('app_customer_select') }}" class="btn btn-primary">Создать новый заказ</a>
 </div>
 
 <script>
-const orderList = document.getElementById('order-list');
-const confirmBlock = document.getElementById('confirm-block');
-const confirmButton = document.getElementById('confirm-selection');
-let selectedId = null;
+document.addEventListener('DOMContentLoaded', function() {
+    const orderList = document.getElementById('order-list');
+    const confirmBlock = document.getElementById('confirm-block');
+    const confirmButton = document.getElementById('confirm-selection');
+    let selectedId = null;
 
-orderList.querySelectorAll('button').forEach(button => {
-    button.addEventListener('click', () => {
-        const isActive = button.classList.contains('active');
+    orderList.querySelectorAll('.order-item').forEach(button => {
+        button.addEventListener('click', function() {
+            const clickedId = this.getAttribute('data-id');
 
-        orderList.querySelectorAll('button').forEach(b => {
-            b.classList.remove('active', 'text-dark');
-            b.style.backgroundColor = '';
-        });
+            // Если кликнули на уже выбранный заказ - подтверждаем
+            if (selectedId === clickedId) {
+                window.location.href = "{{ path('app_payment_new') }}?order=" + selectedId;
+                return;
+            }
 
-        if (!isActive) {
-            button.classList.add('active', 'text-dark');
-            button.style.backgroundColor = '#e0e0e0';
-            selectedId = button.getAttribute('data-id');
+            // Снимаем выделение со всех кнопок
+            orderList.querySelectorAll('.order-item').forEach(b => {
+                b.classList.remove('active', 'text-dark');
+                b.style.backgroundColor = '';
+            });
 
+            // Выделяем текущую кнопку
+            this.classList.add('active', 'text-dark');
+            this.style.backgroundColor = '#e0e0e0';
+
+            selectedId = clickedId;
             confirmBlock.classList.remove('d-none');
-        } else {
-            selectedId = null;
-            confirmBlock.classList.add('d-none');
+        });
+    });
+
+    confirmButton.addEventListener('click', function() {
+        if (selectedId) {
+            window.location.href = "{{ path('app_payment_new') }}?order=" + selectedId;
         }
     });
-});
-
-confirmButton.addEventListener('click', () => {
-    if (selectedId) {
-        window.location.href = "{{ path('app_payment_new') }}" + "?order=" + selectedId;
-    }
 });
 </script>
 {% endblock %}

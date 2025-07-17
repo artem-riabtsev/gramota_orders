@@ -26,7 +26,7 @@ final class PriceController extends AbstractController
         if ($query) {
             $prices = $priceRepository->findByName($query);
         } else {
-            $prices = [];
+            $prices = $priceRepository->findAll();
         }
 
         return $this->render('price/index.html.twig', [

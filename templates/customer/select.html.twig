@@ -28,7 +28,7 @@
     </div>
 
     <div id="confirm-block" class="mb-3 d-none">
-        <button class="btn btn-success" id="confirm-selection">Подтвердить</button>
+        <button class="btn btn-success" id="confirm-selection">Выбрать</button>
     </div>
 
     <a href="{{ path('app_customer_new', {'from': 'order'}) }}" class="btn btn-primary">Создать нового заказчика</a>
@@ -41,29 +41,29 @@ let selectedId = null;
 
 customerList.querySelectorAll('button').forEach(button => {
     button.addEventListener('click', () => {
-        const isActive = button.classList.contains('active');
+        const clickedId = button.getAttribute('data-id');
+
+        if (selectedId === clickedId) {
+            window.location.href = "{{ path('app_order_new') }}?customer=" + selectedId;
+            return;
+        }
 
         customerList.querySelectorAll('button').forEach(b => {
             b.classList.remove('active', 'text-dark');
             b.style.backgroundColor = '';
         });
 
-        if (!isActive) {
-            button.classList.add('active', 'text-dark');
-            button.style.backgroundColor = '#e0e0e0';
-            selectedId = button.getAttribute('data-id');
+        button.classList.add('active', 'text-dark');
+        button.style.backgroundColor = '#e0e0e0';
 
-            confirmBlock.classList.remove('d-none');
-        } else {
-            selectedId = null;
-            confirmBlock.classList.add('d-none');
-        }
+        selectedId = clickedId;
+        confirmBlock.classList.remove('d-none');
     });
 });
 
 confirmButton.addEventListener('click', () => {
     if (selectedId) {
-        window.location.href = "{{ path('app_order_new') }}" + "?customer=" + selectedId;
+        window.location.href = "{{ path('app_order_new') }}?customer=" + selectedId;
     }
 });
 </script>

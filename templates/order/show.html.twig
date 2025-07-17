@@ -23,11 +23,13 @@
             </tr>
             <tr>
                 <th>Заказчик</th>
-                {{ order.customer.name }} ({{ order.customer.email }})</td>
+                <td>{{ order.customer.name }} ({{ order.customer.email }})</td>
             </tr>
         </tbody>
     </table>
 
     <a href="{{ path('app_order_edit', {'id': order.id}) }}" class="btn btn-primary">Редактировать</a>
-    <a href="{{ path('app_order_index') }}" class="btn btn-secondary">Назад</a>
+    <a href="{{ app.request.headers.get('referer') ?: path('app_order_index') }}" class="btn btn-secondary">
+        Назад
+    </a>
 {% endblock %}

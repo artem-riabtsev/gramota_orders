@@ -5,6 +5,7 @@
     <h1>Заказчики</h1>
 
     {% include 'search/search_form.html.twig' %}
+    {% include 'modals/modal_delete.html.twig' %}
 
     <table class="table table-hover table-bordered align-middle">
         <thead>
@@ -30,7 +31,15 @@
                             <a href="{{ path('app_customer_edit', {'id': customer.id}) }}" class="btn btn-sm btn-outline-warning me-2">Редактировать</a>
                             <form method="post" action="{{ path('app_customer_delete', {'id': customer.id}) }}">
                                 <input type="hidden" name="_token" value="{{ csrf_token('delete' ~ customer.id) }}">
-                                <button class="btn btn-sm btn-outline-danger" {% if customer.orders|length > 0 %}disabled{% endif %}>
+                                    {% if app.request.get('q') %}
+                                        <input type="hidden" name="q" value="{{ app.request.get('q') }}">
+                                    {% endif %}
+                                <button type="submit"
+                                        class="btn btn-sm btn-outline-danger remove-item"
+                                        data-id="{{ customer.id }}"
+                                        data-token="{{ csrf_token('delete' ~ customer.id) }}"
+                                        data-url="{{ path('app_customer_delete', {'id': customer.id}) }}"
+                                        {% if customer.orders|length > 0 %}disabled{% endif %}>
                                     Удалить
                                 </button>
                             </form>

@@ -1,7 +1,11 @@
 {% extends 'base.html.twig' %}
 
 {% block content %}
-<h1>Заказ #{{ order.id }}</h1>
+<h1>Заказ {{ order.id }}</h1>
+
+{% include 'modals/modal_delete.html.twig' %}
+{% include 'modals/modal_date.html.twig' %}
+{% include 'modals/modal_cart_item.html.twig' %}
 
 <form method="post" action="{{ path('app_order_edit', {'id': order.id}) }}" id="order-form">
     <input type="hidden" name="deleted_items[]" id="deleted-items" value="">
@@ -9,15 +13,40 @@
     <div class="card mb-4">
         <div class="card-body">
             <div class="row">
-                <div class="col-md-6 mb-3">
-                    {{ form_label(form.date) }}
-                    <div class="d-flex" style="gap: 8px;">
-                        {{ form_widget(form.date, {'attr': {'class': 'form-control border'}}) }}
-                        <button type="submit" name="save" class="btn btn-primary me-2">Сохранить</button>
-                    </div>
+                <div class="col-md-6 mb-3 d-flex align-items-center" style="gap: 12px;">
+                    <strong>Дата заказа:</strong>
+                    <span id="order-date-display">{{ order.date|date('d.m.Y') }}</span>
+
+                    <button type="button" href="{{ path('app_customer_edit', {'id': order.customer.id}) }}" 
+                        id="edit-date-btn"
+                        title="Редактировать дату"
+                        class="btn btn-sm btn-outline-primary d-inline-flex align-items-center justify-content-center border-0 shadow-none" 
+                        style="width: 25px; height: 25px; padding: 0; background-color: #6c757d;"
+                        onmouseover="this.style.backgroundColor='#5a6268'" 
+                        onmouseout="this.style.backgroundColor='#6c757d'">
+                        <i class="bi bi-pencil" style="font-size: 1rem; color: white;"></i>
+                    </button>
                 </div>
             </div>
-            <div class="mb-4">Заказчик: {{ order.customer.name }} ({{ order.customer.email }}, {{ order.customer.phone }})</div>
+            <div class="d-flex" style="gap: 8px; ">
+                <div class="mb-4">Заказчик: {{ order.customer.name }} ({{ order.customer.email }}, {{ order.customer.phone }})</div>
+                <a href="{{ path('app_customer_edit', {'id': order.customer.id}) }}" 
+                    class="btn btn-sm btn-outline-primary d-inline-flex align-items-center justify-content-center border-0 shadow-none" 
+                    style="width: 25px; height: 25px; padding: 0; background-color: #6c757d;"
+                    onmouseover="this.style.backgroundColor='#5a6268'" 
+                    onmouseout="this.style.backgroundColor='#6c757d'">
+                    <i class="bi bi-pencil" style="font-size: 1rem; color: white;"></i>
+                </a>
+            </div>
+             {% if order.status == 1 %}
+                <span class="text-secondary">Не оплачен</span>
+            {% elseif order.status == 2 %}
+                <span class="text-danger">Частично оплачен</span>
+            {% elseif order.status == 3 %}
+                <span class="text-danger">Переплата</span>
+            {% else %}
+                <span class="text-success">Оплачен</span>
+            {% endif %}
             <div class="d-flex" style="gap: 50px;">
                 <div>Сумма заказа: <strong>{{ order.amount }}</strong></div>
                 <div>Сумма оплаты: {{ order.paymentAmount }}</div>
@@ -60,9 +89,10 @@
 </button>
 
 <div class="mt-3">
-    <a href="{{ path('app_order_index') }}" class="btn btn-secondary">Назад</a>
+    <a href="{{ app.request.headers.get('referer') ?: path('app_order_index') }}" class="btn btn-secondary">
+        Назад
+    </a>
 </div>
-
     {{ form_end(form) }}
 </form>
 
@@ -109,57 +139,30 @@
     </div>
 </div>
 
-<!-- Модалка подтверждения удаления -->
-<div class="modal fade" id="confirmDeleteModal" tabindex="-1" aria-hidden="true">
-  <div class="modal-dialog modal-dialog-centered">
-    <div class="modal-content">
-      <div class="modal-header">
-        <h5 class="modal-title">Подтвердите удаление</h5>
-        <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Закрыть"></button>
-      </div>
-      <div class="modal-body">
-        Вы уверены, что хотите удалить эту позицию?
-      </div>
-      <div class="modal-footer">
-        <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Отмена</button>
-        <button type="button" class="btn btn-danger" id="confirmDeleteBtn">Удалить</button>
-      </div>
-    </div>
-  </div>
-</div>
-
 <script>
 document.addEventListener('DOMContentLoaded', function() {
-    const modal = new bootstrap.Modal('#itemModal');
-    const itemForm = document.getElementById('itemForm');
-    const modalTitle = document.getElementById('modalTitle');
-    const itemIdInput = document.getElementById('itemId');
-    const productSelect = document.getElementById('product');
-    const quantityInput = document.getElementById('quantity');
-    const priceInput = document.getElementById('price');
-    const totalInput = document.getElementById('total');
-    const dateInput = document.getElementById('order_form_date');
+    // Обработка удаления элементов
     const deleteModal = new bootstrap.Modal(document.getElementById('confirmDeleteModal'));
     let itemIdToDelete = null;
 
+    // Вешаем обработчик на все кнопки удаления
     document.addEventListener('click', function(e) {
         if (e.target.classList.contains('remove-item')) {
             e.preventDefault();
-
             itemIdToDelete = e.target.dataset.id;
             deleteModal.show();
         }
     });
 
-    document.getElementById('confirmDeleteBtn').addEventListener('click', function() {
+    // Подтверждение удаления
+    document.getElementById('confirmDeleteBtn')?.addEventListener('click', function() {
         if (!itemIdToDelete) return;
 
-        // Создаем форму для отправки удаления
         const form = document.createElement('form');
         form.method = 'POST';
         form.action = '{{ path('app_order_edit', {'id': order.id}) }}';
 
-        // CSRF
+        // CSRF-токен
         const csrfInput = document.createElement('input');
         csrfInput.type = 'hidden';
         csrfInput.name = '_token';
@@ -177,126 +180,20 @@ document.addEventListener('DOMContentLoaded', function() {
         form.submit();
     });
 
+    // Обработка изменения даты (если осталась в основном шаблоне)
+    const dateInput = document.getElementById('order_form_date');
     if (dateInput) {
         const originalValue = dateInput.value;
-
-        dateInput.addEventListener('input', function () {
+        dateInput.addEventListener('input', function() {
             if (this.value !== originalValue) {
-                this.classList.remove('border'); // убери серую рамку
-                this.classList.add('border-warning'); // добавь жёлтую
+                this.classList.remove('border');
+                this.classList.add('border-warning');
             } else {
                 this.classList.remove('border-warning');
-                this.classList.add('border'); // верни серую рамку
+                this.classList.add('border');
             }
         });
     }
-
-    // Обновление общей суммы
-    function updateTotal() {
-        const price = parseFloat(priceInput.value) || 0;
-        const quantity = parseInt(quantityInput.value) || 1;
-        totalInput.value = (price * quantity).toFixed(2);
-    }
-
-    // Обратный пересчёт цены по "Всего"
-    function updatePriceFromTotal() {
-        const total = parseFloat(totalInput.value) || 0;
-        const quantity = parseInt(quantityInput.value) || 1;
-        if (quantity > 0) {
-            priceInput.value = (total / quantity).toFixed(2);
-        }
-    }
-
-    // Инициализация модалки для добавления
-    document.getElementById('add-item').addEventListener('click', function() {
-        modalTitle.textContent = 'Добавить позицию';
-        itemIdInput.value = '';
-
-        // Очищаем выбор продукта
-        productSelect.selectedIndex = 0;
-        productSelect.value = '';
-
-        // Очищаем остальные поля
-        quantityInput.value = '';
-        priceInput.value = '';
-        totalInput.value = '';
-    });
-
-    // Редактирование позиции
-    document.querySelectorAll('.edit-item').forEach(btn => {
-        btn.addEventListener('click', function() {
-            const itemId = this.dataset.id;
-            const row = document.querySelector(`tr[data-id="${itemId}"]`);
-            
-            modalTitle.textContent = 'Редактирование позиции';
-            itemIdInput.value = itemId;
-            productSelect.value = row.querySelector('td:first-child').dataset.productId;
-            quantityInput.value = row.querySelector('td:nth-child(2)').textContent;
-            priceInput.value = row.querySelector('td:nth-child(3)').textContent;
-            updateTotal();
-            
-            modal.show();
-        });
-    });
-
-    // Обработчики изменений
-    quantityInput.addEventListener('input', () => {
-        updateTotal();
-    });
-
-    priceInput.addEventListener('input', () => {
-        updateTotal();
-    });
-
-    totalInput.addEventListener('input', () => {
-        updatePriceFromTotal();
-    });
-
-    productSelect.addEventListener('change', function() {
-        const selectedOption = this.options[this.selectedIndex];
-        
-        if (!selectedOption.value) {
-            // Ничего не выбрано
-            quantityInput.value = '';
-            priceInput.value = '';
-            totalInput.value = '';
-            return;
-        }
-
-        const price = parseFloat(selectedOption.dataset.price);
-
-        // Устанавливаем количество = 1 по умолчанию
-        quantityInput.value = '1';
-        priceInput.value = price.toFixed(2);
-        totalInput.value = price.toFixed(2);
-    });
-
-    // Обработка отправки формы
-    itemForm.addEventListener('submit', function(e) {
-        e.preventDefault();
-        const formData = new FormData(this);
-        
-        // Подмена __ID__ на реальный ID
-        const itemId = formData.get('item_id') || 'new_' + Date.now();
-        const newFormData = new FormData();
-        
-        newFormData.append('_token', formData.get('_token'));
-        newFormData.append(`cart[${itemId}][product_id]`, formData.get('cart[__ID__][product_id]'));
-        newFormData.append(`cart[${itemId}][quantity]`, formData.get('cart[__ID__][quantity]'));
-        newFormData.append(`cart[${itemId}][price]`, formData.get('cart[__ID__][price]'));
-        newFormData.append(`cart[${itemId}][total_amount]`, formData.get('cart[__ID__][total_amount]'));
-        
-        fetch(this.action, {
-            method: 'POST',
-            body: newFormData
-        })
-        .then(response => {
-            if (response.redirected) {
-                window.location.href = response.url;
-            }
-        })
-        .catch(error => console.error('Error:', error));
-    });
 });
 </script>
 {% endblock %}

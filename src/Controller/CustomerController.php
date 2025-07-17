@@ -83,12 +83,17 @@ final class CustomerController extends AbstractController
 
     #[Route('/{id}', name: 'app_customer_show', methods: ['GET'], requirements: ['id' => '\d+'])]
     public function show(Customer $customer): Response
-    {   $completedOrders = $customer->getOrders()->filter(fn($order) => $order->getStatus() === 1);
-        $incompletedOrders = $customer->getOrders()->filter(fn($order) => $order->getStatus() === 0);
+    {
+        $ordersGroups = [
+            ['name' => 'Неоплаченные', 'orders' => $customer->getOrders()->filter(fn($order) => $order->getStatus() === 1)],
+            ['name' => 'Частично оплаченные', 'orders' => $customer->getOrders()->filter(fn($order) => $order->getStatus() === 2)],
+            ['name' => 'Переплаченные', 'orders' => $customer->getOrders()->filter(fn($order) => $order->getStatus() === 3)],
+            ['name' => 'Оплаченные', 'orders' => $customer->getOrders()->filter(fn($order) => $order->getStatus() === 4)],
+        ];
+
         return $this->render('customer/show.html.twig', [
             'customer' => $customer,
-            'completedOrders' => $completedOrders,
-            'incompletedOrders' => $incompletedOrders,
+            'ordersGroups' => $ordersGroups,
         ]);
     }
 
@@ -113,6 +118,8 @@ final class CustomerController extends AbstractController
     #[Route('/{id}', name: 'app_customer_delete', methods: ['POST'])]
     public function delete(Request $request, Customer $customer, EntityManagerInterface $entityManager): Response
     {
+        $q = $request->request->get('q');
+
         if ($this->isCsrfTokenValid('delete'.$customer->getId(), $request->getPayload()->getString('_token'))) {
 
             if ($customer->getOrders()->count() > 0) {
@@ -124,7 +131,7 @@ final class CustomerController extends AbstractController
             $entityManager->flush();
         }
 
-        return $this->redirectToRoute('app_customer_index', [], Response::HTTP_SEE_OTHER);
+        return $this->redirectToRoute('app_customer_index', ['q' => $q], Response::HTTP_SEE_OTHER);
     }
 
 

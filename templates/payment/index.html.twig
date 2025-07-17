@@ -6,6 +6,7 @@
     <h1>Платежи</h1>
 
     {% include 'search/search_form.html.twig' %}
+    {% include 'modals/modal_delete.html.twig' %}
 
     <table class="table table-hover table-bordered align-middle">
         <thead>
@@ -38,12 +39,16 @@
                 <td>{{ payment.amount }}</td>
                 <td>
                     <div class="d-flex">
-                        <a href="{{ path('app_payment_show', {'id': payment.id}) }}" class="btn btn-sm btn-outline-primary me-2">Просмотр</a>
                         <a href="{{ path('app_payment_edit', {'id': payment.id}) }}" class="btn btn-sm btn-outline-warning me-2">Редактировать</a>
-                        <form method="post" action="{{ path('app_payment_delete', {'id': payment.id}) }}" onsubmit="return confirm('Вы уверены, что хотите удалить этот платеж?');">
-                            <input type="hidden" name="_token" value="{{ csrf_token('delete' ~ payment.id) }}">
-                            <button class="btn btn-sm btn-outline-danger">Удалить</button>
-                        </form>
+                        <button
+                            type="button"
+                            class="btn btn-sm btn-outline-danger remove-item"
+                            data-id="{{ payment.id }}"
+                            data-token="{{ csrf_token('delete' ~ payment.id) }}"
+                            data-url="{{ path('app_payment_delete', {'id': payment.id}) }}"
+                        >
+                            Удалить
+                        </button>
                     </div>
                 </td>
             </tr>
