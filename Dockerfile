@@ -22,6 +22,8 @@ RUN apt-get update && apt-get install -y --no-install-recommends \
 	file \
 	gettext \
 	git \
+	libgmp-dev \
+    libc-dev \
 	&& rm -rf /var/lib/apt/lists/*
 
 RUN set -eux; \
@@ -32,6 +34,7 @@ RUN set -eux; \
 		opcache \
 		zip \
 		pdo_mysql \
+		bcmath \
 	;
 
 # https://getcomposer.org/doc/03-cli.md#composer-allow-superuser
