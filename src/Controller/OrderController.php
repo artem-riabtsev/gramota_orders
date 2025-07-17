@@ -145,17 +145,22 @@ final class OrderController extends AbstractController
                 }
 
                 $quantity = max(1, (int)($item['quantity'] ?? 1));
-                $price = (float)str_replace(',', '.', $item['price'] ?? $priceEntity->getPrice());
-                $cartItemOld = $cartItem->getTotalAmount();
+                $price = str_replace(',', '.', $item['price'] ?? $priceEntity->getPrice());
+                $ItemTotalOld = $cartItem->getTotalAmount();
+                $ItemTotalActual = bcmul($price, $quantity, 2);
 
                 $cartItem
                     ->setProduct($priceEntity)
                     ->setPrice($price)
                     ->setQuantity($quantity)
-                    ->setTotalAmount($price * $quantity);
+                    ->setTotalAmount($ItemTotalActual);
 
                 $entityManager->persist($cartItem);
-                $totalAmount = $totalAmount - $cartItemOld + $cartItem->getTotalAmount();
+                $totalAmount = bcadd(
+                    bcsub($totalAmount, $ItemTotalOld, 2),
+                    $cartItem->getTotalAmount(),
+                    2
+                );
             }
 
             // Если корзина пуста - сумма 0
@@ -164,6 +169,17 @@ final class OrderController extends AbstractController
             }
 
             $order->setAmount($totalAmount);
+            $payment_amount = $order->getPaymentAmount();
+            if (bccomp($payment_amount, '0', 2) === 0 && bccomp($payment_amount, $totalAmount, 2) === -1) {
+                $order->setStatus(1); // не оплачен
+            } elseif (bccomp($payment_amount, '0', 2) === 1 && bccomp($payment_amount, $totalAmount, 2) === -1) {
+                $order->setStatus(2); // частично оплачен
+            } elseif (bccomp($payment_amount, $totalAmount, 2) === 0) {
+                $order->setStatus(3); // оплачен
+            } elseif (bccomp($payment_amount, $totalAmount, 2) === 1) {
+                $order->setStatus(4); // переплата
+            }
+
             $entityManager->flush();
 
             return $this->redirectToRoute('app_order_edit', ['id' => $order->getId()]);
@@ -193,25 +209,25 @@ final class OrderController extends AbstractController
         return $this->redirectToRoute('app_order_index', [], Response::HTTP_SEE_OTHER);
     }
 
-    #[Route('/order/{id}/complete', name: 'app_order_complete', methods: ['POST'])]
-    public function complete(Request $request, Order $order, EntityManagerInterface $entityManager): Response
-    {
-        if ($this->isCsrfTokenValid('complete'.$order->getId(), $request->getPayload()->getString('_token'))) {
-            if (count($order->getPayments()) === 0) {
-            $this->addFlash('error', 'Заказ не содержит платежей!');
+    // #[Route('/order/{id}/complete', name: 'app_order_complete', methods: ['POST'])]
+    // public function complete(Request $request, Order $order, EntityManagerInterface $entityManager): Response
+    // {
+    //     if ($this->isCsrfTokenValid('complete'.$order->getId(), $request->getPayload()->getString('_token'))) {
+    //         if (count($order->getPayments()) === 0) {
+    //         $this->addFlash('error', 'Заказ не содержит платежей!');
     
-        } elseif ($order->getAmount() !== $order->getPaymentAmount()) {
-            $this->addFlash('error', 'Сумма оплаты не соответствует сумме заказа!');
+    //     } elseif ($order->getAmount() !== $order->getPaymentAmount()) {
+    //         $this->addFlash('error', 'Сумма оплаты не соответствует сумме заказа!');
         
-        } elseif ($order->getStatus() === 0) {
-            $order->setStatus(1);
-            $entityManager->flush();
-        }
-        }
+    //     } elseif ($order->getStatus() === 0) {
+    //         $order->setStatus(1);
+    //         $entityManager->flush();
+    //     }
+    //     }
 
-        $q = $request->request->get('q');
-        $routeParams = $q ? ['q' => $q] : [];
+    //     $q = $request->request->get('q');
+    //     $routeParams = $q ? ['q' => $q] : [];
 
-        return $this->redirectToRoute('app_order_index', $routeParams, Response::HTTP_SEE_OTHER);
-    }
+    //     return $this->redirectToRoute('app_order_index', $routeParams, Response::HTTP_SEE_OTHER);
+    // }
 }

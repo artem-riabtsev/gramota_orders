@@ -14,10 +14,11 @@ class PaymentForm extends AbstractType
     public function buildForm(FormBuilderInterface $builder, array $options): void
     {
         $builder
-            ->add('date')
-            ->add('amount')
+            ->add('date', null, ['label' => 'Дата'])
+            ->add('amount', null, ['label' => 'Сумма платежа'])
             ->add('order', EntityType::class, [
                 'class' => Order::class,
+                'label' => 'Номер заказа',
                 'choice_label' => 'id',
                 'disabled' => true,
             ])

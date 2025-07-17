@@ -113,6 +113,8 @@ final class CustomerController extends AbstractController
     #[Route('/{id}', name: 'app_customer_delete', methods: ['POST'])]
     public function delete(Request $request, Customer $customer, EntityManagerInterface $entityManager): Response
     {
+        $q = $request->request->get('q');
+
         if ($this->isCsrfTokenValid('delete'.$customer->getId(), $request->getPayload()->getString('_token'))) {
 
             if ($customer->getOrders()->count() > 0) {
@@ -124,7 +126,7 @@ final class CustomerController extends AbstractController
             $entityManager->flush();
         }
 
-        return $this->redirectToRoute('app_customer_index', [], Response::HTTP_SEE_OTHER);
+        return $this->redirectToRoute('app_customer_index', ['q' => $q], Response::HTTP_SEE_OTHER);
     }
 
 

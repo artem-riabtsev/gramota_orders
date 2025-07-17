@@ -13,10 +13,21 @@ use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\HttpFoundation\Response;
 use Symfony\Component\Routing\Attribute\Route;
 use \DateTime;
+// use function bccomp;
 
 #[Route('/payment')]
 final class PaymentController extends AbstractController
 {
+
+
+    #[Route('/phpinfo', name: 'phpinfo')]
+    public function phpinfo(): Response
+    {
+        phpinfo();
+        exit;
+    }
+
+
     #[Route(name: 'app_payment_index', methods: ['GET'])]
     public function index(Request $request ,PaymentRepository $paymentRepository): Response
     {
@@ -52,22 +63,12 @@ final class PaymentController extends AbstractController
         }
 
         $payment->setDate(new DateTime());
-        $form = $this->createForm(PaymentForm::class, $payment);
-        $form->handleRequest($request);
 
-        if ($form->isSubmitted() && $form->isValid()) {
-            $entityManager->persist($payment);
-            $entityManager->flush();
-            $paymentRepository->recalculateOrderPaymentAmount($payment->getOrder());
+        $entityManager->persist($payment);
+        $entityManager->flush();
 
+        return $this->redirectToRoute('app_payment_edit', ['id' => $payment->getId()], Response::HTTP_SEE_OTHER);
 
-            return $this->redirectToRoute('app_payment_index', [], Response::HTTP_SEE_OTHER);
-        }
-
-        return $this->render('payment/new.html.twig', [
-            'payment' => $payment,
-            'form' => $form,
-        ]);
     }
 
     #[Route('/{id}', name: 'app_payment_show', methods: ['GET'])]
@@ -79,7 +80,7 @@ final class PaymentController extends AbstractController
     }
 
     #[Route('/{id}/edit', name: 'app_payment_edit', methods: ['GET', 'POST'])]
-    public function edit(Request $request, $id, Payment $payment, EntityManagerInterface $entityManager, PaymentRepository $paymentRepository): Response
+    public function edit(Request $request, $id, Payment $payment, OrderRepository $orderRepository, EntityManagerInterface $entityManager, PaymentRepository $paymentRepository): Response
     {
         $form = $this->createForm(PaymentForm::class, $payment);
         $form->handleRequest($request);
@@ -87,6 +88,23 @@ final class PaymentController extends AbstractController
         if ($form->isSubmitted() && $form->isValid()) {
             $entityManager->flush();
             $paymentRepository->updateOrderPaymentAmount($id, $payment->getAmount());
+
+            $order = $payment->getOrder();
+
+            $orderPaymentAmount = $order->getPaymentAmount();
+            $orderAmount = $order->getAmount();
+            if (bccomp($orderPaymentAmount, '0', 2) === 0 && bccomp($orderPaymentAmount, $orderAmount, 2) === -1) {
+                $order->setStatus(1); // не оплачен
+            } elseif (bccomp($orderPaymentAmount, '0', 2) === 1 && bccomp($orderPaymentAmount, $orderAmount, 2) === -1) {
+                $order->setStatus(2); // частично оплачен
+            } elseif (bccomp($orderPaymentAmount, $orderAmount, 2) === 0) {
+                $order->setStatus(4); // оплачен
+            } elseif (bccomp($orderPaymentAmount, $orderAmount, 2) === 1) {
+                $order->setStatus(3); // переплата
+            }
+
+            $entityManager->persist($order);
+            $entityManager->flush();
 
             return $this->redirectToRoute('app_payment_index', [], Response::HTTP_SEE_OTHER);
         }

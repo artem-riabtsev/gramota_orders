@@ -1,0 +1,71 @@
+<div class="modal fade" id="confirmDeleteModal" tabindex="-1" aria-hidden="true">
+  <div class="modal-dialog modal-dialog-centered">
+    <div class="modal-content">
+      <div class="modal-header">
+        <h5 class="modal-title">Подтвердите удаление</h5>
+        <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Закрыть"></button>
+      </div>
+      <div class="modal-body">
+        Вы уверены, что хотите удалить?
+      </div>
+      <div class="modal-footer">
+        <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Отмена</button>
+        <button type="button" class="btn btn-danger" id="confirmDeleteBtn">Удалить</button>
+      </div>
+    </div>
+  </div>
+</div>
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    const deleteModal = new bootstrap.Modal(document.getElementById('confirmDeleteModal'));
+    let deleteBtnData = null;
+
+    document.addEventListener('click', function(e) {
+        if (e.target.classList.contains('remove-item')) {
+            e.preventDefault();
+            deleteBtnData = e.target;
+            deleteModal.show();
+        }
+    });
+
+    document.getElementById('confirmDeleteBtn').addEventListener('click', function() {
+        if (!deleteBtnData) return;
+
+        const itemId = deleteBtnData.dataset.id;
+        const token = deleteBtnData.dataset.token;
+        const url = deleteBtnData.dataset.url;
+
+        // Создаем форму
+        const form = document.createElement('form');
+        form.method = 'POST';
+        form.action = url;
+
+        // Добавляем CSRF токен
+        const csrfInput = document.createElement('input');
+        csrfInput.type = 'hidden';
+        csrfInput.name = '_token';
+        csrfInput.value = token;
+        form.appendChild(csrfInput);
+
+        // Добавляем id удаляемого элемента
+        const deleteInput = document.createElement('input');
+        deleteInput.type = 'hidden';
+        deleteInput.name = 'deleted_items[]';
+        deleteInput.value = itemId;
+        form.appendChild(deleteInput);
+
+        // Добавляем поле q, если оно есть на странице (из формы поиска)
+        const qInputOnPage = document.querySelector('input[name="q"]');
+        if (qInputOnPage) {
+            const qInput = document.createElement('input');
+            qInput.type = 'hidden';
+            qInput.name = 'q';
+            qInput.value = qInputOnPage.value;
+            form.appendChild(qInput);
+        }
+
+        document.body.appendChild(form);
+        form.submit();
+    });
+});
+</script>

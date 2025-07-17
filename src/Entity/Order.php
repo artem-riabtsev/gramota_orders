@@ -29,7 +29,7 @@ class Order
     private ?string $payment_amount = '0.00';
 
     #[ORM\Column(type: 'integer', options: ['default' => 0])]
-    private int $status = 0;
+    private int $status = 1;
 
     #[ORM\ManyToOne(targetEntity: Customer::class, inversedBy: "orders")]
     #[ORM\JoinColumn(name: 'customer_id', referencedColumnName: 'id')]

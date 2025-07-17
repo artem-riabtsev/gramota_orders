@@ -23,7 +23,7 @@ class Payment
     private ?\DateTime $date = null;
 
     #[ORM\Column(type: Types::DECIMAL, precision: 10, scale: 2)]
-    private ?string $amount = null;
+    private ?string $amount = '0.00';
 
     public function getId(): ?int
     {
