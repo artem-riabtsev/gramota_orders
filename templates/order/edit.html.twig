@@ -5,7 +5,7 @@
 
 {% include 'modals/modal_delete.html.twig' %}
 {% include 'modals/modal_date.html.twig' %}
-{% include 'modals/modal_cart_item.html.twig' %}
+{% include 'modals/modal_order_item.html.twig' %}
 
 <form method="post" action="{{ path('app_order_edit', {'id': order.id}) }}" id="order-form">
     <input type="hidden" name="deleted_items[]" id="deleted-items" value="">
@@ -48,13 +48,13 @@
                 <span class="text-success">Оплачен</span>
             {% endif %}
             <div class="d-flex" style="gap: 50px;">
-                <div>Сумма заказа: <strong>{{ order.amount }}</strong></div>
-                <div>Сумма оплаты: {{ order.paymentAmount }}</div>
+                <div>Сумма заказа: <strong>{{ order.orderTotal }}</strong></div>
+                <div>Сумма оплаты: {{ order.totalPaid }}</div>
             </div>
         </div>
     </div>
 
-    <table class="table table-hover table-bordered align-middle" id="cart-table">
+    <table class="table table-hover table-bordered align-middle" id="orderItem-table">
     <thead>
         <tr>
             <th>Наименование</th>
@@ -65,18 +65,18 @@
         </tr>
     </thead>
     <tbody>
-        {% for cartItem in order.cart %}
-            <tr data-id="{{ cartItem.id }}">
-                <td data-product-id="{{ cartItem.product.id }}" >{{ cartItem.product.name }}</td>
-                <td>{{ cartItem.quantity }}</td>
-                <td>{{ cartItem.price }}</td>
-                <td>{{ cartItem.totalAmount }}</td>
+        {% for orderItem in order.orderItem %}
+            <tr data-id="{{ orderItem.id }}">
+                <td data-product-id="{{ orderItem.product.id }}" >{{ orderItem.product.description }}</td>
+                <td>{{ orderItem.quantity }}</td>
+                <td>{{ orderItem.price }}</td>
+                <td>{{ orderItem.lineTotal }}</td>
                 <td>
                     <div class='d-flex' style='gap: 8px;'>
                         <button type="button" class="btn btn-sm btn-outline-warning edit-item" 
-                                data-id="{{ cartItem.id }}">Редактировать</button>
+                                data-id="{{ orderItem.id }}">Редактировать</button>
                         <button type="button" class="btn btn-sm btn-outline-danger remove-item" 
-                                data-id="{{ cartItem.id }}">Удалить</button>
+                                data-id="{{ orderItem.id }}">Удалить</button>
                     </div>
                 </td>
             </tr>
@@ -89,56 +89,12 @@
 </button>
 
 <div class="mt-3">
-    <a href="{{ app.request.headers.get('referer') ?: path('app_order_index') }}" class="btn btn-secondary">
+    <a href="{{ path('app_order_index') }}" class="btn btn-secondary">
         Назад
     </a>
 </div>
     {{ form_end(form) }}
 </form>
-
-<!-- Модальное окно для редактирования/добавления -->
-<div class="modal fade" id="itemModal" tabindex="-1" aria-hidden="true">
-    <div class="modal-dialog">
-        <div class="modal-content">
-            <div class="modal-header">
-                <h5 class="modal-title" id="modalTitle">Новая позиция</h5>
-                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
-            </div>
-            <form id="itemForm" method="post" action="{{ path('app_order_edit', {'id': order.id}) }}">
-                <input type="hidden" name="_token" value="{{ csrf_token('edit' ~ order.id) }}">
-                <input type="hidden" name="item_id" id="itemId">
-                <div class="modal-body">
-                    <div class="mb-3">
-                        <label for="product" class="form-label">Товар</label>
-                        <select id="product" name="cart[__ID__][product_id]" class="form-select" required>
-                            <option value="" disabled selected>Выберите позицию</option>
-                            {% for price in prices %}
-                                <option value="{{ price.id }}" data-price="{{ price.price }}">{{ price.name }}</option>
-                            {% endfor %}
-                        </select>
-                    </div>
-                    <div class="mb-3">
-                        <label for="quantity" class="form-label">Количество</label>
-                        <input type="number" class="form-control" id="quantity" name="cart[__ID__][quantity]" min="1" value="1" required>
-                    </div>
-                    <div class="mb-3">
-                        <label for="price" class="form-label">Цена</label>
-                        <input type="text" class="form-control" id="price" name="cart[__ID__][price]" required>
-                    </div>
-                    <div class="mb-3">
-                        <label for="total" class="form-label">Всего</label>
-                        <input type="text" class="form-control" id="total" name="cart[__ID__][total_amount]" required>
-                    </div>
-                </div>
-                <div class="modal-footer">
-                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Отмена</button>
-                    <button type="submit" class="btn btn-primary">Сохранить</button>
-                </div>
-            </form>
-        </div>
-    </div>
-</div>
-
 <script>
 document.addEventListener('DOMContentLoaded', function() {
     // Обработка удаления элементов

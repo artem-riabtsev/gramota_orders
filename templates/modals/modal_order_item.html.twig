@@ -11,24 +11,24 @@
                 <div class="modal-body">
                     <div class="mb-3">
                         <label for="product" class="form-label">Товар</label>
-                        <select id="product" name="cart[__ID__][product_id]" class="form-select" required>
+                        <select id="product" name="orderItem[__ID__][product_id]" class="form-select" required>
                             <option value="" disabled selected>Выберите позицию</option>
-                            {% for price in prices %}
-                                <option value="{{ price.id }}" data-price="{{ price.price }}">{{ price.name }}</option>
+                            {% for product in products %}
+                                <option value="{{ product.id }}" data-price="{{ product.price }}">{{ product.description }}</option>
                             {% endfor %}
                         </select>
                     </div>
                     <div class="mb-3">
                         <label for="quantity" class="form-label">Количество</label>
-                        <input type="number" class="form-control" id="quantity" name="cart[__ID__][quantity]" min="1" value="1" required>
+                        <input type="number" class="form-control" id="quantity" name="orderItem[__ID__][quantity]" min="1" value="1" required>
                     </div>
                     <div class="mb-3">
                         <label for="price" class="form-label">Цена</label>
-                        <input type="text" class="form-control" id="price" name="cart[__ID__][price]" required>
+                        <input type="text" class="form-control" id="price" name="orderItem[__ID__][price]" required>
                     </div>
                     <div class="mb-3">
                         <label for="total" class="form-label">Всего</label>
-                        <input type="text" class="form-control" id="total" name="cart[__ID__][total_amount]" required>
+                        <input type="text" class="form-control" id="total" name="orderItem[__ID__][line_total]" required>
                     </div>
                 </div>
                 <div class="modal-footer">
@@ -59,7 +59,7 @@ document.addEventListener('DOMContentLoaded', function() {
     }
 
     // Обратный пересчёт цены по "Всего"
-    function updatePriceFromTotal() {
+    function updateProductFromTotal() {
         const total = parseFloat(totalInput.value) || 0;
         const quantity = parseInt(quantityInput.value) || 1;
         if (quantity > 0) {
@@ -104,7 +104,7 @@ document.addEventListener('DOMContentLoaded', function() {
     // Обработчики изменений
     quantityInput.addEventListener('input', updateTotal);
     priceInput.addEventListener('input', updateTotal);
-    totalInput.addEventListener('input', updatePriceFromTotal);
+    totalInput.addEventListener('input', updateProductFromTotal);
 
     productSelect.addEventListener('change', function() {
         const selectedOption = this.options[this.selectedIndex];
@@ -125,10 +125,10 @@ document.addEventListener('DOMContentLoaded', function() {
         
         const newFormData = new FormData();
         newFormData.append('_token', formData.get('_token'));
-        newFormData.append(`cart[${itemId}][product_id]`, formData.get('cart[__ID__][product_id]'));
-        newFormData.append(`cart[${itemId}][quantity]`, formData.get('cart[__ID__][quantity]'));
-        newFormData.append(`cart[${itemId}][price]`, formData.get('cart[__ID__][price]'));
-        newFormData.append(`cart[${itemId}][total_amount]`, formData.get('cart[__ID__][total_amount]'));
+        newFormData.append(`orderItem[${itemId}][product_id]`, formData.get('orderItem[__ID__][product_id]'));
+        newFormData.append(`orderItem[${itemId}][quantity]`, formData.get('orderItem[__ID__][quantity]'));
+        newFormData.append(`orderItem[${itemId}][price]`, formData.get('orderItem[__ID__][price]'));
+        newFormData.append(`orderItem[${itemId}][total_amount]`, formData.get('orderItem[__ID__][line_total]'));
         
         fetch(this.action, {
             method: 'POST',

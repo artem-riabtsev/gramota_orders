@@ -16,13 +16,13 @@ class Customer
     #[ORM\Column]
     private ?int $id = null;
 
-    #[ORM\Column(length: 255)]
+    #[ORM\Column(name: 'name', length: 255)]
     private ?string $name = null;
 
-    #[ORM\Column(length: 255)]
+    #[ORM\Column(name: 'email', length: 255)]
     private ?string $email = null;
 
-    #[ORM\Column(length: 255)]
+    #[ORM\Column(name: 'phone', length: 255)]
     private ?string $phone = null;
 
     #[ORM\OneToMany(mappedBy: 'customer', targetEntity: Order::class)]

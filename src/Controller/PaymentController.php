@@ -82,15 +82,15 @@ final class PaymentController extends AbstractController
 
             $order = $payment->getOrder();
 
-            $orderPaymentAmount = $order->getPaymentAmount();
-            $orderAmount = $order->getAmount();
-            if (bccomp($orderPaymentAmount, '0', 2) === 0 && bccomp($orderPaymentAmount, $orderAmount, 2) === -1) {
+            $TotalPaid = $order->getTotalPaid();
+            $orderTotal = $order->getOrderTotal();
+            if (bccomp($TotalPaid, '0', 2) === 0 && bccomp($TotalPaid, $orderTotal, 2) === -1) {
                 $order->setStatus(1); // не оплачен
-            } elseif (bccomp($orderPaymentAmount, '0', 2) === 1 && bccomp($orderPaymentAmount, $orderAmount, 2) === -1) {
+            } elseif (bccomp($TotalPaid, '0', 2) === 1 && bccomp($TotalPaid, $orderTotal, 2) === -1) {
                 $order->setStatus(2); // частично оплачен
-            } elseif (bccomp($orderPaymentAmount, $orderAmount, 2) === 0) {
+            } elseif (bccomp($TotalPaid, $orderTotal, 2) === 0) {
                 $order->setStatus(4); // оплачен
-            } elseif (bccomp($orderPaymentAmount, $orderAmount, 2) === 1) {
+            } elseif (bccomp($TotalPaid, $orderTotal, 2) === 1) {
                 $order->setStatus(3); // переплата
             }
 
@@ -114,15 +114,15 @@ final class PaymentController extends AbstractController
             $entityManager->remove($payment);
             $entityManager->flush();
             $paymentRepository->recalculateOrderPaymentAmount($payment->getOrder());
-            $orderPaymentAmount = $order->getPaymentAmount();
-            $orderAmount = $order->getAmount();
-            if (bccomp($orderPaymentAmount, '0', 2) === 0 && bccomp($orderPaymentAmount, $orderAmount, 2) === -1) {
+            $TotalPaid = $order->getTotalPaid();
+            $orderTotal = $order->getOrderTotal();
+            if (bccomp($TotalPaid, '0', 2) === 0 && bccomp($TotalPaid, $orderTotal, 2) === -1) {
                 $order->setStatus(1); // не оплачен
-            } elseif (bccomp($orderPaymentAmount, '0', 2) === 1 && bccomp($orderPaymentAmount, $orderAmount, 2) === -1) {
+            } elseif (bccomp($TotalPaid, '0', 2) === 1 && bccomp($TotalPaid, $orderTotal, 2) === -1) {
                 $order->setStatus(2); // частично оплачен
-            } elseif (bccomp($orderPaymentAmount, $orderAmount, 2) === 0) {
+            } elseif (bccomp($TotalPaid, $orderTotal, 2) === 0) {
                 $order->setStatus(4); // оплачен
-            } elseif (bccomp($orderPaymentAmount, $orderAmount, 2) === 1) {
+            } elseif (bccomp($TotalPaid, $orderTotal, 2) === 1) {
                 $order->setStatus(3); // переплата
             }
 

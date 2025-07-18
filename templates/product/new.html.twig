@@ -1,7 +1,9 @@
 {% extends 'base.html.twig' %}
 
+{% block title %}Новый продукт{% endblock %}
+
 {% block content %}
-<h1>Редактировать прайс {{ price.id }}</h1>
+<h1>Создать продукт</h1>
 
 <div class="card">
     <div class="card-body">
@@ -9,8 +11,8 @@
 
         <div class="row">
             <div class="col-md-6 mb-3">
-                {{ form_label(form.name) }}
-                {{ form_widget(form.name, {'attr': {'class': 'form-control'}}) }}
+                {{ form_label(form.description) }}
+                {{ form_widget(form.description, {'attr': {'class': 'form-control'}}) }}
             </div>
             <div class="col-md-6 mb-3">
                 {{ form_label(form.price) }}
@@ -18,7 +20,7 @@
             </div>
         </div>
 
-        <button class="btn btn-success">Сохранить</button>
+        <button class="btn btn-success">Создать</button>
         <a href="{{ app.request.headers.get('referer') ?: path('app_order_index') }}" class="btn btn-secondary">
             Назад
         </a>

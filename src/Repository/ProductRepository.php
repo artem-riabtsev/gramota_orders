@@ -2,18 +2,18 @@
 
 namespace App\Repository;
 
-use App\Entity\Price;
+use App\Entity\Product;
 use Doctrine\Bundle\DoctrineBundle\Repository\ServiceEntityRepository;
 use Doctrine\Persistence\ManagerRegistry;
 
 /**
- * @extends ServiceEntityRepository<Price>
+ * @extends ServiceEntityRepository<Product>
  */
-class PriceRepository extends ServiceEntityRepository
+class ProductRepository extends ServiceEntityRepository
 {
     public function __construct(ManagerRegistry $registry)
     {
-        parent::__construct($registry, Price::class);
+        parent::__construct($registry, Product::class);
     }
 
     public function findByName(? string $query): array 
@@ -21,7 +21,7 @@ class PriceRepository extends ServiceEntityRepository
         $qb = $this->createQueryBuilder('c');
 
         if ($query) {
-            $qb->where('LOWER(c.name) LIKE :q')
+            $qb->where('LOWER(c.description) LIKE :q')
             ->setParameter('q', '%' . strtolower($query) . '%');
         }
 

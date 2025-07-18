@@ -21,14 +21,14 @@ class PaymentRepository extends ServiceEntityRepository
     {
     $em = $this->getEntityManager();
 
-    $totalAmount = (float) $this->createQueryBuilder('p')
+    $lineTotal = (float) $this->createQueryBuilder('p')
         ->select('SUM(p.amount)')
         ->where('p.order = :order')
         ->setParameter('order', $order)
         ->getQuery()
         ->getSingleScalarResult();
 
-    $order->setPaymentAmount($totalAmount);
+    $order->setTotalPaid($lineTotal);
 
     $em->flush();
     }
@@ -51,16 +51,16 @@ class PaymentRepository extends ServiceEntityRepository
 
         $amountOld = $payment->getAmount();
 
-        $totalAmount = (float) $this->createQueryBuilder('p')
+        $lineTotal = (float) $this->createQueryBuilder('p')
             ->select('SUM(p.amount)')
             ->where('IDENTITY(p.order) = :order_id')
             ->setParameter('order_id', $order)
             ->getQuery()
             ->getSingleScalarResult();
 
-        $correctedAmount = $totalAmount - $amountOld + $amountUpdated;
+        $correctedAmount = $lineTotal - $amountOld + $amountUpdated;
 
-        $order->setPaymentAmount($correctedAmount);
+        $order->setTotalPaid($correctedAmount);
 
         $em->flush();
     }

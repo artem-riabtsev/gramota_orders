@@ -5,8 +5,8 @@ namespace App\Controller;
 use App\Entity\Order;
 use App\Form\OrderForm;
 use App\Repository\OrderRepository;
-use App\Repository\PriceRepository;
-use App\Entity\Cart;
+use App\Repository\ProductRepository;
+use App\Entity\OrderItem;
 use Doctrine\ORM\EntityManagerInterface;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
 use Symfony\Component\HttpFoundation\Request;
@@ -91,7 +91,7 @@ final class OrderController extends AbstractController
         Request $request,
         Order $order,
         EntityManagerInterface $entityManager,
-        PriceRepository $priceRepository
+        ProductRepository $priceRepository
     ): Response {
         $form = $this->createForm(OrderForm::class, $order);
         $form->handleRequest($request);
@@ -107,77 +107,78 @@ final class OrderController extends AbstractController
 
         if ($request->isMethod('POST')) {
             // Получаем текущие позиции заказа
-            $currentCartItems = $order->getCart()->toArray();
+            $currentOrderItems = $order->getOrderItem()->toArray();
             $deletedItems = $request->request->all('deleted_items') ?? [];
-            $totalAmount = 0;
+            $lineTotal = 0;
 
             // Обработка удаленных элементов
             foreach ($deletedItems as $id) {
-                $cartItem = $entityManager->getRepository(Cart::class)->find($id);
-                if ($cartItem && $cartItem->getOrder() === $order) {
-                    $entityManager->remove($cartItem);
+                $orderItem = $entityManager->getRepository(OrderItem::class)->find($id);
+                if ($orderItem && $orderItem->getOrder() === $order) {
+                    $entityManager->remove($orderItem);
                     // Удаляем из массива текущих позиций
-                    $currentCartItems = array_filter($currentCartItems, fn($item) => $item->getId() != $id);
+                    $currentOrderItems = array_filter($currentOrderItems, fn($item) => $item->getId() != $id);
                 }
             }
 
             // Считаем сумму для неудаленных позиций
-            foreach ($currentCartItems as $cartItem) {
-                $totalAmount += $cartItem->getTotalAmount();
+            foreach ($currentOrderItems as $orderItem) {
+                $lineTotal += $orderItem->getLineTotal();
             }
 
             // Обработка новых/измененных позиций
-            $cartData = $request->request->all('cart') ?? [];
-            foreach ($cartData as $key => $item) {
+            $orderItemData = $request->request->all('orderItem') ?? [];
+            foreach ($orderItemData as $key => $item) {
                 if (empty($item['product_id'])) continue;
 
                 $priceEntity = $priceRepository->find($item['product_id']);
                 if (!$priceEntity) continue;
 
                 if (str_starts_with($key, 'new_')) {
-                    $cartItem = new Cart();
-                    $cartItem->setOrder($order);
+                    $orderItem = new OrderItem();
+                    $orderItem->setOrder($order);
                 } else {
-                    $cartItem = $entityManager->getRepository(Cart::class)->find($key);
-                    if (!$cartItem) {
-                        $cartItem = new Cart();
-                        $cartItem->setOrder($order);
+                    $orderItem = $entityManager->getRepository(OrderItem::class)->find($key);
+                    if (!$orderItem) {
+                        $orderItem = new OrderItem();
+                        $orderItem->setOrder($order);
                     }
                 }
 
                 $quantity = max(1, (int)($item['quantity'] ?? 1));
-                $price = str_replace(',', '.', $item['price'] ?? $priceEntity->getPrice());
-                $ItemTotalOld = $cartItem->getTotalAmount();
+                $price = str_replace(',', '.', $item['price'] ?? $priceEntity->getProduct());
+                $ItemTotalOld = $orderItem->getLineTotal();
                 $ItemTotalActual = bcmul($price, $quantity, 2);
 
-                $cartItem
+                $orderItem
                     ->setProduct($priceEntity)
+                    ->setDescription($priceEntity->getDescription())
                     ->setPrice($price)
                     ->setQuantity($quantity)
-                    ->setTotalAmount($ItemTotalActual);
+                    ->setLineTotal($ItemTotalActual);
 
-                $entityManager->persist($cartItem);
-                $totalAmount = bcadd(
-                    bcsub($totalAmount, $ItemTotalOld, 2),
-                    $cartItem->getTotalAmount(),
+                $entityManager->persist($orderItem);
+                $lineTotal = bcadd(
+                    bcsub($lineTotal, $ItemTotalOld, 2),
+                    $orderItem->getLineTotal(),
                     2
                 );
             }
 
             // Если корзина пуста - сумма 0
-            if (empty($currentCartItems) && empty($cartData)) {
-                $totalAmount = '0';
+            if (empty($currentOrderItems) && empty($orderItemData)) {
+                $lineTotal = '0';
             }
 
-            $order->setAmount($totalAmount);
-            $payment_amount = $order->getPaymentAmount();
-            if (bccomp($payment_amount, '0', 2) === 0 && bccomp($payment_amount, $totalAmount, 2) === -1) {
+            $order->setOrderTotal($lineTotal);
+            $totalPaid = $order->getTotalPaid();
+            if (bccomp($totalPaid, '0', 2) === 0 && bccomp($totalPaid, $lineTotal, 2) === -1) {
                 $order->setStatus(1); // не оплачен
-            } elseif (bccomp($payment_amount, '0', 2) === 1 && bccomp($payment_amount, $totalAmount, 2) === -1) {
+            } elseif (bccomp($totalPaid, '0', 2) === 1 && bccomp($totalPaid, $lineTotal, 2) === -1) {
                 $order->setStatus(2); // частично оплачен
-            } elseif (bccomp($payment_amount, $totalAmount, 2) === 0) {
+            } elseif (bccomp($totalPaid, $lineTotal, 2) === 0) {
                 $order->setStatus(4); // оплачен
-            } elseif (bccomp($payment_amount, $totalAmount, 2) === 1) {
+            } elseif (bccomp($totalPaid, $lineTotal, 2) === 1) {
                 $order->setStatus(3); // переплата
             }
 
@@ -189,7 +190,7 @@ final class OrderController extends AbstractController
         return $this->render('order/edit.html.twig', [
             'order' => $order,
             'form' => $form->createView(),
-            'prices' => $priceRepository->findAll(),
+            'products' => $priceRepository->findAll(),
         ]);
     }
 

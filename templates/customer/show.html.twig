@@ -38,8 +38,8 @@
                     <tr>
                         <td>{{ order.id }}</td>
                         <td>{{ order.date ? order.date|date('d.m.Y') : '' }}</td>
-                        <td>{{ order.amount }}</td>
-                        <td>{{ order.paymentAmount }}</td>
+                        <td>{{ order.orderTotal }}</td>
+                        <td>{{ order.totalPaid }}</td>
                         <td>
                             <div class="d-flex">
                                 <a href="{{ path('app_order_show', {'id': order.id}) }}" class="btn btn-sm btn-outline-primary me-2">Просмотр</a>
