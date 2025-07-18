@@ -90,4 +90,14 @@ class PaymentRepository extends ServiceEntityRepository
             ->getResult();
     }
 
+    public function findByDateRange(\DateTime $from, \DateTime $to): array
+    {
+        return $this->createQueryBuilder('p')
+            ->andWhere('p.date BETWEEN :from AND :to')
+            ->setParameter('from', $from->format('Y-m-d 00:00:00'))
+            ->setParameter('to', $to->format('Y-m-d 23:59:59'))
+            ->orderBy('p.date', 'DESC')
+            ->getQuery()
+            ->getResult();
+    }
 }

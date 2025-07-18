@@ -28,12 +28,12 @@
 {% set currentRoute = app.request.attributes.get('_route') %}
 {% set currentConfig = config[currentRoute] ?? config['default'] %}
 
-<div class="mb-4">
-    <form method="get" action="{{ path(app.request.attributes.get('_route')) }}">
+<div class="mb-4 d-flex justify-content-between">
+    <form method="get" action="{{ path(app.request.attributes.get('_route')) }}" class="flex-grow-1" style="flex-basis: 40%">
         <div class="row g-3">
 
             <div class="col-md-4 d-flex" style="gap: 8px;">
-                <div class="input-group" style="width: 300px;">
+                <div class="input-group flex-grow-1" style="min-width: 362px;">
                     <input
                         type="text"
                         id="filterQuery"
@@ -48,8 +48,7 @@
                         title="Поиск"
                         style="background-color: #6c757d;"
                         onmouseover="this.style.backgroundColor='#5a6268'" 
-                        onmouseout="this.style.backgroundColor='#6c757d'"
-                    >
+                        onmouseout="this.style.backgroundColor='#6c757d'">
                         <i class="bi bi-search text-white"></i>
                     </button>
                 </div>
@@ -61,8 +60,33 @@
             </div>
 
             <div class="col-12">
-                <a href="{{ path(currentConfig.new_route, currentConfig.arg) }}" class="btn btn-primary">{{ currentConfig.new_text }}</a>
+                <a href="{{ path(currentConfig.new_route, currentConfig.arg) }}" class="btn btn-primary">
+                    {{ currentConfig.new_text }}
+                </a>
             </div>
+
         </div>
     </form>
+
+    {% if currentRoute is same as("app_payment_index") %}
+        <div class="d-flex justify-content-between align-items-start flex-grow-1 mt-2" style="flex-basis: 60%">
+            <form method="get" class="d-flex align-items-end gap-2">
+                <div class="d-flex align-items-center justify-content-center" style="gap: 8px;">
+                    <label for="from" class="form-label small mb-0">С:</label>
+                    <input type="date" id="from" name="from" class="form-control form-control-sm" value="{{ app.request.get('from') }}">
+                </div>
+                <div class="d-flex align-items-center justify-content-center" style="gap: 8px;">
+                    <label for="to" class="form-label small mb-0">По:</label>
+                    <input type="date" id="to" name="to" class="form-control form-control-sm" value="{{ app.request.get('to') }}">
+                </div>
+                <button type="submit" class="btn btn-sm btn-outline-primary">Применить</button>
+                {% if totalAmount is defined %}
+                    <div class="text-end small mb-1">
+                        <span class="text-muted">Сумма платежей:</span>
+                        <strong class="ms-1">{{ totalAmount }} ₽</strong>
+                    </div>
+                {% endif %}
+            </form>
+        </div>
+    {% endif %}
 </div>

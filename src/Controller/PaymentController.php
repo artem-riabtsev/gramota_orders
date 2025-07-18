@@ -18,29 +18,27 @@ use \DateTime;
 final class PaymentController extends AbstractController
 {
 
-
-    #[Route('/phpinfo', name: 'phpinfo')]
-    public function phpinfo(): Response
-    {
-        phpinfo();
-        exit;
-    }
-
-
     #[Route(name: 'app_payment_index', methods: ['GET'])]
-    public function index(Request $request ,PaymentRepository $paymentRepository): Response
+    public function index(Request $request, PaymentRepository $paymentRepository): Response
     {
         $query = $request->query->get('q');
+        $from = $request->query->get('from');
+        $to = $request->query->get('to');
 
-        if ($query) {
+        if ($from && $to) {
+            $payments = $paymentRepository->findByDateRange(new \DateTime($from), new \DateTime($to));
+        } elseif ($query) {
             $payments = $paymentRepository->findByOrderId($query);
         } else {
             $payments = $paymentRepository->findLastMonthOrders();
         }
 
+        $totalAmount = array_reduce($payments, fn($carry, $p) => $carry + $p->getAmount(), 0);
+
         return $this->render('payment/index.html.twig', [
             'payments' => $payments,
             'query' => $query,
+            'totalAmount' => $totalAmount,
         ]);
     }
 
