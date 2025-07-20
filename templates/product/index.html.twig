@@ -13,7 +13,7 @@
             <tr>
                 <th>Id</th>
                 <th>Наименование</th>
-                <th>Стоимость</th>
+                <th>Дата</th>
                 <th>Действия</th>
             </tr>
         </thead>
@@ -22,13 +22,12 @@
                 <tr>
                     <td>{{ product.id }}</td>
                     <td>{{ product.description }}</td>
-                    <td>{{ product.price }}</td>
+                    <td>{{ product.date|date('d.m.Y') }}</td>
                     <td>
                         <div class="d-flex">
                             <a href="{{ path('app_product_edit', {'id': product.id}) }}" class="btn btn-sm btn-outline-warning me-2">Редактировать</a>
                             <form method="post" action="{{ path('app_product_delete', {'id': product.id}) }}">
                                 <input type="hidden" name="_token" value="{{ csrf_token('delete' ~ product.id) }}">
-                                {# <button class="btn btn-sm btn-outline-danger">Удалить</button> #}
                                  <button
                                     type="button"
                                     class="btn btn-sm btn-outline-danger remove-item"

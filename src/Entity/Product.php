@@ -6,6 +6,8 @@ use App\Repository\ProductRepository;
 use Doctrine\DBAL\Types\Types;
 use Doctrine\ORM\Mapping as ORM;
 use Doctrine\Common\Collections\Collection;
+use Doctrine\Common\Collections\ArrayCollection;
+
 
 #[ORM\Entity(repositoryClass: ProductRepository::class)]
 class Product
@@ -18,11 +20,8 @@ class Product
     #[ORM\Column(name: 'description', length: 255)]
     private ?string $description = null;
 
-    #[ORM\Column(type: Types::DECIMAL, precision: 10, scale: 2)]
-    private ?string $price = null;
-
-    // #[ORM\Column(name: 'date', type: Types::DATE_MUTABLE)]
-    // private ?\DateTime $date = null;
+    #[ORM\Column(name: 'date', type: Types::DATE_MUTABLE)]
+    private ?\DateTime $date = null;
 
     #[ORM\OneToMany(mappedBy: 'product', targetEntity: OrderItem::class)]
     private Collection $orderItems;
@@ -44,27 +43,26 @@ class Product
         return $this;
     }
 
-        public function getPrice(): ?string
+    public function getDate(): ?\DateTime
     {
-        return $this->price;
+        return $this->date;
     }
 
-    public function setPrice(string $price): static
+    public function setDate(\DateTime $date): static
     {
-        $this->price = $price;
+        $this->date = $date;
 
         return $this;
     }
 
-    // public function getDate(): ?\DateTime
-    // {
-    //     return $this->date;
-    // }
+    public function __construct()
+    {
+        $this->orderItems = new ArrayCollection();
+        $this->date = new \DateTime();
+    }
 
-    // public function setDate(\DateTime $date): static
-    // {
-    //     $this->date = $date;
-
-    //     return $this;
-    // }
+    public function getOrderItems(): Collection
+    {
+        return $this->orderItems;
+    }
 }

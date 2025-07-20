@@ -13,7 +13,9 @@ class ProductForm extends AbstractType
     {
         $builder
             ->add('description', null, ['label' => 'Наименование'])
-            ->add('price', null, ['label' => 'Стоимость'])
+             ->add('date', null, [
+                'label' => 'Дата',
+            ])
         ;
     }
 

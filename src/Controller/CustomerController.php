@@ -123,7 +123,7 @@ final class CustomerController extends AbstractController
         if ($this->isCsrfTokenValid('delete'.$customer->getId(), $request->getPayload()->getString('_token'))) {
 
             if ($customer->getOrders()->count() > 0) {
-            $this->addFlash('danger', 'Нельзя удалить заказчика, у которого есть заказы.');
+            $this->addFlash('error', 'Нельзя удалить заказчика, у которого есть заказы.');
             return $this->redirectToRoute('app_customer_index');
         }
         
