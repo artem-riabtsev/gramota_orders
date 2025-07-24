@@ -6,7 +6,7 @@ use App\Repository\OrderRepository;
 use Doctrine\DBAL\Types\Types;
 use Doctrine\ORM\Mapping as ORM;
 use App\Entity\Customer;
-use App\Entity\Cart;
+use App\Entity\OrderItem;
 use Doctrine\Common\Collections\ArrayCollection;
 use Doctrine\Common\Collections\Collection;
 
@@ -19,24 +19,24 @@ class Order
     #[ORM\Column]
     private ?int $id = null;
 
-    #[ORM\Column(type: Types::DATE_MUTABLE)]
+    #[ORM\Column(name: 'date', type: Types::DATE_MUTABLE)]
     private ?\DateTime $date = null;
-
-    #[ORM\Column(type: Types::DECIMAL, precision: 10, scale: 2)]
-    private ?string $amount = '0.00';
-
-    #[ORM\Column(type: Types::DECIMAL, precision: 10, scale: 2, nullable: true)]
-    private ?string $payment_amount = '0.00';
-
-    #[ORM\Column(type: 'integer', options: ['default' => 0])]
-    private int $status = 1;
 
     #[ORM\ManyToOne(targetEntity: Customer::class, inversedBy: "orders")]
     #[ORM\JoinColumn(name: 'customer_id', referencedColumnName: 'id')]
     private Customer|null $customer = null;
 
-    #[ORM\OneToMany(mappedBy: 'order', targetEntity: Cart::class, cascade: ['persist', 'remove'], orphanRemoval: true)]
-    private Collection $cart;
+    #[ORM\Column(name: 'order_total', type: Types::DECIMAL, precision: 10, scale: 2)]
+    private ?string $orderTotal = '0.00';
+
+    #[ORM\Column(name: 'total_paid', type: Types::DECIMAL, precision: 10, scale: 2, nullable: true)]
+    private ?string $totalPaid = '0.00';
+
+    #[ORM\Column(name: 'status', type: 'integer', options: ['default' => 0])]
+    private int $status = 1;
+
+    #[ORM\OneToMany(mappedBy: 'order', targetEntity: OrderItem::class, cascade: ['persist', 'remove'], orphanRemoval: true)]
+    private Collection $orderItems;
 
     #[ORM\OneToMany(mappedBy: 'order', targetEntity: Payment::class)]
     private Collection $payments;
@@ -58,26 +58,26 @@ class Order
         return $this;
     }
 
-    public function getAmount(): ?string
+    public function getOrderTotal(): ?string
     {
-        return $this->amount;
+        return $this->orderTotal;
     }
 
-    public function setAmount(string $amount): static
+    public function setOrderTotal(string $orderTotal): static
     {
-        $this->amount = $amount;
+        $this->orderTotal = $orderTotal;
 
         return $this;
     }
 
-    public function getPaymentAmount(): ?string
+    public function getTotalPaid(): ?string
     {
-        return $this->payment_amount;
+        return $this->totalPaid;
     }
 
-    public function setPaymentAmount(?string $payment_amount): static
+    public function setTotalPaid(?string $totalPaid): static
     {
-        $this->payment_amount = $payment_amount;
+        $this->totalPaid = $totalPaid;
 
         return $this;
     }
@@ -108,28 +108,28 @@ class Order
     public function __construct()
     {
         $this->date = new \DateTime();
-        $this->cart = new ArrayCollection();
+        $this->orderItems = new ArrayCollection();
         $this->payments = new ArrayCollection();
     }
 
-    public function getCart(): Collection
+    public function getOrderItem(): Collection
     {
-        return $this->cart;
+        return $this->orderItems;
     }
 
-    public function addCart(Cart $item): static
+    public function addOrderItem(OrderItem $item): static
     {
-        if (!$this->cart->contains($item)) {
-            $this->cart[] = $item;
+        if (!$this->orderItems->contains($item)) {
+            $this->orderItems[] = $item;
             $item->setOrder($this);
         }
 
         return $this;
     }
 
-    public function removeCart(Cart $item): static
+    public function removeOrderItem(OrderItem $item): static
     {
-        if ($this->cart->removeElement($item)) {
+        if ($this->orderItems->removeElement($item)) {
             if ($item->getOrder() === $this) {
                 $item->setOrder(null);
             }

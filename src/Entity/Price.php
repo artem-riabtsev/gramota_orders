@@ -1,11 +1,10 @@
 <?php
 
 namespace App\Entity;
-
+use  App\Entity\Product;
 use App\Repository\PriceRepository;
 use Doctrine\DBAL\Types\Types;
 use Doctrine\ORM\Mapping as ORM;
-use Doctrine\Common\Collections\Collection;
 
 #[ORM\Entity(repositoryClass: PriceRepository::class)]
 class Price
@@ -16,28 +15,28 @@ class Price
     private ?int $id = null;
 
     #[ORM\Column(length: 255)]
-    private ?string $name = null;
+    private ?string $description = null;
 
     #[ORM\Column(type: Types::DECIMAL, precision: 10, scale: 2)]
     private ?string $price = null;
 
-    // Price.php
-    #[ORM\OneToMany(mappedBy: 'product', targetEntity: Cart::class)]
-    private Collection $carts;
+    #[ORM\ManyToOne(targetEntity: Product::class)]
+    #[ORM\JoinColumn(name: 'product_id', referencedColumnName: 'id')]
+    private ?Product $product = null;
 
     public function getId(): ?int
     {
         return $this->id;
     }
 
-    public function getName(): ?string
+    public function getDescription(): ?string
     {
-        return $this->name;
+        return $this->description;
     }
 
-    public function setName(string $name): static
+    public function setDescription(string $description): static
     {
-        $this->name = $name;
+        $this->description = $description;
 
         return $this;
     }
@@ -50,6 +49,18 @@ class Price
     public function setPrice(string $price): static
     {
         $this->price = $price;
+
+        return $this;
+    }
+
+    public function getProduct(): ?Product
+    {
+        return $this->product;
+    }
+
+    public function setProduct(?Product $product): static
+    {
+        $this->product = $product;
 
         return $this;
     }

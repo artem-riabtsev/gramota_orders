@@ -18,29 +18,27 @@ use \DateTime;
 final class PaymentController extends AbstractController
 {
 
-
-    #[Route('/phpinfo', name: 'phpinfo')]
-    public function phpinfo(): Response
-    {
-        phpinfo();
-        exit;
-    }
-
-
     #[Route(name: 'app_payment_index', methods: ['GET'])]
-    public function index(Request $request ,PaymentRepository $paymentRepository): Response
+    public function index(Request $request, PaymentRepository $paymentRepository): Response
     {
         $query = $request->query->get('q');
+        $from = $request->query->get('from');
+        $to = $request->query->get('to');
 
-        if ($query) {
+        if ($from && $to) {
+            $payments = $paymentRepository->findByDateRange(new \DateTime($from), new \DateTime($to));
+        } elseif ($query) {
             $payments = $paymentRepository->findByOrderId($query);
         } else {
             $payments = $paymentRepository->findLastMonthOrders();
         }
 
+        $totalAmount = array_reduce($payments, fn($carry, $p) => $carry + $p->getAmount(), 0);
+
         return $this->render('payment/index.html.twig', [
             'payments' => $payments,
             'query' => $query,
+            'totalAmount' => $totalAmount,
         ]);
     }
 
@@ -82,15 +80,15 @@ final class PaymentController extends AbstractController
 
             $order = $payment->getOrder();
 
-            $orderPaymentAmount = $order->getPaymentAmount();
-            $orderAmount = $order->getAmount();
-            if (bccomp($orderPaymentAmount, '0', 2) === 0 && bccomp($orderPaymentAmount, $orderAmount, 2) === -1) {
+            $TotalPaid = $order->getTotalPaid();
+            $orderTotal = $order->getOrderTotal();
+            if (bccomp($TotalPaid, '0', 2) === 0 && bccomp($TotalPaid, $orderTotal, 2) === -1) {
                 $order->setStatus(1); // не оплачен
-            } elseif (bccomp($orderPaymentAmount, '0', 2) === 1 && bccomp($orderPaymentAmount, $orderAmount, 2) === -1) {
+            } elseif (bccomp($TotalPaid, '0', 2) === 1 && bccomp($TotalPaid, $orderTotal, 2) === -1) {
                 $order->setStatus(2); // частично оплачен
-            } elseif (bccomp($orderPaymentAmount, $orderAmount, 2) === 0) {
+            } elseif (bccomp($TotalPaid, $orderTotal, 2) === 0) {
                 $order->setStatus(4); // оплачен
-            } elseif (bccomp($orderPaymentAmount, $orderAmount, 2) === 1) {
+            } elseif (bccomp($TotalPaid, $orderTotal, 2) === 1) {
                 $order->setStatus(3); // переплата
             }
 
@@ -114,15 +112,15 @@ final class PaymentController extends AbstractController
             $entityManager->remove($payment);
             $entityManager->flush();
             $paymentRepository->recalculateOrderPaymentAmount($payment->getOrder());
-            $orderPaymentAmount = $order->getPaymentAmount();
-            $orderAmount = $order->getAmount();
-            if (bccomp($orderPaymentAmount, '0', 2) === 0 && bccomp($orderPaymentAmount, $orderAmount, 2) === -1) {
+            $TotalPaid = $order->getTotalPaid();
+            $orderTotal = $order->getOrderTotal();
+            if (bccomp($TotalPaid, '0', 2) === 0 && bccomp($TotalPaid, $orderTotal, 2) === -1) {
                 $order->setStatus(1); // не оплачен
-            } elseif (bccomp($orderPaymentAmount, '0', 2) === 1 && bccomp($orderPaymentAmount, $orderAmount, 2) === -1) {
+            } elseif (bccomp($TotalPaid, '0', 2) === 1 && bccomp($TotalPaid, $orderTotal, 2) === -1) {
                 $order->setStatus(2); // частично оплачен
-            } elseif (bccomp($orderPaymentAmount, $orderAmount, 2) === 0) {
+            } elseif (bccomp($TotalPaid, $orderTotal, 2) === 0) {
                 $order->setStatus(4); // оплачен
-            } elseif (bccomp($orderPaymentAmount, $orderAmount, 2) === 1) {
+            } elseif (bccomp($TotalPaid, $orderTotal, 2) === 1) {
                 $order->setStatus(3); // переплата
             }
 

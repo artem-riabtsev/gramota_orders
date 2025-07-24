@@ -19,10 +19,10 @@ class Payment
     #[ORM\JoinColumn(name: 'order_id', referencedColumnName: 'id')]
     private Order|null $order = null;
 
-    #[ORM\Column(type: Types::DATE_MUTABLE)]
+    #[ORM\Column(name: 'date', type: Types::DATE_MUTABLE)]
     private ?\DateTime $date = null;
 
-    #[ORM\Column(type: Types::DECIMAL, precision: 10, scale: 2)]
+    #[ORM\Column(name: 'amount', type: Types::DECIMAL, precision: 10, scale: 2)]
     private ?string $amount = '0.00';
 
     public function getId(): ?int

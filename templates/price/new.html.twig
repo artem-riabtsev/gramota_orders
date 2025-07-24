@@ -1,6 +1,6 @@
 {% extends 'base.html.twig' %}
 
-{% block title %}New Price{% endblock %}
+{% block title %}Новый прайс{% endblock %}
 
 {% block content %}
 <h1>Создать прайс</h1>
@@ -11,18 +11,22 @@
 
         <div class="row">
             <div class="col-md-6 mb-3">
-                {{ form_label(form.name) }}
-                {{ form_widget(form.name, {'attr': {'class': 'form-control'}}) }}
+                {{ form_label(form.description) }}
+                {{ form_widget(form.description, {'attr': {'class': 'form-control'}}) }}
             </div>
             <div class="col-md-6 mb-3">
                 {{ form_label(form.price) }}
                 {{ form_widget(form.price, {'attr': {'class': 'form-control'}}) }}
             </div>
+            <div class="col-md-6 mb-3">
+                {{ form_label(form.product) }}
+                {{ form_widget(form.product, {'attr': {'class': 'form-select'}}) }}
+            </div>
         </div>
 
         <button class="btn btn-success">Создать</button>
-        <a href="{{ app.request.headers.get('referer') ?: path('app_order_index') }}" class="btn btn-secondary">
-            Назад
+        <a href="{{ path('app_price_index') }}" class="btn btn-secondary">
+            Назад к списку
         </a>
 
         {{ form_end(form) }}

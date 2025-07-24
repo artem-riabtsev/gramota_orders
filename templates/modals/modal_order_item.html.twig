@@ -1,0 +1,214 @@
+<div class="modal fade" id="itemModal" tabindex="-1" aria-hidden="true">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title" id="modalTitle">Новая позиция</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            {{ form_start(orderItemForm, {
+                'attr': {
+                    'id': 'itemForm',
+                    'method': 'post',
+                    'action': path('app_order_edit', {'id': order.id})
+                }
+            }) }}
+                <input type="hidden" name="_token" value="{{ csrf_token('edit' ~ order.id) }}">
+                <input type="hidden" name="item_id" id="itemId">
+                <div class="modal-body">
+                    {{ form_widget(orderItemForm) }}
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Отмена</button>
+                    <button type="submit" class="btn btn-primary">Сохранить</button>
+                </div>
+            {{ form_end(orderItemForm) }}
+        </div>
+    </div>
+</div>
+
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    const modal = new bootstrap.Modal('#itemModal');
+    const itemForm = document.getElementById('itemForm');
+    const modalTitle = document.getElementById('modalTitle');
+    const itemIdInput = document.getElementById('itemId');
+    const priceSourceSelect = document.getElementById('order_item_form_description');
+    const productSelect = document.getElementById('order_item_form_product');
+    const quantityInput = document.getElementById('order_item_form_quantity');
+    const priceInput = document.getElementById('order_item_form_price');
+    const totalInput = document.getElementById('order_item_form_line_total');
+    const allProductOptions = Array.from(productSelect.options);
+
+    // Обновление общей суммы
+    function updateTotal() {
+        const price = parseFloat(priceInput.value) || 0;
+        const quantity = parseInt(quantityInput.value) || 1;
+        totalInput.value = (price * quantity).toFixed(2);
+    }
+
+    // Управление состоянием доступности поля выбора продукта
+    function updateProductSelectState() {
+        // Блокируем, если нет выбранного описания (названия позиции)
+        if (!priceSourceSelect.value || priceSourceSelect.value.trim() === '') {
+            productSelect.disabled = true;
+            // Очистить выбор продукта, чтобы не было ложного выбора
+            productSelect.selectedIndex = 0;
+        } else {
+            productSelect.disabled = false;
+        }
+    }
+
+    // Фильтрация продуктов по project_id, учитываем allowEmpty для пустого значения
+    function filterProductsByProject(allowEmpty = false) {
+        const selectedOption = priceSourceSelect.options[priceSourceSelect.selectedIndex];
+        const projectId = selectedOption ? selectedOption.getAttribute('data-project-id') : null;
+
+        productSelect.innerHTML = '';
+
+        let filteredOptions = allProductOptions.filter(opt => {
+            const prodProjectId = opt.getAttribute('data-project-id');
+            if (opt.value === '') {
+                return allowEmpty; // показываем пустую опцию, если allowEmpty = true
+            }
+            // Показываем только опции с нужным project_id или если project_id не задан
+            return !projectId || prodProjectId === projectId;
+        });
+
+        filteredOptions.forEach(opt => productSelect.appendChild(opt.cloneNode(true)));
+
+        const currentProductId = productSelect.dataset.currentSelected || null;
+        if (currentProductId) {
+            const optionToSelect = Array.from(productSelect.options).find(opt => opt.value === currentProductId);
+            if (optionToSelect) optionToSelect.selected = true;
+            else productSelect.selectedIndex = allowEmpty ? 0 : -1;
+        } else {
+            productSelect.selectedIndex = allowEmpty ? 0 : -1;
+        }
+    }
+
+    // Инициализация модалки для добавления
+    document.getElementById('add-item')?.addEventListener('click', function() {
+        modalTitle.textContent = 'Добавить позицию';
+        itemIdInput.value = '';
+        priceSourceSelect.selectedIndex = 0;
+
+        // Сбрасываем products к полному списку
+        productSelect.innerHTML = '';
+        allProductOptions.forEach(opt => productSelect.appendChild(opt.cloneNode(true)));
+        productSelect.selectedIndex = 0;
+
+        quantityInput.value = '1';
+        priceInput.value = '';
+        totalInput.value = '';
+
+        // Обновляем доступность поля выбора продукта
+        updateProductSelectState();
+
+        modal.show();
+    });
+
+    // Обработка редактирования существующей позиции
+    document.querySelectorAll('.edit-item').forEach(btn => {
+        btn.addEventListener('click', function() {
+            const itemId = this.dataset.id;
+            const row = document.querySelector(`tr[data-id="${itemId}"]`);
+            if (!row) return;
+
+            modalTitle.textContent = 'Редактирование позиции';
+            itemIdInput.value = itemId;
+
+            const productId = row.dataset.productId;
+            const description = row.dataset.description;
+            const quantity = row.dataset.quantity;
+            const price = row.dataset.price;
+            const total = row.dataset.total;
+
+            priceSourceSelect.value = description;
+            
+            // Сохраняем в атрибут data текущий выбранный продукт
+            productSelect.dataset.currentSelected = productId;
+
+            // Фильтруем продукты по project_id выбранной позиции
+            filterProductsByProject();
+
+            // Обновляем доступность поля выбора продукта после фильтрации и установки значения
+            updateProductSelectState(); 
+
+            quantityInput.value = quantity;
+            priceInput.value = price;
+            totalInput.value = total;
+
+            modal.show();
+        });
+    });
+
+    // Обработчики изменений количества и цены
+    quantityInput.addEventListener('input', updateTotal);
+    priceInput.addEventListener('input', updateTotal);
+
+    // При выборе позиции подставляем все данные
+    priceSourceSelect.addEventListener('change', function() {
+        const selectedOption = this.options[this.selectedIndex];
+        if (selectedOption.value) {
+            priceInput.value = selectedOption.dataset.price;
+            const productId = selectedOption.dataset.productId;
+
+            // Запоминаем текущий выбранный продукт для фильтрации
+            productSelect.dataset.currentSelected = productId;
+
+            // Фильтруем продукты
+            filterProductsByProject();
+
+            quantityInput.value = '1';
+            updateTotal();
+
+            // Разблокируем поле продукта, так как выбрана позиция
+            updateProductSelectState();
+
+        } else {
+            // Если ничего не выбрано, сброс списка продуктов
+            productSelect.innerHTML = '';
+            allProductOptions.forEach(opt => productSelect.appendChild(opt.cloneNode(true)));
+            productSelect.selectedIndex = 0;
+            priceInput.value = '';
+            totalInput.value = '';
+
+            // Блокируем поле продукта, так как позиция не выбрана
+            updateProductSelectState();
+        }
+    });
+
+    // Отправка формы (оставляем как есть)
+    itemForm.addEventListener('submit', function(e) {
+        e.preventDefault();
+        
+        const formData = new FormData(itemForm);
+        const rawItemId = formData.get('item_id');
+        const itemId = rawItemId || 'new_' + Date.now();
+        
+        const submitData = new FormData();
+        submitData.append('_token', formData.get('_token'));
+        submitData.append('item_id', itemId);
+        
+        submitData.append(`order_item[${itemId}][description]`, formData.get('order_item_form[description]'));
+        submitData.append(`order_item[${itemId}][product_id]`, formData.get('order_item_form[product]'));
+        submitData.append(`order_item[${itemId}][quantity]`, formData.get('order_item_form[quantity]'));
+        submitData.append(`order_item[${itemId}][price]`, formData.get('order_item_form[price]'));
+        submitData.append(`order_item[${itemId}][line_total]`, formData.get('order_item_form[line_total]'));
+        
+        fetch(itemForm.action, {
+            method: 'POST',
+            body: submitData
+        }).then(response => {
+            if (response.redirected) {
+                window.location.href = response.url;
+            }
+        }).catch(error => console.error('Error:', error));
+    });
+
+    filterProductsByProject();
+
+    updateProductSelectState();
+});
+
+</script>

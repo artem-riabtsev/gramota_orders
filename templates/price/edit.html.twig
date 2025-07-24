@@ -1,29 +1,33 @@
 {% extends 'base.html.twig' %}
 
+{% block title %}Редактировать прайс{% endblock %}
+
 {% block content %}
-<h1>Редактировать прайс {{ price.id }}</h1>
+    <h1>Редактировать прайс</h1>
+    <div class="card">
+        <div class="card-body">
+            {{ form_start(form) }}
 
-<div class="card">
-    <div class="card-body">
-        {{ form_start(form) }}
+            <div class="row">
+                <div class="col-md-6 mb-3">
+                    {{ form_label(form.description) }}
+                    {{ form_widget(form.description, {'attr': {'class': 'form-control'}}) }}
+                </div>
+                <div class="col-md-6 mb-3">
+                    {{ form_label(form.price) }}
+                    {{ form_widget(form.price, {'attr': {'class': 'form-control'}}) }}
+                </div>
+                <div class="col-md-6 mb-3">
+                    {{ form_label(form.product) }}
+                    {{ form_widget(form.product, {'attr': {'class': 'form-select'}}) }}
+                </div>
+            </div>
 
-        <div class="row">
-            <div class="col-md-6 mb-3">
-                {{ form_label(form.name) }}
-                {{ form_widget(form.name, {'attr': {'class': 'form-control'}}) }}
-            </div>
-            <div class="col-md-6 mb-3">
-                {{ form_label(form.price) }}
-                {{ form_widget(form.price, {'attr': {'class': 'form-control'}}) }}
-            </div>
+            <button class="btn btn-success">Обновить</button>
+            <a href="{{ path('app_price_index') }}" class="btn btn-secondary ms-2">Назад к списку</a>
+
+            {{ form_end(form) }}
+
         </div>
-
-        <button class="btn btn-success">Сохранить</button>
-        <a href="{{ app.request.headers.get('referer') ?: path('app_order_index') }}" class="btn btn-secondary">
-            Назад
-        </a>
-
-        {{ form_end(form) }}
     </div>
-</div>
 {% endblock %}

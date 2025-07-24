@@ -85,10 +85,10 @@ final class CustomerController extends AbstractController
     public function show(Customer $customer): Response
     {
         $ordersGroups = [
-            ['name' => 'Неоплаченные', 'orders' => $customer->getOrders()->filter(fn($order) => $order->getStatus() === 1)],
-            ['name' => 'Частично оплаченные', 'orders' => $customer->getOrders()->filter(fn($order) => $order->getStatus() === 2)],
-            ['name' => 'Переплаченные', 'orders' => $customer->getOrders()->filter(fn($order) => $order->getStatus() === 3)],
-            ['name' => 'Оплаченные', 'orders' => $customer->getOrders()->filter(fn($order) => $order->getStatus() === 4)],
+            ['name' => 'Неоплаченные', 'orders' => $customer->getOrders()->filter(fn($order) => $order->getStatus() === 1), 'color' => 'text-secondary'],
+            ['name' => 'Частично оплаченные', 'orders' => $customer->getOrders()->filter(fn($order) => $order->getStatus() === 2), 'color' => 'text-danger'],
+            ['name' => 'Переплаченные', 'orders' => $customer->getOrders()->filter(fn($order) => $order->getStatus() === 3), 'color' => 'text-danger'],
+            ['name' => 'Оплаченные', 'orders' => $customer->getOrders()->filter(fn($order) => $order->getStatus() === 4), 'color' => 'text-success'],
         ];
 
         return $this->render('customer/show.html.twig', [
@@ -123,7 +123,7 @@ final class CustomerController extends AbstractController
         if ($this->isCsrfTokenValid('delete'.$customer->getId(), $request->getPayload()->getString('_token'))) {
 
             if ($customer->getOrders()->count() > 0) {
-            $this->addFlash('danger', 'Нельзя удалить заказчика, у которого есть заказы.');
+            $this->addFlash('error', 'Нельзя удалить заказчика, у которого есть заказы.');
             return $this->redirectToRoute('app_customer_index');
         }
         

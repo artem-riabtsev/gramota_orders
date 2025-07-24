@@ -4,9 +4,11 @@ namespace App\Controller;
 
 use App\Entity\Order;
 use App\Form\OrderForm;
+use App\Form\OrderItemForm;
 use App\Repository\OrderRepository;
+use App\Repository\ProductRepository;
 use App\Repository\PriceRepository;
-use App\Entity\Cart;
+use App\Entity\OrderItem;
 use Doctrine\ORM\EntityManagerInterface;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
 use Symfony\Component\HttpFoundation\Request;
@@ -91,6 +93,7 @@ final class OrderController extends AbstractController
         Request $request,
         Order $order,
         EntityManagerInterface $entityManager,
+        ProductRepository $productRepository,
         PriceRepository $priceRepository
     ): Response {
         $form = $this->createForm(OrderForm::class, $order);
@@ -105,90 +108,126 @@ final class OrderController extends AbstractController
             }
         }
 
+        $prices = $priceRepository->createQueryBuilder('p')
+            ->leftJoin('p.product', 'product')
+            ->leftJoin('product.project', 'project')
+            ->select('p.description', 'p.price', 
+                'product.id as product_id', 
+                'product.description as product_description',
+                'project.id as project_id')
+            ->getQuery()
+            ->getResult();
+
+        $priceChoices = [];
+        foreach ($prices as $price) {
+            $priceChoices[] = [
+                'description' => $price['description'],
+                'price' => $price['price'],
+                'product' => [
+                    'id' => $price['product_id'],
+                    'description' => $price['product_description'],
+                    'project_id' => $price['project_id']
+                ]
+            ];
+        }
+
+        $orderItemForm = $this->createForm(OrderItemForm::class, null, [
+            'prices' => $priceChoices
+        ]);
+
         if ($request->isMethod('POST')) {
             // Получаем текущие позиции заказа
-            $currentCartItems = $order->getCart()->toArray();
+            $currentOrderItems = $order->getOrderItem()->toArray();
             $deletedItems = $request->request->all('deleted_items') ?? [];
-            $totalAmount = 0;
+            $lineTotal = '0';
 
             // Обработка удаленных элементов
             foreach ($deletedItems as $id) {
-                $cartItem = $entityManager->getRepository(Cart::class)->find($id);
-                if ($cartItem && $cartItem->getOrder() === $order) {
-                    $entityManager->remove($cartItem);
-                    // Удаляем из массива текущих позиций
-                    $currentCartItems = array_filter($currentCartItems, fn($item) => $item->getId() != $id);
+                $orderItem = $entityManager->getRepository(OrderItem::class)->find($id);
+                if ($orderItem && $orderItem->getOrder() === $order) {
+                    $entityManager->remove($orderItem);
+                    $currentOrderItems = array_filter($currentOrderItems, fn($item) => $item->getId() != $id);
                 }
             }
 
             // Считаем сумму для неудаленных позиций
-            foreach ($currentCartItems as $cartItem) {
-                $totalAmount += $cartItem->getTotalAmount();
+            foreach ($currentOrderItems as $orderItem) {
+                $lineTotal = bcadd($lineTotal, (string)$orderItem->getLineTotal(), 2);
             }
 
             // Обработка новых/измененных позиций
-            $cartData = $request->request->all('cart') ?? [];
-            foreach ($cartData as $key => $item) {
+            $orderItemData = $request->request->all('order_item') ?? [];
+
+            foreach ($orderItemData as $key => $item) {
                 if (empty($item['product_id'])) continue;
 
-                $priceEntity = $priceRepository->find($item['product_id']);
-                if (!$priceEntity) continue;
+                $productEntity = $productRepository->find($item['product_id']);
+                if (!$productEntity) continue;
 
-                if (str_starts_with($key, 'new_')) {
-                    $cartItem = new Cart();
-                    $cartItem->setOrder($order);
+                $priceEntity = $priceRepository->findOneBy(['description' => $item['description']]);
+                $description = $priceEntity ? $priceEntity->getDescription() : $item['description'];
+
+                if (str_starts_with($key, 'new')) {
+                    $orderItem = new OrderItem();
+                    $orderItem->setOrder($order);
+                    $order->addOrderItem($orderItem);
                 } else {
-                    $cartItem = $entityManager->getRepository(Cart::class)->find($key);
-                    if (!$cartItem) {
-                        $cartItem = new Cart();
-                        $cartItem->setOrder($order);
+                    $orderItem = $entityManager->getRepository(OrderItem::class)->find($key);
+                    if (!$orderItem) {
+                        $orderItem = new OrderItem();
+                        $orderItem->setOrder($order);
+                        $order->addOrderItem($orderItem);
                     }
                 }
 
                 $quantity = max(1, (int)($item['quantity'] ?? 1));
                 $price = str_replace(',', '.', $item['price'] ?? $priceEntity->getPrice());
-                $ItemTotalOld = $cartItem->getTotalAmount();
+
+                $ItemTotalOld = $orderItem->getLineTotal() ?? '0';
                 $ItemTotalActual = bcmul($price, $quantity, 2);
 
-                $cartItem
-                    ->setProduct($priceEntity)
+                $orderItem
+                    ->setProduct($productEntity)
+                    ->setDescription($description)
                     ->setPrice($price)
                     ->setQuantity($quantity)
-                    ->setTotalAmount($ItemTotalActual);
+                    ->setLineTotal($ItemTotalActual);
 
-                $entityManager->persist($cartItem);
-                $totalAmount = bcadd(
-                    bcsub($totalAmount, $ItemTotalOld, 2),
-                    $cartItem->getTotalAmount(),
+                $entityManager->persist($orderItem);
+
+                $lineTotal = bcadd(
+                    bcsub($lineTotal, $ItemTotalOld, 2),
+                    $ItemTotalActual,
                     2
                 );
             }
 
-            // Если корзина пуста - сумма 0
-            if (empty($currentCartItems) && empty($cartData)) {
-                $totalAmount = '0';
+            if (empty($currentOrderItems) && empty($orderItemData)) {
+                $lineTotal = '0';
             }
 
-            $order->setAmount($totalAmount);
-            $payment_amount = $order->getPaymentAmount();
-            if (bccomp($payment_amount, '0', 2) === 0 && bccomp($payment_amount, $totalAmount, 2) === -1) {
+            $order->setOrderTotal($lineTotal);
+            $totalPaid = $order->getTotalPaid();
+
+            if (bccomp($totalPaid, '0', 2) === 0 && bccomp($totalPaid, $lineTotal, 2) === -1) {
                 $order->setStatus(1); // не оплачен
-            } elseif (bccomp($payment_amount, '0', 2) === 1 && bccomp($payment_amount, $totalAmount, 2) === -1) {
+            } elseif (bccomp($totalPaid, '0', 2) === 1 && bccomp($totalPaid, $lineTotal, 2) === -1) {
                 $order->setStatus(2); // частично оплачен
-            } elseif (bccomp($payment_amount, $totalAmount, 2) === 0) {
+            } elseif (bccomp($totalPaid, $lineTotal, 2) === 0) {
                 $order->setStatus(4); // оплачен
-            } elseif (bccomp($payment_amount, $totalAmount, 2) === 1) {
+            } elseif (bccomp($totalPaid, $lineTotal, 2) === 1) {
                 $order->setStatus(3); // переплата
             }
 
             $entityManager->flush();
-
             return $this->redirectToRoute('app_order_edit', ['id' => $order->getId()]);
         }
 
         return $this->render('order/edit.html.twig', [
             'order' => $order,
             'form' => $form->createView(),
+            'orderItemForm' => $orderItemForm->createView(),
+            'products' => $productRepository->findAll(),
             'prices' => $priceRepository->findAll(),
         ]);
     }
