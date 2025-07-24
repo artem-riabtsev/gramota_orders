@@ -37,6 +37,7 @@ document.addEventListener('DOMContentLoaded', function() {
     const quantityInput = document.getElementById('order_item_form_quantity');
     const priceInput = document.getElementById('order_item_form_price');
     const totalInput = document.getElementById('order_item_form_line_total');
+    const allProductOptions = Array.from(productSelect.options);
 
     // Обновление общей суммы
     function updateTotal() {
@@ -45,15 +46,65 @@ document.addEventListener('DOMContentLoaded', function() {
         totalInput.value = (price * quantity).toFixed(2);
     }
 
+    // Управление состоянием доступности поля выбора продукта
+    function updateProductSelectState() {
+        // Блокируем, если нет выбранного описания (названия позиции)
+        if (!priceSourceSelect.value || priceSourceSelect.value.trim() === '') {
+            productSelect.disabled = true;
+            // Очистить выбор продукта, чтобы не было ложного выбора
+            productSelect.selectedIndex = 0;
+        } else {
+            productSelect.disabled = false;
+        }
+    }
+
+    // Фильтрация продуктов по project_id, учитываем allowEmpty для пустого значения
+    function filterProductsByProject(allowEmpty = false) {
+        const selectedOption = priceSourceSelect.options[priceSourceSelect.selectedIndex];
+        const projectId = selectedOption ? selectedOption.getAttribute('data-project-id') : null;
+
+        productSelect.innerHTML = '';
+
+        let filteredOptions = allProductOptions.filter(opt => {
+            const prodProjectId = opt.getAttribute('data-project-id');
+            if (opt.value === '') {
+                return allowEmpty; // показываем пустую опцию, если allowEmpty = true
+            }
+            // Показываем только опции с нужным project_id или если project_id не задан
+            return !projectId || prodProjectId === projectId;
+        });
+
+        filteredOptions.forEach(opt => productSelect.appendChild(opt.cloneNode(true)));
+
+        const currentProductId = productSelect.dataset.currentSelected || null;
+        if (currentProductId) {
+            const optionToSelect = Array.from(productSelect.options).find(opt => opt.value === currentProductId);
+            if (optionToSelect) optionToSelect.selected = true;
+            else productSelect.selectedIndex = allowEmpty ? 0 : -1;
+        } else {
+            productSelect.selectedIndex = allowEmpty ? 0 : -1;
+        }
+    }
+
     // Инициализация модалки для добавления
     document.getElementById('add-item')?.addEventListener('click', function() {
         modalTitle.textContent = 'Добавить позицию';
         itemIdInput.value = '';
         priceSourceSelect.selectedIndex = 0;
+
+        // Сбрасываем products к полному списку
+        productSelect.innerHTML = '';
+        allProductOptions.forEach(opt => productSelect.appendChild(opt.cloneNode(true)));
         productSelect.selectedIndex = 0;
+
         quantityInput.value = '1';
         priceInput.value = '';
         totalInput.value = '';
+
+        // Обновляем доступность поля выбора продукта
+        updateProductSelectState();
+
+        modal.show();
     });
 
     // Обработка редактирования существующей позиции
@@ -61,7 +112,6 @@ document.addEventListener('DOMContentLoaded', function() {
         btn.addEventListener('click', function() {
             const itemId = this.dataset.id;
             const row = document.querySelector(`tr[data-id="${itemId}"]`);
-            
             if (!row) return;
 
             modalTitle.textContent = 'Редактирование позиции';
@@ -74,9 +124,16 @@ document.addEventListener('DOMContentLoaded', function() {
             const total = row.dataset.total;
 
             priceSourceSelect.value = description;
-            Array.from(productSelect.options).forEach(option => {
-                if (option.value == productId) option.selected = true;
-            });
+            
+            // Сохраняем в атрибут data текущий выбранный продукт
+            productSelect.dataset.currentSelected = productId;
+
+            // Фильтруем продукты по project_id выбранной позиции
+            filterProductsByProject();
+
+            // Обновляем доступность поля выбора продукта после фильтрации и установки значения
+            updateProductSelectState(); 
+
             quantityInput.value = quantity;
             priceInput.value = price;
             totalInput.value = total;
@@ -85,7 +142,7 @@ document.addEventListener('DOMContentLoaded', function() {
         });
     });
 
-    // Обработчики изменений
+    // Обработчики изменений количества и цены
     quantityInput.addEventListener('input', updateTotal);
     priceInput.addEventListener('input', updateTotal);
 
@@ -95,24 +152,33 @@ document.addEventListener('DOMContentLoaded', function() {
         if (selectedOption.value) {
             priceInput.value = selectedOption.dataset.price;
             const productId = selectedOption.dataset.productId;
-            
-            // Устанавливаем выбранный продукт
-            if (productId) {
-                Array.from(productSelect.options).forEach(option => {
-                    option.selected = (option.value == productId);
-                });
-            }
-            
+
+            // Запоминаем текущий выбранный продукт для фильтрации
+            productSelect.dataset.currentSelected = productId;
+
+            // Фильтруем продукты
+            filterProductsByProject();
+
             quantityInput.value = '1';
             updateTotal();
+
+            // Разблокируем поле продукта, так как выбрана позиция
+            updateProductSelectState();
+
         } else {
+            // Если ничего не выбрано, сброс списка продуктов
+            productSelect.innerHTML = '';
+            allProductOptions.forEach(opt => productSelect.appendChild(opt.cloneNode(true)));
             productSelect.selectedIndex = 0;
             priceInput.value = '';
             totalInput.value = '';
+
+            // Блокируем поле продукта, так как позиция не выбрана
+            updateProductSelectState();
         }
     });
 
-    // Отправка формы
+    // Отправка формы (оставляем как есть)
     itemForm.addEventListener('submit', function(e) {
         e.preventDefault();
         
@@ -139,5 +205,10 @@ document.addEventListener('DOMContentLoaded', function() {
             }
         }).catch(error => console.error('Error:', error));
     });
+
+    filterProductsByProject();
+
+    updateProductSelectState();
 });
+
 </script>

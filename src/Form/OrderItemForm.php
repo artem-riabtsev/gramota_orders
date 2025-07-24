@@ -59,17 +59,15 @@ class OrderItemForm extends AbstractType
                 'placeholder' => 'Выберите продукт',
                 'class' => Product::class,
                 'choice_label' => 'description',
+                'choice_attr' => function(Product $product) {
+                    return ['data-project-id' => $product->getProject() ? $product->getProject()->getId() : ''];
+                },
                 'attr' => [
                     'class' => 'form-select product-select mb-3',
                     'id' => 'order_item_form_product'
                 ],
-                'query_builder' => function(ProductRepository $repo) use ($currentProject) {
-                    $qb = $repo->createQueryBuilder('p');
-                    if ($currentProject) {
-                        $qb->where('p.project = :project')
-                        ->setParameter('project', $currentProject);
-                    }
-                    return $qb;
+                'query_builder' => function(ProductRepository $repo) {
+                    return $repo->createQueryBuilder('p')->orderBy('p.description', 'ASC');
                 }
             ])
             ->add('quantity', IntegerType::class, [
