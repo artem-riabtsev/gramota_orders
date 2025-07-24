@@ -15,11 +15,11 @@ class OrderItem
     #[ORM\Column]
     private ?int $id = null;
 
-    #[ORM\ManyToOne(targetEntity: Order::class, inversedBy: 'orderItem')]
+    #[ORM\ManyToOne(targetEntity: Order::class, inversedBy: 'orderItems')]
     #[ORM\JoinColumn(name: 'order_id', referencedColumnName: 'id')]
     private Order|null $order = null;
 
-    #[ORM\ManyToOne(targetEntity: Product::class)]
+    #[ORM\ManyToOne(targetEntity: Product::class, inversedBy: 'orderItems')]
     #[ORM\JoinColumn(name: 'product_id', referencedColumnName: 'id', nullable: false)]
     private ?Product $product = null;
 
