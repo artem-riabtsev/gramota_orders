@@ -1,13 +1,33 @@
 {% extends 'base.html.twig' %}
 
-{% block title %}Edit Price{% endblock %}
+{% block title %}Редактировать прайс{% endblock %}
 
 {% block content %}
-    <h1>Edit Price</h1>
+    <h1>Редактировать прайс</h1>
+    <div class="card">
+        <div class="card-body">
+            {{ form_start(form) }}
 
-    {{ include('price/_form.html.twig', {'button_label': 'Update'}) }}
+            <div class="row">
+                <div class="col-md-6 mb-3">
+                    {{ form_label(form.description) }}
+                    {{ form_widget(form.description, {'attr': {'class': 'form-control'}}) }}
+                </div>
+                <div class="col-md-6 mb-3">
+                    {{ form_label(form.price) }}
+                    {{ form_widget(form.price, {'attr': {'class': 'form-control'}}) }}
+                </div>
+                <div class="col-md-6 mb-3">
+                    {{ form_label(form.product) }}
+                    {{ form_widget(form.product, {'attr': {'class': 'form-select'}}) }}
+                </div>
+            </div>
 
-    <a href="{{ path('app_price_index') }}">back to list</a>
+            <button class="btn btn-success">Обновить</button>
+            <a href="{{ path('app_price_index') }}" class="btn btn-secondary ms-2">Назад к списку</a>
 
-    {{ include('price/_delete_form.html.twig') }}
+            {{ form_end(form) }}
+
+        </div>
+    </div>
 {% endblock %}

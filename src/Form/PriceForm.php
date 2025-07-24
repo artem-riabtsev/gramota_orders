@@ -15,12 +15,13 @@ class PriceForm extends AbstractType
     public function buildForm(FormBuilderInterface $builder, array $options): void
     {
         $builder
-            ->add('description')
-            ->add('price')
+            ->add('description', null, ['label' => 'Описание'])
+            ->add('price', null, ['label' => 'Цена'])
             ->add('product', EntityType::class, [
                 'class' => Product::class,
                 'choice_label' => 'description',
-                'placeholder' => '',
+                'placeholder' => 'Выберете продукт',
+                'label' => 'Продукт',
                 'query_builder' => function (EntityRepository $er) {
                     return $er->createQueryBuilder('p')
                         ->where('p.basic = true');

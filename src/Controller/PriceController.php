@@ -15,10 +15,19 @@ use Symfony\Component\Routing\Attribute\Route;
 final class PriceController extends AbstractController
 {
     #[Route(name: 'app_price_index', methods: ['GET'])]
-    public function index(PriceRepository $priceRepository): Response
+    public function index(Request $request, PriceRepository $priceRepository): Response 
     {
+        $query = $request->query->get('q');
+
+        if ($query) {
+            $prices = $priceRepository->findByDescription($query);
+        } else {
+            $prices = $priceRepository->findAll();
+        }
+
         return $this->render('price/index.html.twig', [
-            'prices' => $priceRepository->findAll(),
+            'prices' => $prices,
+            'query' => $query,
         ]);
     }
 

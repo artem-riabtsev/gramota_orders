@@ -1,17 +1,21 @@
 {% extends 'base.html.twig' %}
 
-{% block title %}Price index{% endblock %}
+{% block title %}Прайс-лист{% endblock %}
 
 {% block content %}
-    <h1>Price index</h1>
 
-    <table class="table">
+    <h1>Прайс-лист</h1>
+
+    {% include 'search/search_form.html.twig' %}
+    {% include 'modals/modal_delete.html.twig' %}
+
+    <table class="table table-hover table-bordered align-middle">
         <thead>
             <tr>
                 <th>Id</th>
-                <th>Description</th>
-                <th>Price</th>
-                <th>actions</th>
+                <th>Описание</th>
+                <th>Цена</th>
+                <th>Действия</th>
             </tr>
         </thead>
         <tbody>
@@ -21,17 +25,26 @@
                 <td>{{ price.description }}</td>
                 <td>{{ price.price }}</td>
                 <td>
-                    <a href="{{ path('app_price_show', {'id': price.id}) }}">show</a>
-                    <a href="{{ path('app_price_edit', {'id': price.id}) }}">edit</a>
+                    <div class="d-flex">
+                        <a href="{{ path('app_price_edit', {'id': price.id}) }}" class="btn btn-sm btn-outline-warning me-2">Редактировать</a>
+                        <button
+                            type="button"
+                            class="btn btn-sm btn-outline-danger remove-item"
+                            data-id="{{ price.id }}"
+                            data-token="{{ csrf_token('delete' ~ price.id) }}"
+                            data-url="{{ path('app_price_delete', {'id': price.id}) }}"
+                        >
+                            Удалить
+                        </button>
+                    </div>
                 </td>
             </tr>
         {% else %}
             <tr>
-                <td colspan="4">no records found</td>
+                <td colspan="4">Записи не найдены</td>
             </tr>
         {% endfor %}
         </tbody>
     </table>
-
-    <a href="{{ path('app_price_new') }}">Create new</a>
 {% endblock %}
+
