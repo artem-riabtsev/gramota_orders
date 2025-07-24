@@ -4,8 +4,10 @@ namespace App\Controller;
 
 use App\Entity\Order;
 use App\Form\OrderForm;
+use App\Form\OrderItemForm;
 use App\Repository\OrderRepository;
 use App\Repository\ProductRepository;
+use App\Repository\PriceRepository;
 use App\Entity\OrderItem;
 use Doctrine\ORM\EntityManagerInterface;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
@@ -91,7 +93,8 @@ final class OrderController extends AbstractController
         Request $request,
         Order $order,
         EntityManagerInterface $entityManager,
-        ProductRepository $priceRepository
+        ProductRepository $productRepository,
+        PriceRepository $priceRepository
     ): Response {
         $form = $this->createForm(OrderForm::class, $order);
         $form->handleRequest($request);
@@ -105,73 +108,107 @@ final class OrderController extends AbstractController
             }
         }
 
+        $prices = $priceRepository->createQueryBuilder('p')
+            ->leftJoin('p.product', 'product')
+            ->leftJoin('product.project', 'project')
+            ->select('p.description', 'p.price', 
+                'product.id as product_id', 
+                'product.description as product_description',
+                'project.id as project_id')
+            ->getQuery()
+            ->getResult();
+
+        $priceChoices = [];
+        foreach ($prices as $price) {
+            $priceChoices[] = [
+                'description' => $price['description'],
+                'price' => $price['price'],
+                'product' => [
+                    'id' => $price['product_id'],
+                    'description' => $price['product_description'],
+                    'project_id' => $price['project_id']
+                ]
+            ];
+        }
+
+        $orderItemForm = $this->createForm(OrderItemForm::class, null, [
+            'prices' => $priceChoices
+        ]);
+
         if ($request->isMethod('POST')) {
             // Получаем текущие позиции заказа
             $currentOrderItems = $order->getOrderItem()->toArray();
             $deletedItems = $request->request->all('deleted_items') ?? [];
-            $lineTotal = 0;
+            $lineTotal = '0';
 
             // Обработка удаленных элементов
             foreach ($deletedItems as $id) {
                 $orderItem = $entityManager->getRepository(OrderItem::class)->find($id);
                 if ($orderItem && $orderItem->getOrder() === $order) {
                     $entityManager->remove($orderItem);
-                    // Удаляем из массива текущих позиций
                     $currentOrderItems = array_filter($currentOrderItems, fn($item) => $item->getId() != $id);
                 }
             }
 
             // Считаем сумму для неудаленных позиций
             foreach ($currentOrderItems as $orderItem) {
-                $lineTotal += $orderItem->getLineTotal();
+                $lineTotal = bcadd($lineTotal, (string)$orderItem->getLineTotal(), 2);
             }
 
             // Обработка новых/измененных позиций
-            $orderItemData = $request->request->all('orderItem') ?? [];
+            $orderItemData = $request->request->all('order_item') ?? [];
+
             foreach ($orderItemData as $key => $item) {
                 if (empty($item['product_id'])) continue;
 
-                $priceEntity = $priceRepository->find($item['product_id']);
-                if (!$priceEntity) continue;
+                $productEntity = $productRepository->find($item['product_id']);
+                if (!$productEntity) continue;
 
-                if (str_starts_with($key, 'new_')) {
+                $priceEntity = $priceRepository->findOneBy(['description' => $item['description']]);
+                $description = $priceEntity ? $priceEntity->getDescription() : $item['description'];
+
+                if (str_starts_with($key, 'new')) {
                     $orderItem = new OrderItem();
                     $orderItem->setOrder($order);
+                    $order->addOrderItem($orderItem);
                 } else {
                     $orderItem = $entityManager->getRepository(OrderItem::class)->find($key);
                     if (!$orderItem) {
                         $orderItem = new OrderItem();
                         $orderItem->setOrder($order);
+                        $order->addOrderItem($orderItem);
                     }
                 }
 
                 $quantity = max(1, (int)($item['quantity'] ?? 1));
-                $price = str_replace(',', '.', $item['price'] ?? $priceEntity->getProduct());
-                $ItemTotalOld = $orderItem->getLineTotal();
+                $price = str_replace(',', '.', $item['price'] ?? $priceEntity->getPrice());
+
+                $ItemTotalOld = $orderItem->getLineTotal() ?? '0';
                 $ItemTotalActual = bcmul($price, $quantity, 2);
 
                 $orderItem
-                    ->setProduct($priceEntity)
-                    ->setDescription($priceEntity->getDescription())
+                    ->setProduct($productEntity)
+                    ->setDescription($description)
                     ->setPrice($price)
                     ->setQuantity($quantity)
                     ->setLineTotal($ItemTotalActual);
 
                 $entityManager->persist($orderItem);
+
                 $lineTotal = bcadd(
                     bcsub($lineTotal, $ItemTotalOld, 2),
-                    $orderItem->getLineTotal(),
+                    $ItemTotalActual,
                     2
                 );
             }
 
-            // Если корзина пуста - сумма 0
             if (empty($currentOrderItems) && empty($orderItemData)) {
                 $lineTotal = '0';
             }
 
             $order->setOrderTotal($lineTotal);
             $totalPaid = $order->getTotalPaid();
+
             if (bccomp($totalPaid, '0', 2) === 0 && bccomp($totalPaid, $lineTotal, 2) === -1) {
                 $order->setStatus(1); // не оплачен
             } elseif (bccomp($totalPaid, '0', 2) === 1 && bccomp($totalPaid, $lineTotal, 2) === -1) {
@@ -183,14 +220,15 @@ final class OrderController extends AbstractController
             }
 
             $entityManager->flush();
-
             return $this->redirectToRoute('app_order_edit', ['id' => $order->getId()]);
         }
 
         return $this->render('order/edit.html.twig', [
             'order' => $order,
             'form' => $form->createView(),
-            'products' => $priceRepository->findAll(),
+            'orderItemForm' => $orderItemForm->createView(),
+            'products' => $productRepository->findAll(),
+            'prices' => $priceRepository->findAll(),
         ]);
     }
 

@@ -5,37 +5,23 @@
                 <h5 class="modal-title" id="modalTitle">Новая позиция</h5>
                 <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
             </div>
-            <form id="itemForm" method="post" action="{{ path('app_order_edit', {'id': order.id}) }}">
+            {{ form_start(orderItemForm, {
+                'attr': {
+                    'id': 'itemForm',
+                    'method': 'post',
+                    'action': path('app_order_edit', {'id': order.id})
+                }
+            }) }}
                 <input type="hidden" name="_token" value="{{ csrf_token('edit' ~ order.id) }}">
                 <input type="hidden" name="item_id" id="itemId">
                 <div class="modal-body">
-                    <div class="mb-3">
-                        <label for="product" class="form-label">Товар</label>
-                        <select id="product" name="orderItem[__ID__][product_id]" class="form-select" required>
-                            <option value="" disabled selected>Выберите позицию</option>
-                            {% for product in products %}
-                                <option value="{{ product.id }}" data-price="{{ product.price }}">{{ product.description }}</option>
-                            {% endfor %}
-                        </select>
-                    </div>
-                    <div class="mb-3">
-                        <label for="quantity" class="form-label">Количество</label>
-                        <input type="number" class="form-control" id="quantity" name="orderItem[__ID__][quantity]" min="1" value="1" required>
-                    </div>
-                    <div class="mb-3">
-                        <label for="price" class="form-label">Цена</label>
-                        <input type="text" class="form-control" id="price" name="orderItem[__ID__][price]" required>
-                    </div>
-                    <div class="mb-3">
-                        <label for="total" class="form-label">Всего</label>
-                        <input type="text" class="form-control" id="total" name="orderItem[__ID__][line_total]" required>
-                    </div>
+                    {{ form_widget(orderItemForm) }}
                 </div>
                 <div class="modal-footer">
                     <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Отмена</button>
                     <button type="submit" class="btn btn-primary">Сохранить</button>
                 </div>
-            </form>
+            {{ form_end(orderItemForm) }}
         </div>
     </div>
 </div>
@@ -46,10 +32,11 @@ document.addEventListener('DOMContentLoaded', function() {
     const itemForm = document.getElementById('itemForm');
     const modalTitle = document.getElementById('modalTitle');
     const itemIdInput = document.getElementById('itemId');
-    const productSelect = document.getElementById('product');
-    const quantityInput = document.getElementById('quantity');
-    const priceInput = document.getElementById('price');
-    const totalInput = document.getElementById('total');
+    const priceSourceSelect = document.getElementById('order_item_form_description');
+    const productSelect = document.getElementById('order_item_form_product');
+    const quantityInput = document.getElementById('order_item_form_quantity');
+    const priceInput = document.getElementById('order_item_form_price');
+    const totalInput = document.getElementById('order_item_form_line_total');
 
     // Обновление общей суммы
     function updateTotal() {
@@ -58,45 +45,42 @@ document.addEventListener('DOMContentLoaded', function() {
         totalInput.value = (price * quantity).toFixed(2);
     }
 
-    // Обратный пересчёт цены по "Всего"
-    function updateProductFromTotal() {
-        const total = parseFloat(totalInput.value) || 0;
-        const quantity = parseInt(quantityInput.value) || 1;
-        if (quantity > 0) {
-            priceInput.value = (total / quantity).toFixed(2);
-        }
-    }
-
     // Инициализация модалки для добавления
     document.getElementById('add-item')?.addEventListener('click', function() {
         modalTitle.textContent = 'Добавить позицию';
         itemIdInput.value = '';
-
-        // Очищаем выбор продукта
+        priceSourceSelect.selectedIndex = 0;
         productSelect.selectedIndex = 0;
-        productSelect.value = '';
-
-        // Очищаем остальные поля
         quantityInput.value = '1';
         priceInput.value = '';
         totalInput.value = '';
     });
 
-    // Редактирование позиции
+    // Обработка редактирования существующей позиции
     document.querySelectorAll('.edit-item').forEach(btn => {
         btn.addEventListener('click', function() {
             const itemId = this.dataset.id;
             const row = document.querySelector(`tr[data-id="${itemId}"]`);
             
             if (!row) return;
-            
+
             modalTitle.textContent = 'Редактирование позиции';
             itemIdInput.value = itemId;
-            productSelect.value = row.querySelector('td:first-child').dataset.productId;
-            quantityInput.value = row.querySelector('td:nth-child(2)').textContent;
-            priceInput.value = row.querySelector('td:nth-child(3)').textContent;
-            updateTotal();
-            
+
+            const productId = row.dataset.productId;
+            const description = row.dataset.description;
+            const quantity = row.dataset.quantity;
+            const price = row.dataset.price;
+            const total = row.dataset.total;
+
+            priceSourceSelect.value = description;
+            Array.from(productSelect.options).forEach(option => {
+                if (option.value == productId) option.selected = true;
+            });
+            quantityInput.value = quantity;
+            priceInput.value = price;
+            totalInput.value = total;
+
             modal.show();
         });
     });
@@ -104,35 +88,51 @@ document.addEventListener('DOMContentLoaded', function() {
     // Обработчики изменений
     quantityInput.addEventListener('input', updateTotal);
     priceInput.addEventListener('input', updateTotal);
-    totalInput.addEventListener('input', updateProductFromTotal);
 
-    productSelect.addEventListener('change', function() {
+    // При выборе позиции подставляем все данные
+    priceSourceSelect.addEventListener('change', function() {
         const selectedOption = this.options[this.selectedIndex];
-        
-        if (!selectedOption?.dataset?.price) return;
-        
-        const price = parseFloat(selectedOption.dataset.price);
-        quantityInput.value = '1';
-        priceInput.value = price.toFixed(2);
-        updateTotal();
+        if (selectedOption.value) {
+            priceInput.value = selectedOption.dataset.price;
+            const productId = selectedOption.dataset.productId;
+            
+            // Устанавливаем выбранный продукт
+            if (productId) {
+                Array.from(productSelect.options).forEach(option => {
+                    option.selected = (option.value == productId);
+                });
+            }
+            
+            quantityInput.value = '1';
+            updateTotal();
+        } else {
+            productSelect.selectedIndex = 0;
+            priceInput.value = '';
+            totalInput.value = '';
+        }
     });
 
-    // Обработка отправки формы
+    // Отправка формы
     itemForm.addEventListener('submit', function(e) {
         e.preventDefault();
-        const formData = new FormData(this);
-        const itemId = formData.get('item_id') || 'new_' + Date.now();
         
-        const newFormData = new FormData();
-        newFormData.append('_token', formData.get('_token'));
-        newFormData.append(`orderItem[${itemId}][product_id]`, formData.get('orderItem[__ID__][product_id]'));
-        newFormData.append(`orderItem[${itemId}][quantity]`, formData.get('orderItem[__ID__][quantity]'));
-        newFormData.append(`orderItem[${itemId}][price]`, formData.get('orderItem[__ID__][price]'));
-        newFormData.append(`orderItem[${itemId}][total_amount]`, formData.get('orderItem[__ID__][line_total]'));
+        const formData = new FormData(itemForm);
+        const rawItemId = formData.get('item_id');
+        const itemId = rawItemId || 'new_' + Date.now();
         
-        fetch(this.action, {
+        const submitData = new FormData();
+        submitData.append('_token', formData.get('_token'));
+        submitData.append('item_id', itemId);
+        
+        submitData.append(`order_item[${itemId}][description]`, formData.get('order_item_form[description]'));
+        submitData.append(`order_item[${itemId}][product_id]`, formData.get('order_item_form[product]'));
+        submitData.append(`order_item[${itemId}][quantity]`, formData.get('order_item_form[quantity]'));
+        submitData.append(`order_item[${itemId}][price]`, formData.get('order_item_form[price]'));
+        submitData.append(`order_item[${itemId}][line_total]`, formData.get('order_item_form[line_total]'));
+        
+        fetch(itemForm.action, {
             method: 'POST',
-            body: newFormData
+            body: submitData
         }).then(response => {
             if (response.redirected) {
                 window.location.href = response.url;

@@ -12,9 +12,19 @@
                 {{ form_label(form.description) }}
                 {{ form_widget(form.description, {'attr': {'class': 'form-control'}}) }}
             </div>
-            <div class="col-md-6 mb-3">
+            <div class="col-md-6 mb-4">
                 {{ form_label(form.date) }}
                 {{ form_widget(form.date, {'attr': {'class': 'form-control'}}) }}
+            </div>
+             <div class="col-md-6 mb-3">
+                {{ form_label(form.project) }}
+                {{ form_widget(form.project, {'attr': {'class': 'form-control'}}) }}
+            </div>
+            <div class="col-md-6 mt-3">
+                <div class="form-check">
+                    {{ form_widget(form.basic, {'attr': {'class': 'form-check-input'}}) }}
+                    {{ form_label(form.basic, null, {'label_attr': {'class': 'form-check-label'}}) }}
+                </div>
             </div>
         </div>
 

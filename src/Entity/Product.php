@@ -26,6 +26,13 @@ class Product
     #[ORM\OneToMany(mappedBy: 'product', targetEntity: OrderItem::class)]
     private Collection $orderItems;
 
+    #[ORM\Column(name: 'basic', type: 'boolean', options: ['default' => false])]
+    private bool $basic = false;
+
+    #[ORM\ManyToOne(targetEntity: Project::class, inversedBy: 'products')]
+    #[ORM\JoinColumn(name: 'project_id', nullable: false)]
+    private ?Project $project = null;
+
     public function getId(): ?int
     {
         return $this->id;
@@ -55,6 +62,18 @@ class Product
         return $this;
     }
 
+        public function getBasic(): ?bool
+    {
+        return $this->basic;
+    }
+
+    public function setBasic(bool $basic): static
+    {
+        $this->basic = $basic;
+
+        return $this;
+    }
+
     public function __construct()
     {
         $this->orderItems = new ArrayCollection();
@@ -64,5 +83,16 @@ class Product
     public function getOrderItems(): Collection
     {
         return $this->orderItems;
+    }
+
+        public function getProject(): ?Project
+    {
+        return $this->project;
+    }
+
+    public function setProject(?Project $project): self
+    {
+        $this->project = $project;
+        return $this;
     }
 }

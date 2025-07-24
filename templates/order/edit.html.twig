@@ -58,6 +58,7 @@
     <thead>
         <tr>
             <th>Наименование</th>
+            <th>Категория</th>
             <th>Количество</th>
             <th>Цена</th>
             <th>Всего</th>
@@ -66,8 +67,15 @@
     </thead>
     <tbody>
         {% for orderItem in order.orderItem %}
-            <tr data-id="{{ orderItem.id }}">
+            <tr data-id="{{ orderItem.id }}"
+                data-product-id="{{ orderItem.product.id }}"
+                data-description="{{ orderItem.description }}"
+                data-quantity="{{ orderItem.quantity }}"
+                data-price="{{ orderItem.price }}"
+                data-total="{{ orderItem.lineTotal }}"
+                >
                 <td data-product-id="{{ orderItem.product.id }}" >{{ orderItem.product.description }}</td>
+                <td>{{ orderItem.description }}</td>
                 <td>{{ orderItem.quantity }}</td>
                 <td>{{ orderItem.price }}</td>
                 <td>{{ orderItem.lineTotal }}</td>

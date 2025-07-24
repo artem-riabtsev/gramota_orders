@@ -2,10 +2,14 @@
 
 namespace App\Form;
 
+use App\Entity\Project;
 use App\Entity\Product;
 use Symfony\Component\Form\AbstractType;
 use Symfony\Component\Form\FormBuilderInterface;
 use Symfony\Component\OptionsResolver\OptionsResolver;
+use Symfony\Component\Form\Extension\Core\Type\CheckboxType;
+use Doctrine\ORM\EntityRepository;
+use Symfony\Bridge\Doctrine\Form\Type\EntityType;
 
 class ProductForm extends AbstractType
 {
@@ -15,6 +19,17 @@ class ProductForm extends AbstractType
             ->add('description', null, ['label' => 'Наименование'])
              ->add('date', null, [
                 'label' => 'Дата',
+            ])
+            ->add('basic', CheckboxType::class, [
+                'label' => 'Является базовым значением',
+                'data' => $options['data']->getBasic() ?? false,
+                'required' => false,
+            ])
+            ->add('project', EntityType::class, [
+                'class' => Project::class,
+                'choice_label' => 'name',
+                'label' => 'Проект',
+                'placeholder' => 'Выберете проект',
             ])
         ;
     }

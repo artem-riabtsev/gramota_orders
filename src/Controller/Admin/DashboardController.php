@@ -10,6 +10,7 @@ use Symfony\Component\HttpFoundation\Response;
 use EasyCorp\Bundle\EasyAdminBundle\Router\AdminUrlGenerator;
 use Symfony\Component\Security\Http\Attribute\IsGranted;
 use App\Entity\Order;
+use App\Entity\Project;
 
 #[IsGranted('ROLE_ADMIN')]
 #[AdminDashboard(routePath: '/admin', routeName: 'admin')]
@@ -40,6 +41,7 @@ class DashboardController extends AbstractDashboardController
 
         yield MenuItem::linkToCrud('Пользователи', 'fa fa-users', \App\Entity\User::class);
         yield MenuItem::linkToCrud('Заказы', 'fa fa-box', Order::class);
+        yield MenuItem::linkToCrud('Проекты', 'fa fa-folder', Project::class);
       
     }
 }

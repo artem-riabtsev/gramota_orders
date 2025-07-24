@@ -3,33 +3,106 @@
 namespace App\Form;
 
 use App\Entity\OrderItem;
-use App\Entity\Order;
+use App\Entity\Product;
 use Symfony\Bridge\Doctrine\Form\Type\EntityType;
 use Symfony\Component\Form\AbstractType;
 use Symfony\Component\Form\FormBuilderInterface;
 use Symfony\Component\OptionsResolver\OptionsResolver;
+use Symfony\Component\Form\Extension\Core\Type\IntegerType;
+use Symfony\Component\Form\Extension\Core\Type\ChoiceType;
+use Symfony\Component\Form\Extension\Core\Type\TextType;
+use Doctrine\ORM\EntityManagerInterface;
+use App\Repository\ProductRepository;
 
 class OrderItemForm extends AbstractType
 {
+    private $entityManager;
+
+    public function __construct(EntityManagerInterface $entityManager)
+    {
+        $this->entityManager = $entityManager;
+    }
+
     public function buildForm(FormBuilderInterface $builder, array $options): void
     {
+        // Безопасная проверка наличия данных
+        $currentProduct = ($options['data'] ?? null) instanceof OrderItem ? $options['data']->getProduct() : null;
+        $currentProject = $currentProduct ? $currentProduct->getProject() : null;
+
         $builder
-            ->add('name', null, ['label' => 'Наименование'])
-            ->add('quantity', null, ['label' => 'Количество'])
-            ->add('price', null, ['label' => 'Цена'])
-            ->add('line_total', null, ['label' => 'Всего'])
-            ->add('order', EntityType::class, [
-                'class' => Order::class,
-                'choice_label' => 'id',
-                'label' => 'Заказ'
+            ->add('description', ChoiceType::class, [
+                'label' => 'Название позиции',
+                'choices' => array_combine(
+                    array_column($options['prices'], 'description'),
+                    array_column($options['prices'], 'description')
+                ),
+                'choice_attr' => function($choice, $key, $value) use ($options) {
+                    $price = array_values(array_filter($options['prices'], function($item) use ($value) {
+                        return $item['description'] === $value;
+                    }))[0] ?? null;
+                    
+                    return [
+                        'data-price' => $price['price'] ?? '',
+                        'data-product-id' => $price['product']['id'] ?? '',
+                        'data-product-name' => $price['product']['description'] ?? '',
+                        'data-project-id' => $price['product']['project_id'] ?? null
+                    ];
+                },
+                'placeholder' => 'Выберите позицию',
+                'attr' => [
+                    'class' => 'form-select price-source mb-3',
+                    'id' => 'order_item_form_description'
+                ]
             ])
-        ;
+            ->add('product', EntityType::class, [
+                'label' => 'Продукт',
+                'placeholder' => 'Выберите продукт',
+                'class' => Product::class,
+                'choice_label' => 'description',
+                'attr' => [
+                    'class' => 'form-select product-select mb-3',
+                    'id' => 'order_item_form_product'
+                ],
+                'query_builder' => function(ProductRepository $repo) use ($currentProject) {
+                    $qb = $repo->createQueryBuilder('p');
+                    if ($currentProject) {
+                        $qb->where('p.project = :project')
+                        ->setParameter('project', $currentProject);
+                    }
+                    return $qb;
+                }
+            ])
+            ->add('quantity', IntegerType::class, [
+                'label' => 'Количество',
+                'attr' => [
+                    'min' => 1,
+                    'class' => 'form-control quantity mb-3',
+                    'id' => 'order_item_form_quantity',
+                ]
+            ])
+            ->add('price', TextType::class, [
+                'label' => 'Цена',
+                'attr' => [
+                    'class' => 'form-control price mb-3',
+                    'id' => 'order_item_form_price',
+                ]
+            ])
+            ->add('line_total', TextType::class, [
+                'label' => 'Всего',
+                'attr' => [
+                    'class' => 'form-control total mb-3',
+                    'id' => 'order_item_form_line_total',
+                ]
+            ]);
     }
 
     public function configureOptions(OptionsResolver $resolver): void
     {
         $resolver->setDefaults([
             'data_class' => OrderItem::class,
+            'prices' => [],
         ]);
+        
+        $resolver->setAllowedTypes('prices', 'array');
     }
 }
