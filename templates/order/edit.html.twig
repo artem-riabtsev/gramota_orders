@@ -58,7 +58,7 @@
     <thead>
         <tr>
             <th>Наименование</th>
-            <th>Категория</th>
+            <th>Продукт</th>
             <th>Количество</th>
             <th>Цена</th>
             <th>Всего</th>
@@ -74,8 +74,8 @@
                 data-price="{{ orderItem.price }}"
                 data-total="{{ orderItem.lineTotal }}"
                 >
-                <td data-product-id="{{ orderItem.product.id }}" >{{ orderItem.product.description }}</td>
                 <td>{{ orderItem.description }}</td>
+                <td data-product-id="{{ orderItem.product.id }}" >{{ orderItem.product.description }}</td>
                 <td>{{ orderItem.quantity }}</td>
                 <td>{{ orderItem.price }}</td>
                 <td>{{ orderItem.lineTotal }}</td>
