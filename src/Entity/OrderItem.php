@@ -7,7 +7,6 @@ use Doctrine\DBAL\Types\Types;
 use Doctrine\ORM\Mapping as ORM;
 
 #[ORM\Entity(repositoryClass: OrderItemRepository::class)]
-#[ORM\Table(name: 'order_item')] 
 class OrderItem
 {
     #[ORM\Id]
@@ -16,23 +15,23 @@ class OrderItem
     private ?int $id = null;
 
     #[ORM\ManyToOne(targetEntity: Order::class, inversedBy: 'orderItems')]
-    #[ORM\JoinColumn(name: 'order_id', referencedColumnName: 'id')]
-    private Order|null $order = null;
+    #[ORM\JoinColumn(nullable: false)]
+    private ?Order $order = null;
 
     #[ORM\ManyToOne(targetEntity: Product::class, inversedBy: 'orderItems')]
-    #[ORM\JoinColumn(name: 'product_id', referencedColumnName: 'id', nullable: false)]
+    #[ORM\JoinColumn(nullable: false)]
     private ?Product $product = null;
 
-    #[ORM\Column(name: 'quantity')]
+    #[ORM\Column]
     private ?int $quantity = null;
 
-    #[ORM\Column(name: 'price', type: Types::DECIMAL, precision: 10, scale: 2)]
+    #[ORM\Column(type: Types::DECIMAL, precision: 10, scale: 2)]
     private ?string $price = null;
 
-    #[ORM\Column(name: 'line_total', type: Types::DECIMAL, precision: 10, scale: 2)]
+    #[ORM\Column(type: Types::DECIMAL, precision: 10, scale: 2)]
     private ?string $lineTotal = null;
 
-    #[ORM\Column(name: 'description')]
+    #[ORM\Column]
     private ?string $description = null;
 
     public function getId(): ?int
@@ -79,7 +78,7 @@ class OrderItem
     {
         return $this->price;
     }
-    
+
 
     public function setPrice(string $price): static
     {
@@ -111,5 +110,4 @@ class OrderItem
 
         return $this;
     }
-
 }

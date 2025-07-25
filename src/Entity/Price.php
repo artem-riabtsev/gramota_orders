@@ -1,6 +1,7 @@
 <?php
 
 namespace App\Entity;
+
 use  App\Entity\Product;
 use App\Repository\PriceRepository;
 use Doctrine\DBAL\Types\Types;
@@ -14,14 +15,14 @@ class Price
     #[ORM\Column]
     private ?int $id = null;
 
-    #[ORM\Column(length: 255)]
+    #[ORM\Column]
     private ?string $description = null;
 
     #[ORM\Column(type: Types::DECIMAL, precision: 10, scale: 2)]
     private ?string $price = null;
 
     #[ORM\ManyToOne(targetEntity: Product::class)]
-    #[ORM\JoinColumn(name: 'product_id', referencedColumnName: 'id')]
+    #[ORM\JoinColumn]
     private ?Product $product = null;
 
     public function getId(): ?int

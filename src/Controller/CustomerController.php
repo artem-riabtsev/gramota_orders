@@ -25,7 +25,7 @@ final class CustomerController extends AbstractController
         if ($query) {
             $customers = $customerRepository->findByNameOrEmail($query);
         } else {
-            $customers =[];
+            $customers = [];
         }
 
         return $this->render('customer/index.html.twig', [
@@ -120,19 +120,17 @@ final class CustomerController extends AbstractController
     {
         $q = $request->request->get('q');
 
-        if ($this->isCsrfTokenValid('delete'.$customer->getId(), $request->getPayload()->getString('_token'))) {
+        if ($this->isCsrfTokenValid('delete' . $customer->getId(), $request->getPayload()->getString('_token'))) {
 
-            if ($customer->getOrders()->count() > 0) {
-            $this->addFlash('error', 'Нельзя удалить заказчика, у которого есть заказы.');
-            return $this->redirectToRoute('app_customer_index');
-        }
-        
+            if ($customer->hasOrders() > 0) {
+                $this->addFlash('error', 'Нельзя удалить заказчика, у которого есть заказы.');
+                return $this->redirectToRoute('app_customer_index');
+            }
+
             $entityManager->remove($customer);
             $entityManager->flush();
         }
 
         return $this->redirectToRoute('app_customer_index', ['q' => $q], Response::HTTP_SEE_OTHER);
     }
-
-
 }

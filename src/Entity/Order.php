@@ -11,7 +11,6 @@ use Doctrine\Common\Collections\ArrayCollection;
 use Doctrine\Common\Collections\Collection;
 
 #[ORM\Entity(repositoryClass: OrderRepository::class)]
-#[ORM\Table(name: '`order`')]
 class Order
 {
     #[ORM\Id]
@@ -19,23 +18,23 @@ class Order
     #[ORM\Column]
     private ?int $id = null;
 
-    #[ORM\Column(name: 'date', type: Types::DATE_MUTABLE)]
+    #[ORM\Column(type: Types::DATE_MUTABLE)]
     private ?\DateTime $date = null;
 
     #[ORM\ManyToOne(targetEntity: Customer::class, inversedBy: "orders")]
-    #[ORM\JoinColumn(name: 'customer_id', referencedColumnName: 'id')]
-    private Customer|null $customer = null;
+    #[ORM\JoinColumn] //(nullable: false)
+    private ?Customer $customer = null;
 
-    #[ORM\Column(name: 'order_total', type: Types::DECIMAL, precision: 10, scale: 2)]
+    #[ORM\Column(type: Types::DECIMAL, precision: 10, scale: 2)]
     private ?string $orderTotal = '0.00';
 
-    #[ORM\Column(name: 'total_paid', type: Types::DECIMAL, precision: 10, scale: 2, nullable: true)]
+    #[ORM\Column(type: Types::DECIMAL, precision: 10, scale: 2)] // удалить nullable: true
     private ?string $totalPaid = '0.00';
 
-    #[ORM\Column(name: 'status', type: 'integer', options: ['default' => 0])]
+    #[ORM\Column(options: ['default' => 0])] // перечисление
     private int $status = 1;
 
-    #[ORM\OneToMany(mappedBy: 'order', targetEntity: OrderItem::class, cascade: ['persist', 'remove'], orphanRemoval: true)]
+    #[ORM\OneToMany(mappedBy: 'order', targetEntity: OrderItem::class, cascade: ['persist', 'remove'])]
     private Collection $orderItems;
 
     #[ORM\OneToMany(mappedBy: 'order', targetEntity: Payment::class)]
@@ -138,7 +137,7 @@ class Order
         return $this;
     }
 
-        public function getPayments(): Collection
+    public function getPayments(): Collection
     {
         return $this->payments;
     }

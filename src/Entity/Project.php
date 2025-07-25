@@ -15,7 +15,7 @@ class Project
     #[ORM\Column]
     private ?int $id = null;
 
-    #[ORM\Column(length: 255)]
+    #[ORM\Column]
     private ?string $name = null;
 
     #[ORM\OneToMany(mappedBy: 'project', targetEntity: Product::class)]

@@ -17,20 +17,20 @@ class Product
     #[ORM\Column]
     private ?int $id = null;
 
-    #[ORM\Column(name: 'description', length: 255)]
+    #[ORM\Column]
     private ?string $description = null;
 
-    #[ORM\Column(name: 'date', type: Types::DATE_MUTABLE)]
+    #[ORM\Column(type: Types::DATE_MUTABLE)]
     private ?\DateTime $date = null;
 
     #[ORM\OneToMany(mappedBy: 'product', targetEntity: OrderItem::class)]
     private Collection $orderItems;
 
-    #[ORM\Column(name: 'basic', type: 'boolean', options: ['default' => false])]
+    #[ORM\Column(options: ['default' => false])] // убрать default
     private bool $basic = false;
 
     #[ORM\ManyToOne(targetEntity: Project::class, inversedBy: 'products')]
-    #[ORM\JoinColumn(name: 'project_id', nullable: false)]
+    #[ORM\JoinColumn(nullable: false)]
     private ?Project $project = null;
 
     public function getId(): ?int
@@ -62,7 +62,7 @@ class Product
         return $this;
     }
 
-        public function getBasic(): ?bool
+    public function getBasic(): ?bool
     {
         return $this->basic;
     }
@@ -85,7 +85,7 @@ class Product
         return $this->orderItems;
     }
 
-        public function getProject(): ?Project
+    public function getProject(): ?Project
     {
         return $this->project;
     }

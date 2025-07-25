@@ -16,8 +16,8 @@ class Payment
     private ?int $id = null;
 
     #[ORM\ManyToOne(targetEntity: Order::class, inversedBy: "payments")]
-    #[ORM\JoinColumn(name: 'order_id', referencedColumnName: 'id')]
-    private Order|null $order = null;
+    #[ORM\JoinColumn]
+    private ?Order $order = null;
 
     #[ORM\Column(name: 'date', type: Types::DATE_MUTABLE)]
     private ?\DateTime $date = null;
