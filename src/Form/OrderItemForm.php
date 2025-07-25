@@ -31,7 +31,8 @@ class OrderItemForm extends AbstractType
 
         $builder
             ->add('description', ChoiceType::class, [
-                'label' => 'Название позиции',
+                'label' => 'Шаблон',
+                'mapped' => false,
                 'choices' => array_combine(
                     array_column($options['prices'], 'description'),
                     array_column($options['prices'], 'description')
@@ -48,10 +49,17 @@ class OrderItemForm extends AbstractType
                         'data-project-id' => $price['product']['project_id'] ?? null
                     ];
                 },
-                'placeholder' => 'Выберите позицию',
+                'placeholder' => 'Выберите шаблон',
                 'attr' => [
                     'class' => 'form-select price-source mb-3',
                     'id' => 'order_item_form_description'
+                ]
+            ])
+            ->add('description_text', TextType::class, [
+                'label' => 'Название позиции',
+                'attr' => [
+                    'class' => 'form-control mb-3',
+                    'id' => 'order_item_form_description_text'
                 ]
             ])
             ->add('product', EntityType::class, [

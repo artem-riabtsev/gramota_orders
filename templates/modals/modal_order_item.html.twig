@@ -37,6 +37,7 @@ document.addEventListener('DOMContentLoaded', function() {
     const quantityInput = document.getElementById('order_item_form_quantity');
     const priceInput = document.getElementById('order_item_form_price');
     const totalInput = document.getElementById('order_item_form_line_total');
+    const descriptionTextInput = document.getElementById('order_item_form_description_text');
     const allProductOptions = Array.from(productSelect.options);
 
     // Обновление общей суммы
@@ -44,18 +45,6 @@ document.addEventListener('DOMContentLoaded', function() {
         const price = parseFloat(priceInput.value) || 0;
         const quantity = parseInt(quantityInput.value) || 1;
         totalInput.value = (price * quantity).toFixed(2);
-    }
-
-    // Управление состоянием доступности поля выбора продукта
-    function updateProductSelectState() {
-        // Блокируем, если нет выбранного описания (названия позиции)
-        if (!priceSourceSelect.value || priceSourceSelect.value.trim() === '') {
-            productSelect.disabled = true;
-            // Очистить выбор продукта, чтобы не было ложного выбора
-            productSelect.selectedIndex = 0;
-        } else {
-            productSelect.disabled = false;
-        }
     }
 
     // Фильтрация продуктов по project_id, учитываем allowEmpty для пустого значения
@@ -100,9 +89,7 @@ document.addEventListener('DOMContentLoaded', function() {
         quantityInput.value = '1';
         priceInput.value = '';
         totalInput.value = '';
-
-        // Обновляем доступность поля выбора продукта
-        updateProductSelectState();
+        descriptionTextInput.value = '';
 
         modal.show();
     });
@@ -124,15 +111,13 @@ document.addEventListener('DOMContentLoaded', function() {
             const total = row.dataset.total;
 
             priceSourceSelect.value = description;
+            descriptionTextInput.value = description;
             
             // Сохраняем в атрибут data текущий выбранный продукт
             productSelect.dataset.currentSelected = productId;
 
             // Фильтруем продукты по project_id выбранной позиции
             filterProductsByProject();
-
-            // Обновляем доступность поля выбора продукта после фильтрации и установки значения
-            updateProductSelectState(); 
 
             quantityInput.value = quantity;
             priceInput.value = price;
@@ -152,6 +137,7 @@ document.addEventListener('DOMContentLoaded', function() {
         if (selectedOption.value) {
             priceInput.value = selectedOption.dataset.price;
             const productId = selectedOption.dataset.productId;
+            descriptionTextInput.value = selectedOption.value;
 
             // Запоминаем текущий выбранный продукт для фильтрации
             productSelect.dataset.currentSelected = productId;
@@ -161,10 +147,6 @@ document.addEventListener('DOMContentLoaded', function() {
 
             quantityInput.value = '1';
             updateTotal();
-
-            // Разблокируем поле продукта, так как выбрана позиция
-            updateProductSelectState();
-
         } else {
             // Если ничего не выбрано, сброс списка продуктов
             productSelect.innerHTML = '';
@@ -172,9 +154,7 @@ document.addEventListener('DOMContentLoaded', function() {
             productSelect.selectedIndex = 0;
             priceInput.value = '';
             totalInput.value = '';
-
-            // Блокируем поле продукта, так как позиция не выбрана
-            updateProductSelectState();
+            descriptionTextInput.value = '';
         }
     });
 
@@ -190,7 +170,7 @@ document.addEventListener('DOMContentLoaded', function() {
         submitData.append('_token', formData.get('_token'));
         submitData.append('item_id', itemId);
         
-        submitData.append(`order_item[${itemId}][description]`, formData.get('order_item_form[description]'));
+        submitData.append(`order_item[${itemId}][description]`, formData.get('order_item_form[description_text]'));
         submitData.append(`order_item[${itemId}][product_id]`, formData.get('order_item_form[product]'));
         submitData.append(`order_item[${itemId}][quantity]`, formData.get('order_item_form[quantity]'));
         submitData.append(`order_item[${itemId}][price]`, formData.get('order_item_form[price]'));
@@ -207,8 +187,5 @@ document.addEventListener('DOMContentLoaded', function() {
     });
 
     filterProductsByProject();
-
-    updateProductSelectState();
 });
-
 </script>
