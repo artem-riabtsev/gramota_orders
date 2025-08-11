@@ -229,17 +229,6 @@ final class OrderController extends AbstractController
             $totalPaid = $order->getTotalPaid();
 
             $order->recalcStatus($totalPaid, $orderTotal);
-            if (bccomp($totalPaid, '0', 2) === 0 && bccomp($lineTotal, '0', 2) === 0) {
-                $order->setStatus(OrderStatus::EMPTY); // Пустой
-            } elseif (bccomp($totalPaid, '0', 2) === 0 && bccomp($totalPaid, $lineTotal, 2) === -1) {
-                $order->setStatus(OrderStatus::UNPAID); // Не оплачен
-            } elseif (bccomp($totalPaid, '0', 2) === 1 && bccomp($totalPaid, $lineTotal, 2) === -1) {
-                $order->setStatus(OrderStatus::PARTIALLY_PAID); // Частично оплачен
-            } elseif (bccomp($totalPaid, $lineTotal, 2) === 0) {
-                $order->setStatus(OrderStatus::PAID); // Оплачен
-            } elseif (bccomp($totalPaid, $lineTotal, 2) === 1) {
-                $order->setStatus(OrderStatus::OVERPAID); // Переплата
-            }
 
             $entityManager->flush();
             return $this->redirectToRoute('app_order_edit', ['id' => $order->getId()]);

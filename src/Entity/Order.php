@@ -146,14 +146,16 @@ class Order
 
     public function recalcStatus($totalPaid, $orderTotal): void
     {
-        if (bccomp($totalPaid, '0', 2) === 0 && bccomp($totalPaid, $orderTotal, 2) === -1) {
-            $this->setStatus(1); // не оплачен
-        } elseif (bccomp($totalPaid, '0', 2) === 1 && bccomp($totalPaid, $orderTotal, 2) === -1) {
-            $this->setStatus(2); // частично оплачен
-        } elseif (bccomp($totalPaid, $orderTotal, 2) === 0) {
-            $this->setStatus(4); // оплачен
-        } elseif (bccomp($totalPaid, $orderTotal, 2) === 1) {
-            $this->setStatus(3); // переплата
-        }
+        if (bccomp($totalPaid, '0', 2) === 0 && bccomp($orderTotal, '0', 2) === 0) {
+                $this->setStatus(OrderStatus::EMPTY); // Пустой
+            } elseif (bccomp($totalPaid, '0', 2) === 0 && bccomp($totalPaid, $orderTotal, 2) === -1) {
+                $this->setStatus(OrderStatus::UNPAID); // Не оплачен
+            } elseif (bccomp($totalPaid, '0', 2) === 1 && bccomp($totalPaid, $orderTotal, 2) === -1) {
+                $this->setStatus(OrderStatus::PARTIALLY_PAID); // Частично оплачен
+            } elseif (bccomp($totalPaid, $orderTotal, 2) === 0) {
+                $this->setStatus(OrderStatus::PAID); // Оплачен
+            } elseif (bccomp($totalPaid, $orderTotal, 2) === 1) {
+                $this->setStatus(OrderStatus::OVERPAID); // Переплата
+            }
     }
 }
