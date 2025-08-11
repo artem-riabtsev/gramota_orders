@@ -21,11 +21,15 @@
             {% for product in products %}
                 <tr>
                     <td>{{ product.id }}</td>
-                    <td>{{ product.description }}</td>
+                    <td>
+                        <span class="me-2">{{ product.description }}</span>
+                        <a href="{{ path('app_product_edit', {'id': product.id}) }}" class="btn p-0 mb-1">
+                            <i class="bi bi-pencil" style="font-size: 1rem; color: #6c757d;"></i>
+                        </a>
+                    </td>
                     <td>{{ product.date|date('d.m.Y') }}</td>
                     <td>
                         <div class="d-flex justify-content-center">
-                            <a href="{{ path('app_product_edit', {'id': product.id}) }}" class="btn btn-sm btn-outline-warning me-2">Редактировать</a>
                             <form method="post" action="{{ path('app_product_delete', {'id': product.id}) }}">
                                 <input type="hidden" name="_token" value="{{ csrf_token('delete' ~ product.id) }}">
                                  <button

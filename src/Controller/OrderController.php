@@ -82,14 +82,6 @@ final class OrderController extends AbstractController
         ]);
     }
 
-    #[Route('/order/{id}', name: 'app_order_show', methods: ['GET'])]
-    public function show(Order $order): Response
-    {
-        return $this->render('order/show.html.twig', [
-            'order' => $order,
-        ]);
-    }
-
     #[Route('/order/{id}/edit', name: 'app_order_edit', methods: ['GET', 'POST'])]
     public function edit(
         Request $request,

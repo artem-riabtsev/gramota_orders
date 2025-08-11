@@ -23,23 +23,18 @@
             <tr>
                 <td>{{ payment.id }}</td>
                 <td>
-                    {% if payment.order.status == 0 %}
-                        <a href="{{ path('app_order_edit', {'id': payment.order.id}) }}" 
-                           class="text-muted" style="text-decoration: underline; text-decoration-thickness: 1px;">
-                            {{ payment.order.id }}
-                        </a>
-                    {% else %}
-                        <a href="{{ path('app_order_show', {'id': payment.order.id}) }}" 
-                           class="text-muted" style="text-decoration: underline; text-decoration-thickness: 1px;">
-                            {{ payment.order.id }}
-                        </a>
-                    {% endif %}
+                    <a href="{{ path('app_order_edit', {'id': payment.order.id}) }}" 
+                        class="text-muted me-2" style="text-decoration: underline; text-decoration-thickness: 1px;">
+                        {{ payment.order.id }}
+                    </a>
+                    <a href="{{ path('app_payment_edit', {'id': payment.id}) }}" class="btn p-0 mb-1">
+                        <i class="bi bi-pencil" style="font-size: 1rem; color: #6c757d;"></i>
+                    </a>
                 </td>
                 <td>{{ payment.date ? payment.date|date('d.m.Y') : '' }}</td>
                 <td>{{ payment.amount }}</td>
                 <td>
                     <div class="d-flex justify-content-center">
-                        <a href="{{ path('app_payment_edit', {'id': payment.id}) }}" class="btn btn-sm btn-outline-warning me-2">Редактировать</a>
                         <button
                             type="button"
                             class="btn bp-0 remove-item"

@@ -76,21 +76,26 @@
                 data-price="{{ orderItem.price }}"
                 data-total="{{ orderItem.lineTotal }}"
                 >
-                <td>{{ orderItem.description }}</td>
+                <td>
+                    <span  class="me-2">
+                        {{ orderItem.description }}
+                    </span>
+                    <button type="button" class="btn p-0 mb-1 edit-item" 
+                        data-id="{{ orderItem.id }}"><i class="bi bi-pencil" style="font-size: 1rem; color: #6c757d;"></i>
+                    </button>
+                </td>
                 <td data-product-id="{{ orderItem.product.id }}" >{{ orderItem.product.description }}</td>
                 <td>{{ orderItem.quantity }}</td>
                 <td>{{ orderItem.price }}</td>
                 <td>{{ orderItem.lineTotal }}</td>
                 <td>
                     <div class='d-flex justify-content-center'>
-                        <button type="button" class="btn btn-sm btn-outline-warning edit-item" 
-                                data-id="{{ orderItem.id }}">Редактировать</button>
                         <button type="button" class="btn p-0 remove-item" 
-                                data-id="{{ orderItem.id }}"
-                                data-url="{{ path('app_order_edit', {'id': order.id}) }}"
-                                style="background: none; border: none; color: #dc3545; font-size: 1.5rem; line-height: 1;">
-                                <i class="bi bi-x"></i>
-                            </button>
+                            data-id="{{ orderItem.id }}"
+                            data-url="{{ path('app_order_edit', {'id': order.id}) }}"
+                            style="background: none; border: none; color: #dc3545; font-size: 1.5rem; line-height: 1;">
+                            <i class="bi bi-x"></i>
+                        </button>
                     </div>
                 </td>
             </tr>
