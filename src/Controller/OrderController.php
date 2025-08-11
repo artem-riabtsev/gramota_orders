@@ -15,6 +15,7 @@ use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\HttpFoundation\Response;
 use Symfony\Component\Routing\Attribute\Route;
 use App\Repository\CustomerRepository;
+use App\Enum\OrderStatus;
 
 final class OrderController extends AbstractController
 {
@@ -49,6 +50,7 @@ final class OrderController extends AbstractController
     public function new(Request $request, EntityManagerInterface $entityManager, CustomerRepository $customerRepository): Response
     {
         $order = new Order();
+        $order->setStatus(OrderStatus::EMPTY);
 
         $customerId = $request->query->get('customer');
         if ($customerId) {
@@ -96,6 +98,22 @@ final class OrderController extends AbstractController
         ProductRepository $productRepository,
         PriceRepository $priceRepository
     ): Response {
+
+        if ($request->isMethod('POST') && $request->request->has('order_item_form')) {
+            $data = $request->request->all()['order_item_form'];
+            $itemId = $request->request->get('item_id', 'new_'.time());
+            
+            // Формируем данные в нужном формате
+            $request->request->set('order_item', [
+                $itemId => [
+                    'description' => $data['description_text'],
+                    'product_id' => $data['product'],
+                    'quantity' => $data['quantity'],
+                    'price' => $data['price'],
+                    'line_total' => $data['line_total']
+                ]
+            ]);
+        }
         $form = $this->createForm(OrderForm::class, $order);
         $form->handleRequest($request);
 
@@ -209,14 +227,16 @@ final class OrderController extends AbstractController
             $order->setOrderTotal($lineTotal);
             $totalPaid = $order->getTotalPaid();
 
-            if (bccomp($totalPaid, '0', 2) === 0 && bccomp($totalPaid, $lineTotal, 2) === -1) {
-                $order->setStatus(1); // не оплачен
+            if (bccomp($totalPaid, '0', 2) === 0 && bccomp($lineTotal, '0', 2) === 0) {
+                $order->setStatus(OrderStatus::EMPTY); // Пустой
+            } elseif (bccomp($totalPaid, '0', 2) === 0 && bccomp($totalPaid, $lineTotal, 2) === -1) {
+                $order->setStatus(OrderStatus::UNPAID); // Не оплачен
             } elseif (bccomp($totalPaid, '0', 2) === 1 && bccomp($totalPaid, $lineTotal, 2) === -1) {
-                $order->setStatus(2); // частично оплачен
+                $order->setStatus(OrderStatus::PARTIALLY_PAID); // Частично оплачен
             } elseif (bccomp($totalPaid, $lineTotal, 2) === 0) {
-                $order->setStatus(4); // оплачен
+                $order->setStatus(OrderStatus::PAID); // Оплачен
             } elseif (bccomp($totalPaid, $lineTotal, 2) === 1) {
-                $order->setStatus(3); // переплата
+                $order->setStatus(OrderStatus::OVERPAID); // Переплата
             }
 
             $entityManager->flush();

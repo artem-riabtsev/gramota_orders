@@ -26,7 +26,7 @@ class Product
     #[ORM\Column]
     private bool $basic = false;
 
-    #[ORM\ManyToOne(targetEntity: Project::class, inversedBy: 'products')]
+    #[ORM\ManyToOne(targetEntity: Project::class)]
     #[ORM\JoinColumn(nullable: false)]
     private ?Project $project = null;
 

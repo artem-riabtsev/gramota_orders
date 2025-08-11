@@ -10,6 +10,7 @@ use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
 use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\HttpFoundation\Response;
 use Symfony\Component\Routing\Attribute\Route;
+use App\Enum\OrderStatus;
 
 #[Route('/customer')]
 final class CustomerController extends AbstractController
@@ -88,10 +89,11 @@ final class CustomerController extends AbstractController
     public function show(Customer $customer): Response
     {
         $ordersGroups = [
-            ['name' => 'Неоплаченные', 'orders' => $customer->getOrders()->filter(fn($order) => $order->getStatus() === 1), 'color' => 'text-secondary'],
-            ['name' => 'Частично оплаченные', 'orders' => $customer->getOrders()->filter(fn($order) => $order->getStatus() === 2), 'color' => 'text-danger'],
-            ['name' => 'Переплаченные', 'orders' => $customer->getOrders()->filter(fn($order) => $order->getStatus() === 3), 'color' => 'text-danger'],
-            ['name' => 'Оплаченные', 'orders' => $customer->getOrders()->filter(fn($order) => $order->getStatus() === 4), 'color' => 'text-success'],
+            ['name' => 'Пустые', 'orders' => $customer->getOrders()->filter(fn($order) => $order->getStatus() === OrderStatus::EMPTY), 'color' => 'text-secondary'],
+            ['name' => 'Неоплаченные', 'orders' => $customer->getOrders()->filter(fn($order) => $order->getStatus() === OrderStatus::UNPAID), 'color' => 'text-secondary'],
+            ['name' => 'Частично оплаченные', 'orders' => $customer->getOrders()->filter(fn($order) => $order->getStatus() === OrderStatus::PARTIALLY_PAID), 'color' => 'text-danger'],
+            ['name' => 'Переплаченные', 'orders' => $customer->getOrders()->filter(fn($order) => $order->getStatus() === OrderStatus::OVERPAID), 'color' => 'text-danger'],
+            ['name' => 'Оплаченные', 'orders' => $customer->getOrders()->filter(fn($order) => $order->getStatus() === OrderStatus::PAID), 'color' => 'text-success'],
         ];
 
         return $this->render('customer/show.html.twig', [

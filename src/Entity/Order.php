@@ -9,6 +9,7 @@ use App\Entity\Customer;
 use App\Entity\OrderItem;
 use Doctrine\Common\Collections\ArrayCollection;
 use Doctrine\Common\Collections\Collection;
+use App\Enum\OrderStatus;
 
 #[ORM\Entity(repositoryClass: OrderRepository::class)]
 #[ORM\Table(name: '`order`')]
@@ -32,8 +33,8 @@ class Order
     #[ORM\Column(type: Types::DECIMAL, precision: 10, scale: 2, nullable: false)]
     private string $totalPaid = '0.00';
 
-    #[ORM\Column(options: ['default' => 0])] // перечисление
-    private int $status = 1;
+    #[ORM\Column(type: 'integer', enumType: OrderStatus::class, options: ['default' => OrderStatus::EMPTY->value])]
+    private OrderStatus $status = OrderStatus::EMPTY;
 
     #[ORM\OneToMany(mappedBy: 'order', targetEntity: OrderItem::class, cascade: ['persist', 'remove'])]
     private Collection $orderItems;
@@ -82,12 +83,12 @@ class Order
         return $this;
     }
 
-    public function getStatus(): int
+    public function getStatus(): OrderStatus
     {
         return $this->status;
     }
 
-    public function setStatus(int $status): self
+    public function setStatus(OrderStatus $status): self
     {
         $this->status = $status;
         return $this;

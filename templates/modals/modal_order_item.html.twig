@@ -40,6 +40,14 @@ document.addEventListener('DOMContentLoaded', function() {
     const descriptionTextInput = document.getElementById('order_item_form_description_text');
     const allProductOptions = Array.from(productSelect.options);
 
+    function handleTotalChange() {
+        const quantity = parseInt(quantityInput.value) || 1;
+        const total = parseFloat(totalInput.value) || 0;
+        if (quantity > 0) {
+            priceInput.value = (total / quantity).toFixed(2);
+        }
+    }
+
     // Обновление общей суммы
     function updateTotal() {
         const price = parseFloat(priceInput.value) || 0;
@@ -128,8 +136,15 @@ document.addEventListener('DOMContentLoaded', function() {
     });
 
     // Обработчики изменений количества и цены
-    quantityInput.addEventListener('input', updateTotal);
     priceInput.addEventListener('input', updateTotal);
+    totalInput.addEventListener('input', handleTotalChange);
+    quantityInput.addEventListener('input', function() {
+        if (priceInput.value) {
+            updateTotal();
+        } else {
+            handleTotalChange();
+        }
+    });
 
     // При выборе позиции подставляем все данные
     priceSourceSelect.addEventListener('change', function() {
@@ -158,32 +173,24 @@ document.addEventListener('DOMContentLoaded', function() {
         }
     });
 
-    // Отправка формы (оставляем как есть)
     itemForm.addEventListener('submit', function(e) {
         e.preventDefault();
         
-        const formData = new FormData(itemForm);
-        const rawItemId = formData.get('item_id');
-        const itemId = rawItemId || 'new_' + Date.now();
+        const form = this;
+        const formData = new FormData(form);
         
-        const submitData = new FormData();
-        submitData.append('_token', formData.get('_token'));
-        submitData.append('item_id', itemId);
-        
-        submitData.append(`order_item[${itemId}][description]`, formData.get('order_item_form[description_text]'));
-        submitData.append(`order_item[${itemId}][product_id]`, formData.get('order_item_form[product]'));
-        submitData.append(`order_item[${itemId}][quantity]`, formData.get('order_item_form[quantity]'));
-        submitData.append(`order_item[${itemId}][price]`, formData.get('order_item_form[price]'));
-        submitData.append(`order_item[${itemId}][line_total]`, formData.get('order_item_form[line_total]'));
-        
-        fetch(itemForm.action, {
+        // Простая отправка формы как есть
+        fetch(form.action, {
             method: 'POST',
-            body: submitData
+            body: formData
         }).then(response => {
             if (response.redirected) {
                 window.location.href = response.url;
             }
-        }).catch(error => console.error('Error:', error));
+        }).catch(error => {
+            console.error('Error:', error);
+            alert('Ошибка при сохранении');
+        });
     });
 
     filterProductsByProject();

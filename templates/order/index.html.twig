@@ -33,14 +33,16 @@
                 </a>
             </td>
             <td>
-                {% if order.status == 1 %}
+                {% if order.status.value == constant('App\\Enum\\OrderStatus::EMPTY').value %}
+                    <span class="text-muted">Пустой</span>
+                {% elseif order.status.value == constant('App\\Enum\\OrderStatus::UNPAID').value %}
                     <span class="text-secondary">Не оплачен</span>
-                {% elseif order.status == 2 %}
-                    <span class="text-danger">Частично оплачен</span>
-                {% elseif order.status == 3 %}
-                    <span class="text-danger">Переплата</span>
-                {% else %}
+                {% elseif order.status.value == constant('App\\Enum\\OrderStatus::PARTIALLY_PAID').value %}
+                    <span class="text-warning">Частично оплачен</span>
+                {% elseif order.status.value == constant('App\\Enum\\OrderStatus::PAID').value %}
                     <span class="text-success">Оплачен</span>
+                {% elseif order.status.value == constant('App\\Enum\\OrderStatus::OVERPAID').value %}
+                    <span class="text-danger">Переплата</span>
                 {% endif %}
             </td>
             <td>

@@ -2,7 +2,6 @@
 
 namespace App\Controller;
 
-use App\Entity\Order;
 use App\Entity\Payment;
 use App\Form\PaymentForm;
 use App\Repository\PaymentRepository;
@@ -12,6 +11,7 @@ use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
 use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\HttpFoundation\Response;
 use Symfony\Component\Routing\Attribute\Route;
+use App\Enum\OrderStatus;
 use \DateTime;
 
 #[Route('/payment')]
@@ -82,14 +82,17 @@ final class PaymentController extends AbstractController
 
             $TotalPaid = $order->getTotalPaid();
             $orderTotal = $order->getOrderTotal();
-            if (bccomp($TotalPaid, '0', 2) === 0 && bccomp($TotalPaid, $orderTotal, 2) === -1) {
-                $order->setStatus(1); // не оплачен
+
+            if (bccomp($TotalPaid, '0', 2) === 0 && bccomp($orderTotal, '0', 2) === 0) {
+                $order->setStatus(OrderStatus::EMPTY); // Пустой
+            } elseif (bccomp($TotalPaid, '0', 2) === 0 && bccomp($TotalPaid, $orderTotal, 2) === -1) {
+                $order->setStatus(OrderStatus::UNPAID); // Не оплачен
             } elseif (bccomp($TotalPaid, '0', 2) === 1 && bccomp($TotalPaid, $orderTotal, 2) === -1) {
-                $order->setStatus(2); // частично оплачен
+                $order->setStatus(OrderStatus::PARTIALLY_PAID); // Частично оплачен
             } elseif (bccomp($TotalPaid, $orderTotal, 2) === 0) {
-                $order->setStatus(4); // оплачен
+                $order->setStatus(OrderStatus::PAID); // Оплачен
             } elseif (bccomp($TotalPaid, $orderTotal, 2) === 1) {
-                $order->setStatus(3); // переплата
+                $order->setStatus(OrderStatus::OVERPAID); // Переплата
             }
 
             $entityManager->persist($order);
@@ -114,14 +117,16 @@ final class PaymentController extends AbstractController
             $paymentRepository->recalculateOrderPaymentAmount($payment->getOrder());
             $TotalPaid = $order->getTotalPaid();
             $orderTotal = $order->getOrderTotal();
-            if (bccomp($TotalPaid, '0', 2) === 0 && bccomp($TotalPaid, $orderTotal, 2) === -1) {
-                $order->setStatus(1); // не оплачен
+            if (bccomp($TotalPaid, '0', 2) === 0 && bccomp($orderTotal, '0', 2) === 0) {
+                $order->setStatus(OrderStatus::EMPTY); // Пустой
+            } elseif (bccomp($TotalPaid, '0', 2) === 0 && bccomp($TotalPaid, $orderTotal, 2) === -1) {
+                $order->setStatus(OrderStatus::UNPAID); // Не оплачен
             } elseif (bccomp($TotalPaid, '0', 2) === 1 && bccomp($TotalPaid, $orderTotal, 2) === -1) {
-                $order->setStatus(2); // частично оплачен
+                $order->setStatus(OrderStatus::PARTIALLY_PAID); // Частично оплачен
             } elseif (bccomp($TotalPaid, $orderTotal, 2) === 0) {
-                $order->setStatus(4); // оплачен
+                $order->setStatus(OrderStatus::PAID); // Оплачен
             } elseif (bccomp($TotalPaid, $orderTotal, 2) === 1) {
-                $order->setStatus(3); // переплата
+                $order->setStatus(OrderStatus::OVERPAID); // Переплата
             }
 
             $entityManager->persist($order);
