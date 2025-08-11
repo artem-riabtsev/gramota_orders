@@ -15,11 +15,8 @@ class Project
     #[ORM\Column]
     private ?int $id = null;
 
-    #[ORM\Column(length: 255)]
+    #[ORM\Column]
     private ?string $name = null;
-
-    #[ORM\OneToMany(mappedBy: 'project', targetEntity: Product::class)]
-    private Collection $products;
 
     public function getId(): ?int
     {
@@ -35,35 +32,6 @@ class Project
     {
         $this->name = $name;
 
-        return $this;
-    }
-
-    public function __construct()
-    {
-        $this->products = new ArrayCollection();
-    }
-
-    public function getProducts(): Collection
-    {
-        return $this->products;
-    }
-
-    public function addProduct(Product $product): self
-    {
-        if (!$this->products->contains($product)) {
-            $this->products->add($product);
-            $product->setProject($this);
-        }
-        return $this;
-    }
-
-    public function removeProduct(Product $product): self
-    {
-        if ($this->products->removeElement($product)) {
-            if ($product->getProject() === $this) {
-                $product->setProject(null);
-            }
-        }
         return $this;
     }
 }

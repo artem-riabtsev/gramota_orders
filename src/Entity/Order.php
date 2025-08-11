@@ -9,6 +9,7 @@ use App\Entity\Customer;
 use App\Entity\OrderItem;
 use Doctrine\Common\Collections\ArrayCollection;
 use Doctrine\Common\Collections\Collection;
+use App\Enum\OrderStatus;
 
 #[ORM\Entity(repositoryClass: OrderRepository::class)]
 #[ORM\Table(name: '`order`')]
@@ -19,23 +20,23 @@ class Order
     #[ORM\Column]
     private ?int $id = null;
 
-    #[ORM\Column(name: 'date', type: Types::DATE_MUTABLE)]
+    #[ORM\Column(type: Types::DATE_MUTABLE)]
     private ?\DateTime $date = null;
 
     #[ORM\ManyToOne(targetEntity: Customer::class, inversedBy: "orders")]
-    #[ORM\JoinColumn(name: 'customer_id', referencedColumnName: 'id')]
-    private Customer|null $customer = null;
+    #[ORM\JoinColumn(nullable: false)]
+    private Customer $customer;
 
-    #[ORM\Column(name: 'order_total', type: Types::DECIMAL, precision: 10, scale: 2)]
+    #[ORM\Column(type: Types::DECIMAL, precision: 10, scale: 2)]
     private ?string $orderTotal = '0.00';
 
-    #[ORM\Column(name: 'total_paid', type: Types::DECIMAL, precision: 10, scale: 2, nullable: true)]
-    private ?string $totalPaid = '0.00';
+    #[ORM\Column(type: Types::DECIMAL, precision: 10, scale: 2, nullable: false)]
+    private string $totalPaid = '0.00';
 
-    #[ORM\Column(name: 'status', type: 'integer', options: ['default' => 0])]
-    private int $status = 1;
+    #[ORM\Column(type: 'integer', enumType: OrderStatus::class, options: ['default' => OrderStatus::EMPTY->value])]
+    private OrderStatus $status = OrderStatus::EMPTY;
 
-    #[ORM\OneToMany(mappedBy: 'order', targetEntity: OrderItem::class, cascade: ['persist', 'remove'], orphanRemoval: true)]
+    #[ORM\OneToMany(mappedBy: 'order', targetEntity: OrderItem::class, cascade: ['persist', 'remove'])]
     private Collection $orderItems;
 
     #[ORM\OneToMany(mappedBy: 'order', targetEntity: Payment::class)]
@@ -82,12 +83,12 @@ class Order
         return $this;
     }
 
-    public function getStatus(): int
+    public function getStatus(): OrderStatus
     {
         return $this->status;
     }
 
-    public function setStatus(int $status): self
+    public function setStatus(OrderStatus $status): self
     {
         $this->status = $status;
         return $this;
@@ -138,30 +139,9 @@ class Order
         return $this;
     }
 
-        public function getPayments(): Collection
+    public function hasPayments(): bool
     {
-        return $this->payments;
-    }
-
-    public function addPayment(Payment $payment): static
-    {
-        if (!$this->payments->contains($payment)) {
-            $this->payments[] = $payment;
-            $payment->setOrder($this);
-        }
-
-        return $this;
-    }
-
-    public function removePayment(Payment $payment): static
-    {
-        if ($this->payments->removeElement($payment)) {
-            if ($payment->getOrder() === $this) {
-                $payment->setOrder(null);
-            }
-        }
-
-        return $this;
+        return !$this->payments->isEmpty();
     }
 
     public function recalcStatus($totalPaid, $orderTotal): void

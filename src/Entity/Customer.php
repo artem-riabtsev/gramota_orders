@@ -16,13 +16,13 @@ class Customer
     #[ORM\Column]
     private ?int $id = null;
 
-    #[ORM\Column(name: 'name', length: 255)]
+    #[ORM\Column]
     private ?string $name = null;
 
-    #[ORM\Column(name: 'email', length: 255)]
+    #[ORM\Column]
     private ?string $email = null;
 
-    #[ORM\Column(name: 'phone', length: 255)]
+    #[ORM\Column]
     private ?string $phone = null;
 
     #[ORM\OneToMany(mappedBy: 'customer', targetEntity: Order::class)]
@@ -72,6 +72,11 @@ class Customer
     public function __construct()
     {
         $this->orders = new ArrayCollection();
+    }
+
+    public function hasOrders(): bool
+    {
+        return !$this->orders->isEmpty();
     }
 
     public function getOrders(): Collection

@@ -10,6 +10,7 @@ use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
 use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\HttpFoundation\Response;
 use Symfony\Component\Routing\Attribute\Route;
+use App\Enum\OrderStatus;
 
 #[Route('/customer')]
 final class CustomerController extends AbstractController
@@ -21,16 +22,19 @@ final class CustomerController extends AbstractController
         CustomerRepository $customerRepository
     ): Response {
         $query = $request->query->get('q');
+        $customer = New Customer;
+        $hasorders = $customer->hasOrders();
 
         if ($query) {
             $customers = $customerRepository->findByNameOrEmail($query);
         } else {
-            $customers =[];
+            $customers = [];
         }
 
         return $this->render('customer/index.html.twig', [
             'customers' => $customers,
             'query' => $query,
+            'hasorders' => $hasorders,
         ]);
     }
 
@@ -85,10 +89,11 @@ final class CustomerController extends AbstractController
     public function show(Customer $customer): Response
     {
         $ordersGroups = [
-            ['name' => 'Неоплаченные', 'orders' => $customer->getOrders()->filter(fn($order) => $order->getStatus() === 1), 'color' => 'text-secondary'],
-            ['name' => 'Частично оплаченные', 'orders' => $customer->getOrders()->filter(fn($order) => $order->getStatus() === 2), 'color' => 'text-danger'],
-            ['name' => 'Переплаченные', 'orders' => $customer->getOrders()->filter(fn($order) => $order->getStatus() === 3), 'color' => 'text-danger'],
-            ['name' => 'Оплаченные', 'orders' => $customer->getOrders()->filter(fn($order) => $order->getStatus() === 4), 'color' => 'text-success'],
+            ['name' => 'Пустые', 'orders' => $customer->getOrders()->filter(fn($order) => $order->getStatus() === OrderStatus::EMPTY), 'color' => 'text-secondary'],
+            ['name' => 'Неоплаченные', 'orders' => $customer->getOrders()->filter(fn($order) => $order->getStatus() === OrderStatus::UNPAID), 'color' => 'text-secondary'],
+            ['name' => 'Частично оплаченные', 'orders' => $customer->getOrders()->filter(fn($order) => $order->getStatus() === OrderStatus::PARTIALLY_PAID), 'color' => 'text-danger'],
+            ['name' => 'Переплаченные', 'orders' => $customer->getOrders()->filter(fn($order) => $order->getStatus() === OrderStatus::OVERPAID), 'color' => 'text-danger'],
+            ['name' => 'Оплаченные', 'orders' => $customer->getOrders()->filter(fn($order) => $order->getStatus() === OrderStatus::PAID), 'color' => 'text-success'],
         ];
 
         return $this->render('customer/show.html.twig', [
@@ -120,19 +125,17 @@ final class CustomerController extends AbstractController
     {
         $q = $request->request->get('q');
 
-        if ($this->isCsrfTokenValid('delete'.$customer->getId(), $request->getPayload()->getString('_token'))) {
+        if ($this->isCsrfTokenValid('delete' . $customer->getId(), $request->getPayload()->getString('_token'))) {
 
-            if ($customer->getOrders()->count() > 0) {
-            $this->addFlash('error', 'Нельзя удалить заказчика, у которого есть заказы.');
-            return $this->redirectToRoute('app_customer_index');
-        }
-        
+            if ($customer->hasOrders() > 0) {
+                $this->addFlash('error', 'Нельзя удалить заказчика, у которого есть заказы.');
+                return $this->redirectToRoute('app_customer_index');
+            }
+
             $entityManager->remove($customer);
             $entityManager->flush();
         }
 
         return $this->redirectToRoute('app_customer_index', ['q' => $q], Response::HTTP_SEE_OTHER);
     }
-
-
 }
