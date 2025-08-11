@@ -15,13 +15,19 @@
             <th>Сумма оплаты</th>
             <th>Заказчик</th>
             <th>Статус</th>
-            <th>Действия</th>
+            <th></th>
         </tr>
     </thead>
     <tbody>
     {% for order in orders %}
         <tr>
-            <td>{{ order.id }}</td>
+            <td>
+                <a href="{{ path('app_order_edit', {'id': order.id}) }}"
+                    class="text-muted"
+                    style="text-decoration: underline; text-decoration-thickness: 1px;">
+                    {{ order.id }}
+                </a>
+            </td>
             <td>{{ order.date ? order.date|date('d.m.Y') : '' }}</td>
             <td>{{ order.orderTotal }}</td>
             <td>{{ order.totalPaid }}</td>
@@ -44,21 +50,16 @@
                 {% endif %}
             </td>
             <td>
-                <div class="d-flex">
-                    {% if order.status == 4 %}
-                        <a href="{{ path('app_order_show', {'id': order.id}) }}" class="btn btn-sm btn-outline-primary me-2">Просмотр</a>
-                    {% else %}
-                        <a href="{{ path('app_order_edit', {'id': order.id}) }}" class="btn btn-sm btn-outline-warning me-2">Корзина</a>
-                    {% endif %}
+                <div class="d-flex justify-content-center">
                     <button
                         type="button"
-                        class="btn btn-sm btn-outline-danger remove-item"
+                        class="btn remove-item p-0"
                         data-id="{{ order.id }}"
                         data-token="{{ csrf_token('delete' ~ order.id) }}"
                         data-url="{{ path('app_order_delete', {'id': order.id}) }}"
-                        {% if order.payments|length > 0 %}disabled{% endif %}
+                        style="background: none; border: none; color: #dc3545; font-size: 1.5rem; line-height: 1;"
                     >
-                        Удалить
+                        <i class="bi bi-x"></i>
                     </button>
                 </div>
             </td>

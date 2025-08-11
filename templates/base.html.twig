@@ -70,15 +70,6 @@
             }
         ]
     });
-
-    {% for label, messages in app.flashes %}
-        {% for message in messages %}
-            notyf.open({
-                type: '{{ label == "error" ? "error" : (label == "warning" ? "warning" : "success") }}',
-                message: "{{ message|e('js') }}"
-            });
-        {% endfor %}
-    {% endfor %}
 </script>
 </body>
 </html>

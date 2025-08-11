@@ -33,38 +33,6 @@ class PaymentRepository extends ServiceEntityRepository
     $em->flush();
     }
 
-    public function updateOrderPaymentAmount(int $paymentId, float $amountUpdated): void
-    {
-        $em = $this->getEntityManager();
-
-        $payment = $em->getRepository(Payment::class)->find($paymentId);
-
-        if (!$payment) {
-            throw new \RuntimeException("Payment not found: ID $paymentId");
-        }
-
-        $order = $payment->getOrder();
-
-        if (!$order) {
-            throw new \RuntimeException("Order not found for payment ID $paymentId");
-        }
-
-        $amountOld = $payment->getAmount();
-
-        $lineTotal = (float) $this->createQueryBuilder('p')
-            ->select('SUM(p.amount)')
-            ->where('IDENTITY(p.order) = :order_id')
-            ->setParameter('order_id', $order)
-            ->getQuery()
-            ->getSingleScalarResult();
-
-        $correctedAmount = $lineTotal - $amountOld + $amountUpdated;
-
-        $order->setTotalPaid($correctedAmount);
-
-        $em->flush();
-    }
-
     public function findByOrderId(?string $query): array
     {
         $qb = $this->createQueryBuilder('c');

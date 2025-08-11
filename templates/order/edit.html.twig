@@ -62,7 +62,7 @@
             <th>Количество</th>
             <th>Цена</th>
             <th>Всего</th>
-            <th>Действия</th>
+            <th></th>
         </tr>
     </thead>
     <tbody>
@@ -80,11 +80,15 @@
                 <td>{{ orderItem.price }}</td>
                 <td>{{ orderItem.lineTotal }}</td>
                 <td>
-                    <div class='d-flex' style='gap: 8px;'>
+                    <div class='d-flex justify-content-center'>
                         <button type="button" class="btn btn-sm btn-outline-warning edit-item" 
                                 data-id="{{ orderItem.id }}">Редактировать</button>
-                        <button type="button" class="btn btn-sm btn-outline-danger remove-item" 
-                                data-id="{{ orderItem.id }}">Удалить</button>
+                        <button type="button" class="btn p-0 remove-item" 
+                                data-id="{{ orderItem.id }}"
+                                data-url="{{ path('app_order_edit', {'id': order.id}) }}"
+                                style="background: none; border: none; color: #dc3545; font-size: 1.5rem; line-height: 1;">
+                                <i class="bi bi-x"></i>
+                            </button>
                     </div>
                 </td>
             </tr>
@@ -105,45 +109,6 @@
 </form>
 <script>
 document.addEventListener('DOMContentLoaded', function() {
-    // Обработка удаления элементов
-    const deleteModal = new bootstrap.Modal(document.getElementById('confirmDeleteModal'));
-    let itemIdToDelete = null;
-
-    // Вешаем обработчик на все кнопки удаления
-    document.addEventListener('click', function(e) {
-        if (e.target.classList.contains('remove-item')) {
-            e.preventDefault();
-            itemIdToDelete = e.target.dataset.id;
-            deleteModal.show();
-        }
-    });
-
-    // Подтверждение удаления
-    document.getElementById('confirmDeleteBtn')?.addEventListener('click', function() {
-        if (!itemIdToDelete) return;
-
-        const form = document.createElement('form');
-        form.method = 'POST';
-        form.action = '{{ path('app_order_edit', {'id': order.id}) }}';
-
-        // CSRF-токен
-        const csrfInput = document.createElement('input');
-        csrfInput.type = 'hidden';
-        csrfInput.name = '_token';
-        csrfInput.value = '{{ csrf_token('edit' ~ order.id) }}';
-        form.appendChild(csrfInput);
-
-        // ID удаляемого элемента
-        const deleteInput = document.createElement('input');
-        deleteInput.type = 'hidden';
-        deleteInput.name = 'deleted_items[]';
-        deleteInput.value = itemIdToDelete;
-        form.appendChild(deleteInput);
-
-        document.body.appendChild(form);
-        form.submit();
-    });
-
     // Обработка изменения даты (если осталась в основном шаблоне)
     const dateInput = document.getElementById('order_form_date');
     if (dateInput) {

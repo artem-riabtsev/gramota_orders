@@ -21,11 +21,12 @@ document.addEventListener('DOMContentLoaded', function() {
     let deleteBtnData = null;
 
     document.addEventListener('click', function(e) {
-        if (e.target.classList.contains('remove-item')) {
-            e.preventDefault();
-            deleteBtnData = e.target;
-            deleteModal.show();
-        }
+      const removeBtn = e.target.closest('.remove-item');
+      if (removeBtn) {
+          e.preventDefault();
+          deleteBtnData = removeBtn;
+          deleteModal.show();
+      }
     });
 
     document.getElementById('confirmDeleteBtn').addEventListener('click', function() {

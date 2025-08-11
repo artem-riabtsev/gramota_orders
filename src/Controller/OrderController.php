@@ -139,7 +139,7 @@ final class OrderController extends AbstractController
             // Получаем текущие позиции заказа
             $currentOrderItems = $order->getOrderItem()->toArray();
             $deletedItems = $request->request->all('deleted_items') ?? [];
-            $lineTotal = '0';
+            $orderTotal = '0';
 
             // Обработка удаленных элементов
             foreach ($deletedItems as $id) {
@@ -152,7 +152,7 @@ final class OrderController extends AbstractController
 
             // Считаем сумму для неудаленных позиций
             foreach ($currentOrderItems as $orderItem) {
-                $lineTotal = bcadd($lineTotal, (string)$orderItem->getLineTotal(), 2);
+                $orderTotal = bcadd($orderTotal, (string)$orderItem->getLineTotal(), 2);
             }
 
             // Обработка новых/измененных позиций
@@ -183,44 +183,38 @@ final class OrderController extends AbstractController
                 $quantity = max(1, (int)($item['quantity'] ?? 1));
                 $price = str_replace(',', '.', $item['price'] ?? $priceEntity->getPrice());
 
-                $ItemTotalOld = $orderItem->getLineTotal() ?? '0';
-                $ItemTotalActual = bcmul($price, $quantity, 2);
+                $lineTotalOld = $orderItem->getLineTotal() ?? '0';
+                $lineTotalActual = str_replace(',', '.', $item['line_total']);
 
+                
                 $orderItem
                     ->setProduct($productEntity)
                     ->setDescription($description)
-                    ->setPrice($price)
+                    ->setPrice($price, 2)
                     ->setQuantity($quantity)
-                    ->setLineTotal($ItemTotalActual);
+                    ->setLineTotal($lineTotalActual, 2);
 
                 $entityManager->persist($orderItem);
 
-                $lineTotal = bcadd(
-                    bcsub($lineTotal, $ItemTotalOld, 2),
-                    $ItemTotalActual,
+                $orderTotal = bcadd(
+                    bcsub($orderTotal, $lineTotalOld, 2),
+                    $lineTotalActual,
                     2
                 );
             }
 
             if (empty($currentOrderItems) && empty($orderItemData)) {
-                $lineTotal = '0';
+                $orderTotal = '0';
             }
 
-            $order->setOrderTotal($lineTotal);
+            $order->setOrderTotal($orderTotal);
             $totalPaid = $order->getTotalPaid();
 
-            if (bccomp($totalPaid, '0', 2) === 0 && bccomp($totalPaid, $lineTotal, 2) === -1) {
-                $order->setStatus(1); // не оплачен
-            } elseif (bccomp($totalPaid, '0', 2) === 1 && bccomp($totalPaid, $lineTotal, 2) === -1) {
-                $order->setStatus(2); // частично оплачен
-            } elseif (bccomp($totalPaid, $lineTotal, 2) === 0) {
-                $order->setStatus(4); // оплачен
-            } elseif (bccomp($totalPaid, $lineTotal, 2) === 1) {
-                $order->setStatus(3); // переплата
-            }
+            $order->recalcStatus($totalPaid, $orderTotal);
 
             $entityManager->flush();
             return $this->redirectToRoute('app_order_edit', ['id' => $order->getId()]);
+            
         }
 
         return $this->render('order/edit.html.twig', [

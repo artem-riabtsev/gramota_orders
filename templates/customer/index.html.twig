@@ -14,7 +14,7 @@
                 <th>ФИО</th>
                 <th>Email</th>
                 <th>Телефон</th>
-                <th>Действия</th>
+                <th></th>
             </tr>
         </thead>
         <tbody>
@@ -22,25 +22,28 @@
             {% for customer in customers %}
                 <tr>
                     <td>{{ customer.id }}</td>
-                    <td>{{ customer.name }}</td>
+                    <td class="d-flex" style="gap: 20px;">
+                        <a href="{{ path('app_customer_show', {'id': customer.id}) }}" class="text-muted" style="text-decoration: underline; text-decoration-thickness: 1px;">{{ customer.name }}</a>
+                        <a href="{{ path('app_customer_edit', {'id': customer.id}) }}" class="btn p-0">
+                            <i class="bi bi-pencil" style="font-size: 1rem; color: #6c757d;"></i>
+                        </a>
+                    </td>
                     <td>{{ customer.email }}</td>
                     <td>{{ customer.phone }}</td>
                     <td>
-                        <div class="d-flex">
-                            <a href="{{ path('app_customer_show', {'id': customer.id}) }}" class="btn btn-sm btn-outline-primary me-2">Просмотр</a>
-                            <a href="{{ path('app_customer_edit', {'id': customer.id}) }}" class="btn btn-sm btn-outline-warning me-2">Редактировать</a>
+                        <div class="d-flex justify-content-center align-items-center" style="gap: 8px;">
                             <form method="post" action="{{ path('app_customer_delete', {'id': customer.id}) }}">
                                 <input type="hidden" name="_token" value="{{ csrf_token('delete' ~ customer.id) }}">
                                     {% if app.request.get('q') %}
                                         <input type="hidden" name="q" value="{{ app.request.get('q') }}">
                                     {% endif %}
                                 <button type="submit"
-                                        class="btn btn-sm btn-outline-danger remove-item"
+                                        class="btn p-0 remove-item"
                                         data-id="{{ customer.id }}"
                                         data-token="{{ csrf_token('delete' ~ customer.id) }}"
                                         data-url="{{ path('app_customer_delete', {'id': customer.id}) }}"
-                                        {% if customer.orders|length > 0 %}disabled{% endif %}>
-                                    Удалить
+                                        style="background: none; border: none; color: #dc3545; font-size: 1.5rem; line-height: 1;">
+                                        <i class="bi bi-x"></i>
                                 </button>
                             </form>
                         </div>

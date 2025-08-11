@@ -14,7 +14,7 @@
                 <th>Id</th>
                 <th>Наименование</th>
                 <th>Дата</th>
-                <th>Действия</th>
+                <th></th>
             </tr>
         </thead>
         <tbody>
@@ -24,18 +24,19 @@
                     <td>{{ product.description }}</td>
                     <td>{{ product.date|date('d.m.Y') }}</td>
                     <td>
-                        <div class="d-flex">
+                        <div class="d-flex justify-content-center">
                             <a href="{{ path('app_product_edit', {'id': product.id}) }}" class="btn btn-sm btn-outline-warning me-2">Редактировать</a>
                             <form method="post" action="{{ path('app_product_delete', {'id': product.id}) }}">
                                 <input type="hidden" name="_token" value="{{ csrf_token('delete' ~ product.id) }}">
                                  <button
                                     type="button"
-                                    class="btn btn-sm btn-outline-danger remove-item"
+                                    class="btn p-0 remove-item"
                                     data-id="{{ product.id }}"
                                     data-token="{{ csrf_token('delete' ~ product.id) }}"
                                     data-url="{{ path('app_product_delete', {'id': product.id}) }}"
+                                    style="background: none; border: none; color: #dc3545; font-size: 1.5rem; line-height: 1;"
                                 >
-                                    Удалить
+                                    <i class="bi bi-x"></i>
                                 </button>
                             </form>
                         </div>

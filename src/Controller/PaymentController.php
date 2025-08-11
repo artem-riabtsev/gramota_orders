@@ -76,21 +76,14 @@ final class PaymentController extends AbstractController
 
         if ($form->isSubmitted() && $form->isValid()) {
             $entityManager->flush();
-            $paymentRepository->updateOrderPaymentAmount($id, $payment->getAmount());
+            // $paymentRepository->updateOrderPaymentAmount($id, $payment->getAmount());
+            $paymentRepository->recalculateOrderPaymentAmount($payment->getOrder());
 
             $order = $payment->getOrder();
 
-            $TotalPaid = $order->getTotalPaid();
+            $totalPaid = $order->getTotalPaid();
             $orderTotal = $order->getOrderTotal();
-            if (bccomp($TotalPaid, '0', 2) === 0 && bccomp($TotalPaid, $orderTotal, 2) === -1) {
-                $order->setStatus(1); // не оплачен
-            } elseif (bccomp($TotalPaid, '0', 2) === 1 && bccomp($TotalPaid, $orderTotal, 2) === -1) {
-                $order->setStatus(2); // частично оплачен
-            } elseif (bccomp($TotalPaid, $orderTotal, 2) === 0) {
-                $order->setStatus(4); // оплачен
-            } elseif (bccomp($TotalPaid, $orderTotal, 2) === 1) {
-                $order->setStatus(3); // переплата
-            }
+            $order->recalcStatus($totalPaid, $orderTotal);
 
             $entityManager->persist($order);
             $entityManager->flush();
@@ -112,17 +105,9 @@ final class PaymentController extends AbstractController
             $entityManager->remove($payment);
             $entityManager->flush();
             $paymentRepository->recalculateOrderPaymentAmount($payment->getOrder());
-            $TotalPaid = $order->getTotalPaid();
+            $totalPaid = $order->getTotalPaid();
             $orderTotal = $order->getOrderTotal();
-            if (bccomp($TotalPaid, '0', 2) === 0 && bccomp($TotalPaid, $orderTotal, 2) === -1) {
-                $order->setStatus(1); // не оплачен
-            } elseif (bccomp($TotalPaid, '0', 2) === 1 && bccomp($TotalPaid, $orderTotal, 2) === -1) {
-                $order->setStatus(2); // частично оплачен
-            } elseif (bccomp($TotalPaid, $orderTotal, 2) === 0) {
-                $order->setStatus(4); // оплачен
-            } elseif (bccomp($TotalPaid, $orderTotal, 2) === 1) {
-                $order->setStatus(3); // переплата
-            }
+            $order->recalcStatus($totalPaid, $orderTotal);
 
             $entityManager->persist($order);
             $entityManager->flush();

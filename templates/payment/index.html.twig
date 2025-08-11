@@ -15,7 +15,7 @@
                 <th>Номер заказа</th>
                 <th>Дата</th>
                 <th>Сумма платежа</th>
-                <th>Действия</th>
+                <th></th>
             </tr>
         </thead>
         <tbody>
@@ -38,16 +38,17 @@
                 <td>{{ payment.date ? payment.date|date('d.m.Y') : '' }}</td>
                 <td>{{ payment.amount }}</td>
                 <td>
-                    <div class="d-flex">
+                    <div class="d-flex justify-content-center">
                         <a href="{{ path('app_payment_edit', {'id': payment.id}) }}" class="btn btn-sm btn-outline-warning me-2">Редактировать</a>
                         <button
                             type="button"
-                            class="btn btn-sm btn-outline-danger remove-item"
+                            class="btn bp-0 remove-item"
                             data-id="{{ payment.id }}"
                             data-token="{{ csrf_token('delete' ~ payment.id) }}"
                             data-url="{{ path('app_payment_delete', {'id': payment.id}) }}"
+                            style="background: none; border: none; color: #dc3545; font-size: 1.5rem; line-height: 1;"
                         >
-                            Удалить
+                            <i class="bi bi-x"></i>
                         </button>
                     </div>
                 </td>

@@ -25,6 +25,14 @@
         </div>
     </div>
 </div>
+{% for label, messages in app.flashes %}
+    {% for message in messages %}
+        notyf.open({
+            type: '{{ label == "error" ? "error" : (label == "warning" ? "warning" : "success") }}',
+            message: "{{ message|e('js') }}"
+        });
+    {% endfor %}
+{% endfor %}
 
 <script>
 document.addEventListener('DOMContentLoaded', function() {
@@ -74,6 +82,20 @@ document.addEventListener('DOMContentLoaded', function() {
             productSelect.selectedIndex = allowEmpty ? 0 : -1;
         }
     }
+
+    function limitPriceInput(input) {
+    input.addEventListener('input', () => {
+        let val = input.value;
+        val = val.replace(/[^\d.]/g, '');
+        const parts = val.split('.');
+        parts[0] = parts[0].slice(0, 10);
+        if (parts[1]) parts[1] = parts[1].slice(0, 2);
+        input.value = parts.join('.');
+    });
+    }
+
+    if (priceInput) limitPriceInput(priceInput);
+    if (totalInput) limitPriceInput(totalInput);
 
     // Инициализация модалки для добавления
     document.getElementById('add-item')?.addEventListener('click', function() {
@@ -130,6 +152,11 @@ document.addEventListener('DOMContentLoaded', function() {
     // Обработчики изменений количества и цены
     quantityInput.addEventListener('input', updateTotal);
     priceInput.addEventListener('input', updateTotal);
+    totalInput.addEventListener('input', function () {
+        const quantity = parseInt(quantityInput.value) || 1;
+        const total = parseFloat(totalInput.value) || 0;
+        priceInput.value = (Math.round((total / quantity) * 100) / 100).toFixed(2);
+    });
 
     // При выборе позиции подставляем все данные
     priceSourceSelect.addEventListener('change', function() {
