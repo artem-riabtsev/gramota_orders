@@ -78,4 +78,9 @@ class Customer
     {
         return !$this->orders->isEmpty();
     }
+
+    public function getOrders(): Collection
+    {
+        return $this->orders;
+    }
 }

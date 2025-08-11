@@ -21,6 +21,8 @@ final class CustomerController extends AbstractController
         CustomerRepository $customerRepository
     ): Response {
         $query = $request->query->get('q');
+        $customer = New Customer;
+        $hasorders = $customer->hasOrders();
 
         if ($query) {
             $customers = $customerRepository->findByNameOrEmail($query);
@@ -31,6 +33,7 @@ final class CustomerController extends AbstractController
         return $this->render('customer/index.html.twig', [
             'customers' => $customers,
             'query' => $query,
+            'hasorders' => $hasorders,
         ]);
     }
 

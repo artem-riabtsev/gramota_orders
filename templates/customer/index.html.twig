@@ -39,7 +39,7 @@
                                         data-id="{{ customer.id }}"
                                         data-token="{{ csrf_token('delete' ~ customer.id) }}"
                                         data-url="{{ path('app_customer_delete', {'id': customer.id}) }}"
-                                        {% if customer.orders|length > 0 %}disabled{% endif %}>
+                                        {% if hasorders %}disabled{% endif %}>
                                     Удалить
                                 </button>
                             </form>

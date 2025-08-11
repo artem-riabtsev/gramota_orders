@@ -11,6 +11,7 @@ use Doctrine\Common\Collections\ArrayCollection;
 use Doctrine\Common\Collections\Collection;
 
 #[ORM\Entity(repositoryClass: OrderRepository::class)]
+#[ORM\Table(name: '`order`')]
 class Order
 {
     #[ORM\Id]
@@ -22,14 +23,14 @@ class Order
     private ?\DateTime $date = null;
 
     #[ORM\ManyToOne(targetEntity: Customer::class, inversedBy: "orders")]
-    #[ORM\JoinColumn] //(nullable: false)
-    private ?Customer $customer = null;
+    #[ORM\JoinColumn(nullable: false)]
+    private Customer $customer;
 
     #[ORM\Column(type: Types::DECIMAL, precision: 10, scale: 2)]
     private ?string $orderTotal = '0.00';
 
-    #[ORM\Column(type: Types::DECIMAL, precision: 10, scale: 2)] // удалить nullable: true
-    private ?string $totalPaid = '0.00';
+    #[ORM\Column(type: Types::DECIMAL, precision: 10, scale: 2, nullable: false)]
+    private string $totalPaid = '0.00';
 
     #[ORM\Column(options: ['default' => 0])] // перечисление
     private int $status = 1;
@@ -137,29 +138,8 @@ class Order
         return $this;
     }
 
-    public function getPayments(): Collection
+    public function hasPayments(): bool
     {
-        return $this->payments;
-    }
-
-    public function addPayment(Payment $payment): static
-    {
-        if (!$this->payments->contains($payment)) {
-            $this->payments[] = $payment;
-            $payment->setOrder($this);
-        }
-
-        return $this;
-    }
-
-    public function removePayment(Payment $payment): static
-    {
-        if ($this->payments->removeElement($payment)) {
-            if ($payment->getOrder() === $this) {
-                $payment->setOrder(null);
-            }
-        }
-
-        return $this;
+        return !$this->payments->isEmpty();
     }
 }

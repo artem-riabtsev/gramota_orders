@@ -237,7 +237,7 @@ final class OrderController extends AbstractController
     {
         if ($this->isCsrfTokenValid('delete'.$order->getId(), $request->getPayload()->getString('_token'))) {
 
-            if (count($order->getPayments()) > 0) {
+            if ($order->hasPayments()) {
             $this->addFlash('error', 'Нельзя удалить заказ, у которого есть платежи.');
             return $this->redirectToRoute('app_order_index');
         }
