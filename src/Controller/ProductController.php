@@ -3,6 +3,7 @@
 namespace App\Controller;
 
 use App\Entity\Product;
+use App\Entity\OrderItem;
 use App\Form\ProductForm;
 use App\Repository\ProductRepository;
 use Doctrine\ORM\EntityManagerInterface;
@@ -77,8 +78,12 @@ final class ProductController extends AbstractController
     #[Route('/{id}', name: 'app_product_delete', methods: ['POST'])]
     public function delete(Request $request, Product $product, EntityManagerInterface $entityManager): Response
     {
+
+        $hasItems = $entityManager->getRepository(OrderItem::class)
+        ->productHasOrderItems($product);
+
         if ($this->isCsrfTokenValid('delete'.$product->getId(), $request->getPayload()->getString('_token'))) {
-            if ($product->getOrderItems()->count() === 0 ) {
+            if ( (!$hasItems) ) {
                 $entityManager->remove($product);
                 $entityManager->flush();
             } else {

@@ -23,10 +23,7 @@ class Product
     #[ORM\Column(type: Types::DATE_MUTABLE)]
     private ?\DateTime $date = null;
 
-    #[ORM\OneToMany(mappedBy: 'product', targetEntity: OrderItem::class)]
-    private Collection $orderItems;
-
-    #[ORM\Column(options: ['default' => false])] // убрать default
+    #[ORM\Column]
     private bool $basic = false;
 
     #[ORM\ManyToOne(targetEntity: Project::class, inversedBy: 'products')]
@@ -76,13 +73,7 @@ class Product
 
     public function __construct()
     {
-        $this->orderItems = new ArrayCollection();
         $this->date = new \DateTime();
-    }
-
-    public function getOrderItems(): Collection
-    {
-        return $this->orderItems;
     }
 
     public function getProject(): ?Project
