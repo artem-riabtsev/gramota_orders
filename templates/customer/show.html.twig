@@ -1,0 +1,70 @@
+{% extends 'base.html.twig' %}
+
+{% block content %}
+    <h1>Заказчик {{ customer.id }}</h1>
+
+    {% include 'modals/modal_delete.html.twig' %}
+
+    <table class="table table-hover table-bordered align-middle">
+        <tbody>
+            <tr><th>Id</th><td>{{ customer.id }}</td></tr>
+            <tr><th>ФИО</th><td>{{ customer.name }}</td></tr>
+            <tr><th>Email</th><td>{{ customer.email }}</td></tr>
+            <tr><th>Phone</th><td>{{ customer.phone }}</td></tr>
+        </tbody>
+    </table>
+
+    <div class="mb-2">
+        <a href="{{ path('app_customer_edit', {'id': customer.id}) }}" class="btn btn-primary">Редактировать</a>
+        <a href="{{ app.request.headers.get('referer') ?: path('app_order_index') }}" class="btn btn-secondary">
+            Назад
+        </a>
+    </div>
+
+    <h2>Заказы</h2>
+
+    <table class="table table-hover table-bordered align-middle">
+        <thead>
+            <tr>
+                <th>Номер заказа</th>
+                <th>Дата заказа</th>
+                <th>Сумма заказа</th>
+                <th>Сумма оплаты</th>
+                <th></th>
+            </tr>
+        </thead>
+        <tbody>
+        {% for group in ordersGroups %}
+            {% if group.orders|length > 0 %}
+                <tr><td colspan="7"><span class="{{ group.color }}">{{ group.name }}</span></td></tr>
+            {% endif %}
+            {% for order in group.orders %}
+                <tr>
+                    <td>{{ order.id }}</td>
+                    <td>{{ order.date ? order.date|date('d.m.Y') : '' }}</td>
+                    <td>{{ order.orderTotal }}</td>
+                    <td>{{ order.totalPaid }}</td>
+                    <td>
+                        <div class="d-flex justify-content-center">
+                            <a href="{{ path('app_order_edit', {'id': order.id}) }}" class="btn btn-sm btn-outline-warning me-2">Редактировать</a>
+                            <form method="post" action="{{ path('app_order_delete', {'id': order.id}) }}">
+                                <input type="hidden" name="_token" value="{{ csrf_token('delete' ~ order.id) }}">
+                                <button
+                                    type="button"
+                                    class="btn p-0 remove-item"
+                                    data-id="{{ order.id }}"
+                                    data-token="{{ csrf_token('delete' ~ order.id) }}"
+                                    data-url="{{ path('app_order_delete', {'id': order.id}) }}"
+                                    style="background: none; border: none; color: #dc3545; font-size: 1.5rem; line-height: 1;"
+                                >
+                                    <i class="bi bi-x"></i>
+                                </button>
+                            </form>
+                        </div>
+                    </td>
+                </tr>
+            {% endfor %}
+        {% endfor %}  
+        </tbody>
+    </table>
+{% endblock %}

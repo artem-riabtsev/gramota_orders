@@ -1,0 +1,41 @@
+{% extends 'base.html.twig' %}
+
+{% block title %}Новый продукт{% endblock %}
+
+{% block content %}
+<h1>Создать продукт</h1>
+
+<div class="card">
+    <div class="card-body">
+        {{ form_start(form) }}
+
+        <div class="row">
+            <div class="col-md-6 mb-3">
+                {{ form_label(form.description) }}
+                {{ form_widget(form.description, {'attr': {'class': 'form-control'}}) }}
+            </div>
+            <div class="col-md-6 mb-3">
+                {{ form_label(form.date) }}
+                {{ form_widget(form.date, {'attr': {'class': 'form-control'}}) }}
+            </div>
+             <div class="col-md-6 mb-3">
+                {{ form_label(form.project) }}
+                {{ form_widget(form.project, {'attr': {'class': 'form-select'}}) }}
+            </div>
+            <div class="col-md-6 mt-3">
+                <div class="form-check">
+                    {{ form_widget(form.basic, {'attr': {'class': 'form-check-input'}}) }}
+                    {{ form_label(form.basic, null, {'label_attr': {'class': 'form-check-label'}}) }}
+                </div>
+            </div>
+        </div>
+
+        <button class="btn btn-success">Создать</button>
+        <a href="{{ app.request.headers.get('referer') ?: path('app_order_index') }}" class="btn btn-secondary">
+            Назад
+        </a>
+
+        {{ form_end(form) }}
+    </div>
+</div>
+{% endblock %}

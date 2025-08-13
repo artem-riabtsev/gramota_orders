@@ -11,11 +11,13 @@
         "doctrine/doctrine-bundle": "^2.15",
         "doctrine/doctrine-migrations-bundle": "^3.4",
         "doctrine/orm": "^3.5",
+        "easycorp/easyadmin-bundle": "^4.24",
         "symfony/console": "6.4.*",
         "symfony/dotenv": "6.4.*",
         "symfony/flex": "^2",
         "symfony/framework-bundle": "6.4.*",
         "symfony/runtime": "6.4.*",
+        "symfony/security-bundle": "6.4.*",
         "symfony/yaml": "6.4.*"
     },
     "config": {
@@ -66,5 +68,9 @@
             "require": "6.4.*",
             "docker": true
         }
+    },
+    "require-dev": {
+        "symfony/maker-bundle": "^1.64",
+        "symfony/web-profiler-bundle": "6.4.*"
     }
 }

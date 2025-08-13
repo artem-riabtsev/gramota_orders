@@ -1,0 +1,76 @@
+{% extends 'base.html.twig' %} 
+
+{% block content %}
+<h1>Заказы</h1>
+
+{% include 'search/search_form.html.twig' %}
+{% include 'modals/modal_delete.html.twig' %}
+
+<table class="table table-hover table-bordered align-middle">
+    <thead>
+        <tr>
+            <th>Номер заказа</th>
+            <th>Дата заказа</th>
+            <th>Сумма заказа</th>
+            <th>Сумма оплаты</th>
+            <th>Заказчик</th>
+            <th>Статус</th>
+            <th></th>
+        </tr>
+    </thead>
+    <tbody>
+    {% for order in orders %}
+        <tr>
+            <td>
+                <a href="{{ path('app_order_edit', {'id': order.id}) }}"
+                    class="text-muted"
+                    style="text-decoration: underline; text-decoration-thickness: 1px;">
+                    {{ order.id }}
+                </a>
+            </td>
+            <td>{{ order.date ? order.date|date('d.m.Y') : '' }}</td>
+            <td>{{ order.orderTotal }}</td>
+            <td>{{ order.totalPaid }}</td>
+            <td>
+                <a href="{{ path('app_customer_show', {'id': order.customer.id}) }}"
+                class="text-muted"
+                style="text-decoration: underline; text-decoration-thickness: 1px;">
+                    {{ order.customer.name }}
+                </a>
+            </td>
+            <td>
+                {% if order.status.value == constant('App\\Enum\\OrderStatus::EMPTY').value %}
+                    <span class="text-muted">Пустой</span>
+                {% elseif order.status.value == constant('App\\Enum\\OrderStatus::UNPAID').value %}
+                    <span class="text-secondary">Не оплачен</span>
+                {% elseif order.status.value == constant('App\\Enum\\OrderStatus::PARTIALLY_PAID').value %}
+                    <span class="text-warning">Частично оплачен</span>
+                {% elseif order.status.value == constant('App\\Enum\\OrderStatus::PAID').value %}
+                    <span class="text-success">Оплачен</span>
+                {% elseif order.status.value == constant('App\\Enum\\OrderStatus::OVERPAID').value %}
+                    <span class="text-danger">Переплата</span>
+                {% endif %}
+            </td>
+            <td>
+                <div class="d-flex justify-content-center">
+                    <button
+                        type="button"
+                        class="btn remove-item p-0"
+                        data-id="{{ order.id }}"
+                        data-token="{{ csrf_token('delete' ~ order.id) }}"
+                        data-url="{{ path('app_order_delete', {'id': order.id}) }}"
+                        style="background: none; border: none; color: #dc3545; font-size: 1.5rem; line-height: 1;"
+                    >
+                        <i class="bi bi-x"></i>
+                    </button>
+                </div>
+            </td>
+        </tr>
+    {% else %}
+        <tr>
+            <td colspan="7">Заказы ненайдены</td>
+        </tr>
+    {% endfor %}
+    </tbody>
+</table>
+{% endblock %}
