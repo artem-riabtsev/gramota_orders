@@ -15,10 +15,25 @@ use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\HttpFoundation\Response;
 use Symfony\Component\Routing\Attribute\Route;
 use App\Repository\CustomerRepository;
-use App\Enum\OrderStatus;
+use App\Config\OrderStatus;
 
 final class OrderController extends AbstractController
 {
+
+
+    #[Route('/order/{id}/date', name: 'app_edit_date', methods: ['GET', 'POST'])]
+    public function editDate(Order $order)
+    {
+
+        return $this->renderView('tampl', [
+            'order' => $order
+        ]);
+    }
+
+
+
+
+
     #[Route('/', name: 'app_home_redirect', methods: ['GET'])]
     public function redirectToOrders(): Response
     {
@@ -30,7 +45,7 @@ final class OrderController extends AbstractController
         Request $request,
         OrderRepository $orderRepository,
     ): Response {
-        
+
         $query = $request->query->get('q');
 
         if ($query) {
@@ -43,7 +58,6 @@ final class OrderController extends AbstractController
             'orders' => $orders,
             'query' => $query,
         ]);
-
     }
 
     #[Route('/order/new', name: 'app_order_new', methods: ['GET', 'POST'])]
@@ -93,8 +107,8 @@ final class OrderController extends AbstractController
 
         if ($request->isMethod('POST') && $request->request->has('order_item_form')) {
             $data = $request->request->all()['order_item_form'];
-            $itemId = $request->request->get('item_id', 'new_'.time());
-            
+            $itemId = $request->request->get('item_id', 'new_' . time());
+
             // Формируем данные в нужном формате
             $request->request->set('order_item', [
                 $itemId => [
@@ -110,7 +124,7 @@ final class OrderController extends AbstractController
         $form->handleRequest($request);
 
         if ($request->isMethod('POST') && $request->request->has('order_date')) {
-            $newDate = \DateTime::createFromFormat('Y-m-d', $request->request->get('order_date'));
+            $newDate = \DateTimeImmutable::createFromFormat('Y-m-d', $request->request->get('order_date'));
             if ($newDate) {
                 $order->setDate($newDate);
                 $entityManager->flush();
@@ -121,10 +135,13 @@ final class OrderController extends AbstractController
         $prices = $priceRepository->createQueryBuilder('p')
             ->leftJoin('p.product', 'product')
             ->leftJoin('product.project', 'project')
-            ->select('p.description', 'p.price', 
-                'product.id as product_id', 
+            ->select(
+                'p.description',
+                'p.price',
+                'product.id as product_id',
                 'product.description as product_description',
-                'project.id as project_id')
+                'project.id as project_id'
+            )
             ->getQuery()
             ->getResult();
 
@@ -196,7 +213,7 @@ final class OrderController extends AbstractController
                 $lineTotalOld = $orderItem->getLineTotal() ?? '0';
                 $lineTotalActual = str_replace(',', '.', $item['line_total']);
 
-                
+
                 $orderItem
                     ->setProduct($productEntity)
                     ->setDescription($description)
@@ -224,7 +241,6 @@ final class OrderController extends AbstractController
 
             $entityManager->flush();
             return $this->redirectToRoute('app_order_edit', ['id' => $order->getId()]);
-            
         }
 
         return $this->render('order/edit.html.twig', [
@@ -239,12 +255,12 @@ final class OrderController extends AbstractController
     #[Route('/order/{id}', name: 'app_order_delete', methods: ['POST'])]
     public function delete(Request $request, Order $order, EntityManagerInterface $entityManager): Response
     {
-        if ($this->isCsrfTokenValid('delete'.$order->getId(), $request->getPayload()->getString('_token'))) {
+        if ($this->isCsrfTokenValid('delete' . $order->getId(), $request->getPayload()->getString('_token'))) {
 
             if ($order->hasPayments()) {
-            $this->addFlash('error', 'Нельзя удалить заказ, у которого есть платежи.');
-            return $this->redirectToRoute('app_order_index');
-        }
+                $this->addFlash('error', 'Нельзя удалить заказ, у которого есть платежи.');
+                return $this->redirectToRoute('app_order_index');
+            }
 
             $entityManager->remove($order);
             $entityManager->flush();

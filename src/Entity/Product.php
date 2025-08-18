@@ -3,11 +3,7 @@
 namespace App\Entity;
 
 use App\Repository\ProductRepository;
-use Doctrine\DBAL\Types\Types;
 use Doctrine\ORM\Mapping as ORM;
-use Doctrine\Common\Collections\Collection;
-use Doctrine\Common\Collections\ArrayCollection;
-
 
 #[ORM\Entity(repositoryClass: ProductRepository::class)]
 class Product
@@ -20,15 +16,15 @@ class Product
     #[ORM\Column]
     private ?string $description = null;
 
-    #[ORM\Column(type: Types::DATE_MUTABLE)]
-    private ?\DateTime $date = null;
+    #[ORM\Column]
+    private ?\DateTimeImmutable $date = null;
 
     #[ORM\Column]
-    private bool $basic = false;
+    private ?bool $basic = false;
 
-    #[ORM\ManyToOne(targetEntity: Project::class)]
+    #[ORM\ManyToOne]
     #[ORM\JoinColumn(nullable: false)]
-    private ?Project $project = null;
+    private Project $project;
 
     public function getId(): ?int
     {
@@ -43,19 +39,17 @@ class Product
     public function setDescription(string $description): static
     {
         $this->description = $description;
-
         return $this;
     }
 
-    public function getDate(): ?\DateTime
+    public function getDate(): ?\DateTimeImmutable
     {
         return $this->date;
     }
 
-    public function setDate(\DateTime $date): static
+    public function setDate(\DateTimeImmutable $date): static
     {
         $this->date = $date;
-
         return $this;
     }
 
@@ -67,13 +61,7 @@ class Product
     public function setBasic(bool $basic): static
     {
         $this->basic = $basic;
-
         return $this;
-    }
-
-    public function __construct()
-    {
-        $this->date = new \DateTime();
     }
 
     public function getProject(): ?Project
@@ -81,7 +69,7 @@ class Product
         return $this->project;
     }
 
-    public function setProject(?Project $project): self
+    public function setProject(Project $project): self
     {
         $this->project = $project;
         return $this;

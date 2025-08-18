@@ -19,8 +19,8 @@ class Payment
     #[ORM\JoinColumn(nullable: false)]
     private Order $order;
 
-    #[ORM\Column(type: Types::DATE_MUTABLE)]
-    private ?\DateTime $date = null;
+    #[ORM\Column]
+    private ?\DateTimeImmutable $date = null;
 
     #[ORM\Column(type: Types::DECIMAL, precision: 10, scale: 2)]
     private ?string $amount = '0.00';
@@ -35,22 +35,21 @@ class Payment
         return $this->order;
     }
 
-    public function setOrder(?Order $order): static
+    public function setOrder(Order $order): static
     {
         $this->order = $order;
 
         return $this;
     }
 
-    public function getDate(): ?\DateTime
+    public function getDate(): ?\DateTimeImmutable
     {
         return $this->date;
     }
 
-    public function setDate(\DateTime $date): static
+    public function setDate(\DateTimeImmutable $date): static
     {
         $this->date = $date;
-
         return $this;
     }
 
@@ -62,7 +61,6 @@ class Payment
     public function setAmount(string $amount): static
     {
         $this->amount = $amount;
-
         return $this;
     }
 }

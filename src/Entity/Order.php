@@ -9,7 +9,7 @@ use App\Entity\Customer;
 use App\Entity\OrderItem;
 use Doctrine\Common\Collections\ArrayCollection;
 use Doctrine\Common\Collections\Collection;
-use App\Enum\OrderStatus;
+use App\Config\OrderStatus;
 
 #[ORM\Entity(repositoryClass: OrderRepository::class)]
 #[ORM\Table(name: '`order`')]
@@ -20,8 +20,8 @@ class Order
     #[ORM\Column]
     private ?int $id = null;
 
-    #[ORM\Column(type: Types::DATE_MUTABLE)]
-    private ?\DateTime $date = null;
+    #[ORM\Column]
+    private ?\DateTimeImmutable $date = null;
 
     #[ORM\ManyToOne(targetEntity: Customer::class, inversedBy: "orders")]
     #[ORM\JoinColumn(nullable: false)]
@@ -30,10 +30,10 @@ class Order
     #[ORM\Column(type: Types::DECIMAL, precision: 10, scale: 2)]
     private ?string $orderTotal = '0.00';
 
-    #[ORM\Column(type: Types::DECIMAL, precision: 10, scale: 2, nullable: false)]
+    #[ORM\Column(type: Types::DECIMAL, precision: 10, scale: 2)]
     private string $totalPaid = '0.00';
 
-    #[ORM\Column(type: 'integer', enumType: OrderStatus::class, options: ['default' => OrderStatus::EMPTY->value])]
+    #[ORM\Column(enumType: OrderStatus::class)]
     private OrderStatus $status = OrderStatus::EMPTY;
 
     #[ORM\OneToMany(mappedBy: 'order', targetEntity: OrderItem::class, cascade: ['persist', 'remove'])]
@@ -47,12 +47,12 @@ class Order
         return $this->id;
     }
 
-    public function getDate(): ?\DateTime
+    public function getDate(): ?\DateTimeImmutable
     {
         return $this->date;
     }
 
-    public function setDate(\DateTime $date): static
+    public function setDate(\DateTimeImmutable $date): static
     {
         $this->date = $date;
 
@@ -76,7 +76,7 @@ class Order
         return $this->totalPaid;
     }
 
-    public function setTotalPaid(?string $totalPaid): static
+    public function setTotalPaid(string $totalPaid): static
     {
         $this->totalPaid = $totalPaid;
 
@@ -99,7 +99,7 @@ class Order
         return $this->customer;
     }
 
-    public function setCustomer(?Customer $customer): static
+    public function setCustomer(Customer $customer): static
     {
         $this->customer = $customer;
 
@@ -108,7 +108,7 @@ class Order
 
     public function __construct()
     {
-        $this->date = new \DateTime();
+        $this->date = new \DateTimeImmutable();
         $this->orderItems = new ArrayCollection();
         $this->payments = new ArrayCollection();
     }
@@ -130,12 +130,7 @@ class Order
 
     public function removeOrderItem(OrderItem $item): static
     {
-        if ($this->orderItems->removeElement($item)) {
-            if ($item->getOrder() === $this) {
-                $item->setOrder(null);
-            }
-        }
-
+        $this->orderItems->removeElement($item);
         return $this;
     }
 
@@ -147,15 +142,15 @@ class Order
     public function recalcStatus($totalPaid, $orderTotal): void
     {
         if (bccomp($totalPaid, '0', 2) === 0 && bccomp($orderTotal, '0', 2) === 0) {
-                $this->setStatus(OrderStatus::EMPTY); // Пустой
-            } elseif (bccomp($totalPaid, '0', 2) === 0 && bccomp($totalPaid, $orderTotal, 2) === -1) {
-                $this->setStatus(OrderStatus::UNPAID); // Не оплачен
-            } elseif (bccomp($totalPaid, '0', 2) === 1 && bccomp($totalPaid, $orderTotal, 2) === -1) {
-                $this->setStatus(OrderStatus::PARTIALLY_PAID); // Частично оплачен
-            } elseif (bccomp($totalPaid, $orderTotal, 2) === 0) {
-                $this->setStatus(OrderStatus::PAID); // Оплачен
-            } elseif (bccomp($totalPaid, $orderTotal, 2) === 1) {
-                $this->setStatus(OrderStatus::OVERPAID); // Переплата
-            }
+            $this->setStatus(OrderStatus::EMPTY); // Пустой
+        } elseif (bccomp($totalPaid, '0', 2) === 0 && bccomp($totalPaid, $orderTotal, 2) === -1) {
+            $this->setStatus(OrderStatus::UNPAID); // Не оплачен
+        } elseif (bccomp($totalPaid, '0', 2) === 1 && bccomp($totalPaid, $orderTotal, 2) === -1) {
+            $this->setStatus(OrderStatus::PARTIALLY_PAID); // Частично оплачен
+        } elseif (bccomp($totalPaid, $orderTotal, 2) === 0) {
+            $this->setStatus(OrderStatus::PAID); // Оплачен
+        } elseif (bccomp($totalPaid, $orderTotal, 2) === 1) {
+            $this->setStatus(OrderStatus::OVERPAID); // Переплата
+        }
     }
 }
