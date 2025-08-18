@@ -4,7 +4,7 @@
 <h1>Заказ {{ order.id }}</h1>
 
 {% include 'modals/modal_delete.html.twig' %}
-{% include 'modals/modal_date.html.twig' %}
+
 {% include 'modals/modal_order_item.html.twig' %}
 
 <form method="post" action="{{ path('app_order_edit', {'id': order.id}) }}" id="order-form">
@@ -16,9 +16,12 @@
                 <div class="col-md-6 mb-3 d-flex align-items-center" style="gap: 12px;">
                     <strong>Дата заказа:</strong>
                     <span id="order-date-display">{{ order.date|date('d.m.Y') }}</span>
-
-                    <button type="button" href="{{ path('app_customer_edit', {'id': order.customer.id}) }}" 
-                        id="edit-date-btn"
+                    <button type="button"
+                        hx-get="{{ path('app_edit_date', {'id': order.id}) }}"
+                        hx-target="#modal-content"
+                        hx-trigger="click"
+                        data-bs-toggle="modal"
+                        data-bs-target="#dateModal"
                         title="Редактировать дату"
                         class="btn btn-sm btn-outline-primary d-inline-flex align-items-center justify-content-center border-0 shadow-none" 
                         style="width: 25px; height: 25px; padding: 0; background-color: #6c757d;"
@@ -28,6 +31,8 @@
                     </button>
                 </div>
             </div>
+            {% include 'modals/modal_date.html.twig' %}
+            
             <div class="d-flex" style="gap: 8px; ">
                 <div class="mb-4">Заказчик: {{ order.customer.name }} ({{ order.customer.email }}, {{ order.customer.phone }})</div>
                 <a href="{{ path('app_customer_edit', {'id': order.customer.id}) }}" 
@@ -114,22 +119,4 @@
 </div>
     {{ form_end(form) }}
 </form>
-<script>
-document.addEventListener('DOMContentLoaded', function() {
-    // Обработка изменения даты (если осталась в основном шаблоне)
-    const dateInput = document.getElementById('order_form_date');
-    if (dateInput) {
-        const originalValue = dateInput.value;
-        dateInput.addEventListener('input', function() {
-            if (this.value !== originalValue) {
-                this.classList.remove('border');
-                this.classList.add('border-warning');
-            } else {
-                this.classList.remove('border-warning');
-                this.classList.add('border');
-            }
-        });
-    }
-});
-</script>
 {% endblock %}

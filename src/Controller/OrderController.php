@@ -22,10 +22,19 @@ final class OrderController extends AbstractController
 
 
     #[Route('/order/{id}/date', name: 'app_edit_date', methods: ['GET', 'POST'])]
-    public function editDate(Order $order)
+    public function editDate(Request $request, Order $order, EntityManagerInterface $entityManager): Response
     {
 
-        return $this->renderView('tampl', [
+        if ($request->isMethod('POST')) {
+            $newDate = \DateTimeImmutable::createFromFormat('Y-m-d', $request->request->get('order_date'));
+            if ($newDate) {
+                $order->setDate($newDate);
+                $entityManager->flush();
+                return new Response($newDate->format('d.m.Y'));
+            }
+        }
+
+        return $this->render('modals/modal_date_form.html.twig', [
             'order' => $order
         ]);
     }
@@ -123,14 +132,14 @@ final class OrderController extends AbstractController
         $form = $this->createForm(OrderForm::class, $order);
         $form->handleRequest($request);
 
-        if ($request->isMethod('POST') && $request->request->has('order_date')) {
-            $newDate = \DateTimeImmutable::createFromFormat('Y-m-d', $request->request->get('order_date'));
-            if ($newDate) {
-                $order->setDate($newDate);
-                $entityManager->flush();
-                return $this->redirectToRoute('app_order_edit', ['id' => $order->getId()]);
-            }
-        }
+        // if ($request->isMethod('POST') && $request->request->has('order_date')) {
+        //     $newDate = \DateTimeImmutable::createFromFormat('Y-m-d', $request->request->get('order_date'));
+        //     if ($newDate) {
+        //         $order->setDate($newDate);
+        //         $entityManager->flush();
+        //         return $this->redirectToRoute('app_order_edit', ['id' => $order->getId()]);
+        //     }
+        // }
 
         $prices = $priceRepository->createQueryBuilder('p')
             ->leftJoin('p.product', 'product')
