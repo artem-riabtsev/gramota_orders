@@ -11,8 +11,9 @@ use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
 use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\HttpFoundation\Response;
 use Symfony\Component\Routing\Attribute\Route;
-use App\Enum\OrderStatus;
+use App\Config\OrderStatus;
 use \DateTime;
+use DateTimeImmutable;
 
 #[Route('/payment')]
 final class PaymentController extends AbstractController
@@ -44,8 +45,8 @@ final class PaymentController extends AbstractController
 
     #[Route('/new', name: 'app_payment_new', methods: ['GET', 'POST'])]
     public function new(
-        Request $request, 
-        EntityManagerInterface $entityManager, 
+        Request $request,
+        EntityManagerInterface $entityManager,
         PaymentRepository $paymentRepository,
         OrderRepository $orderRepository
     ): Response {
@@ -59,23 +60,22 @@ final class PaymentController extends AbstractController
             }
         }
 
-        $payment->setDate(new DateTime());
+        $payment->setDate(new DateTimeImmutable());
 
         $entityManager->persist($payment);
         $entityManager->flush();
 
         return $this->redirectToRoute('app_payment_edit', ['id' => $payment->getId()], Response::HTTP_SEE_OTHER);
-
     }
 
     #[Route('/{id}/edit', name: 'app_payment_edit', methods: ['GET', 'POST'])]
-    public function edit(Request $request, $id, Payment $payment, OrderRepository $orderRepository, EntityManagerInterface $entityManager, PaymentRepository $paymentRepository): Response
+    public function edit(Request $request, Payment $payment, EntityManagerInterface $entityManager, PaymentRepository $paymentRepository): Response
     {
         $form = $this->createForm(PaymentForm::class, $payment);
         $form->handleRequest($request);
 
         if ($form->isSubmitted() && $form->isValid()) {
-            $entityManager->flush();
+            // $entityManager->flush();
             // $paymentRepository->updateOrderPaymentAmount($id, $payment->getAmount());
             $paymentRepository->recalculateOrderPaymentAmount($payment->getOrder());
 
@@ -99,7 +99,7 @@ final class PaymentController extends AbstractController
     #[Route('/{id}', name: 'app_payment_delete', methods: ['POST'])]
     public function delete(Request $request, Payment $payment, EntityManagerInterface $entityManager, PaymentRepository $paymentRepository): Response
     {
-        if ($this->isCsrfTokenValid('delete'.$payment->getId(), $request->getPayload()->getString('_token'))) {
+        if ($this->isCsrfTokenValid('delete' . $payment->getId(), $request->getPayload()->getString('_token'))) {
             $order = $payment->getOrder();
             $entityManager->remove($payment);
             $entityManager->flush();

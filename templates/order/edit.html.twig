@@ -16,7 +16,7 @@
                 <div class="col-md-6 mb-3 d-flex align-items-center" style="gap: 12px;">
                     <strong>Дата заказа:</strong>
                     <span id="order-date-display">{{ order.date|date('d.m.Y') }}</span>
-                    <button type="button"
+                    {# <button type="button"
                         hx-get="{{ path('app_edit_date', {'id': order.id}) }}"
                         hx-target="#modal-content"
                         hx-trigger="click"
@@ -28,11 +28,23 @@
                         onmouseover="this.style.backgroundColor='#5a6268'" 
                         onmouseout="this.style.backgroundColor='#6c757d'">
                         <i class="bi bi-pencil" style="font-size: 1rem; color: white;"></i>
-                    </button>
+                    </button> #}
+                    <a href="{{ path('app_edit_date', {'id': order.id}) }}" 
+                        class="btn btn-sm btn-outline-primary d-inline-flex align-items-center justify-content-center border-0 shadow-none" 
+                        style="width: 25px; height: 25px; padding: 0; background-color: #6c757d;"
+                        onmouseover="this.style.backgroundColor='#5a6268'" 
+                        onmouseout="this.style.backgroundColor='#6c757d'">
+                        <i class="bi bi-pencil" style="font-size: 1rem; color: white;"></i>
+                    </a>
                 </div>
             </div>
-            {% include 'modals/modal_date.html.twig' %}
-            
+
+            <div class="modal fade" id="dateModal" tabindex="-1" aria-hidden="true">
+                <div class="modal-dialog">
+                    <div class="modal-content" id="modal-content"></div>
+                </div>
+            </div>
+
             <div class="d-flex" style="gap: 8px; ">
                 <div class="mb-4">Заказчик: {{ order.customer.name }} ({{ order.customer.email }}, {{ order.customer.phone }})</div>
                 <a href="{{ path('app_customer_edit', {'id': order.customer.id}) }}" 
@@ -117,6 +129,5 @@
         Назад
     </a>
 </div>
-    {{ form_end(form) }}
 </form>
 {% endblock %}
