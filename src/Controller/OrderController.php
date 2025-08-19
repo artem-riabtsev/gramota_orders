@@ -33,22 +33,11 @@ final class OrderController extends AbstractController
         }
 
         return $this->render('order/edit.date.html.twig', [
-            'order' => $order,
-            'form' => $form->createView(),
+            'form' => $form,
         ]);
     }
 
-
-
-
-
-    #[Route('/', name: 'app_home_redirect', methods: ['GET'])]
-    public function redirectToOrders(): Response
-    {
-        return $this->redirectToRoute('app_order_index');
-    }
-
-    #[Route('/order', name: 'app_order_index', methods: ['GET'])]
+    #[Route(['/order', '/'], name: 'app_order_index', methods: ['GET'])]
     public function index(
         Request $request,
         OrderRepository $orderRepository,

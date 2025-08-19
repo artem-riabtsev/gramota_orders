@@ -4,12 +4,11 @@
     <div class="modal-header">
         <h5 class="modal-title">Изменить дату заказа</h5>
     </div>
+
     {{ form_start(form) }}
         <div class="row">
             <div class="col-md-6 mb-3">
-                {{ form_label(form.date) }}
-                {{ form_widget(form.date) }}
-                {{ form_errors(form.date) }}
+                {{ form_row(form.date) }}
             </div>
         </div>
         <div class="modal-footer">

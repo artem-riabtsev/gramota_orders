@@ -25,7 +25,6 @@ class OrderItemForm extends AbstractType
 
     public function buildForm(FormBuilderInterface $builder, array $options): void
     {
-        // Безопасная проверка наличия данных
         $currentProduct = ($options['data'] ?? null) instanceof OrderItem ? $options['data']->getProduct() : null;
         $currentProject = $currentProduct ? $currentProduct->getProject() : null;
 
@@ -37,11 +36,11 @@ class OrderItemForm extends AbstractType
                     array_column($options['prices'], 'description'),
                     array_column($options['prices'], 'description')
                 ),
-                'choice_attr' => function($choice, $key, $value) use ($options) {
-                    $price = array_values(array_filter($options['prices'], function($item) use ($value) {
+                'choice_attr' => function ($choice, $key, $value) use ($options) {
+                    $price = array_values(array_filter($options['prices'], function ($item) use ($value) {
                         return $item['description'] === $value;
                     }))[0] ?? null;
-                    
+
                     return [
                         'data-price' => $price['price'] ?? '',
                         'data-product-id' => $price['product']['id'] ?? '',
@@ -67,14 +66,14 @@ class OrderItemForm extends AbstractType
                 'placeholder' => 'Выберите продукт',
                 'class' => Product::class,
                 'choice_label' => 'description',
-                'choice_attr' => function(Product $product) {
+                'choice_attr' => function (Product $product) {
                     return ['data-project-id' => $product->getProject() ? $product->getProject()->getId() : ''];
                 },
                 'attr' => [
                     'class' => 'form-select product-select mb-3',
                     'id' => 'order_item_form_product'
                 ],
-                'query_builder' => function(ProductRepository $repo) {
+                'query_builder' => function (ProductRepository $repo) {
                     return $repo->createQueryBuilder('p')->orderBy('p.description', 'ASC');
                 }
             ])
@@ -108,7 +107,7 @@ class OrderItemForm extends AbstractType
             'data_class' => OrderItem::class,
             'prices' => [],
         ]);
-        
+
         $resolver->setAllowedTypes('prices', 'array');
     }
 }
