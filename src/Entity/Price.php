@@ -4,6 +4,7 @@ namespace App\Entity;
 
 use  App\Entity\Product;
 use App\Repository\PriceRepository;
+use Brick\Money\Money;
 use Doctrine\DBAL\Types\Types;
 use Doctrine\ORM\Mapping as ORM;
 
@@ -19,7 +20,10 @@ class Price
     private ?string $description = null;
 
     #[ORM\Column(type: Types::DECIMAL, precision: 10, scale: 2)]
-    private ?string $price = null;
+    private ?string $price = '0.00';
+
+    #[ORM\Column(type: Types::DECIMAL, precision: 10, scale: 2, options: ['default' => '0.00'])]
+    private ?string $price1 = '0.00';
 
     #[ORM\ManyToOne]
     #[ORM\JoinColumn(nullable: false)]
@@ -63,6 +67,17 @@ class Price
     {
         $this->product = $product;
 
+        return $this;
+    }
+
+    public function getPrice1(): Money
+    {
+        return Money::of($this->price1, 'RUB');
+    }
+
+    public function setPrice1(Money $price1): static
+    {
+        $this->price1 = (string)$price1->getAmount();
         return $this;
     }
 }
