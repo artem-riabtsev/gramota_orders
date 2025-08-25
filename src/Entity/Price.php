@@ -2,8 +2,10 @@
 
 namespace App\Entity;
 
-use  App\Entity\Product;
+use Symfony\Component\Validator\Constraints as Assert;
+use App\Entity\Product;
 use App\Repository\PriceRepository;
+use Brick\Money\Money;
 use Doctrine\DBAL\Types\Types;
 use Doctrine\ORM\Mapping as ORM;
 
@@ -18,8 +20,9 @@ class Price
     #[ORM\Column]
     private ?string $description = null;
 
-    #[ORM\Column(type: Types::DECIMAL, precision: 10, scale: 2)]
-    private ?string $price = null;
+    #[Assert\PositiveOrZero(message: 'Введите положительное число.')]
+    #[ORM\Column(type: Types::BIGINT)]
+    private ?int $price = 0;
 
     #[ORM\ManyToOne]
     #[ORM\JoinColumn(nullable: false)]
@@ -42,15 +45,14 @@ class Price
         return $this;
     }
 
-    public function getPrice(): ?string
+    public function getPrice(): Money
     {
-        return $this->price;
+        return Money::ofMinor($this->price, 'RUB');
     }
 
-    public function setPrice(string $price): static
+    public function setPrice(Money $price): static
     {
-        $this->price = $price;
-
+        $this->price = $price->getMinorAmount()->toInt();
         return $this;
     }
 
