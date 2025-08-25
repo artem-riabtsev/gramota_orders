@@ -15,7 +15,7 @@ use Symfony\Component\Routing\Attribute\Route;
 final class PriceController extends AbstractController
 {
     #[Route(name: 'app_price_index', methods: ['GET'])]
-    public function index(Request $request, PriceRepository $priceRepository): Response 
+    public function index(Request $request, PriceRepository $priceRepository): Response
     {
         $query = $request->query->get('q');
 
@@ -51,14 +51,6 @@ final class PriceController extends AbstractController
         ]);
     }
 
-    #[Route('/{id}', name: 'app_price_show', methods: ['GET'])]
-    public function show(Price $price): Response
-    {
-        return $this->render('price/show.html.twig', [
-            'price' => $price,
-        ]);
-    }
-
     #[Route('/{id}/edit', name: 'app_price_edit', methods: ['GET', 'POST'])]
     public function edit(Request $request, Price $price, EntityManagerInterface $entityManager): Response
     {
@@ -80,7 +72,7 @@ final class PriceController extends AbstractController
     #[Route('/{id}', name: 'app_price_delete', methods: ['POST'])]
     public function delete(Request $request, Price $price, EntityManagerInterface $entityManager): Response
     {
-        if ($this->isCsrfTokenValid('delete'.$price->getId(), $request->getPayload()->getString('_token'))) {
+        if ($this->isCsrfTokenValid('delete' . $price->getId(), $request->getPayload()->getString('_token'))) {
             $entityManager->remove($price);
             $entityManager->flush();
         }
