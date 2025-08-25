@@ -70,3 +70,18 @@ document.addEventListener('DOMContentLoaded', function() {
     });
 });
 </script>
+
+{# какая к этой форме шла кнопка #}
+{# <form method="post" action="{{ path('app_product_delete', {'id': product.id}) }}">
+                                <input type="hidden" name="_token" value="{{ csrf_token('delete' ~ product.id) }}">
+                                 <button
+                                    type="button"
+                                    class="btn p-0 remove-item"
+                                    data-id="{{ product.id }}"
+                                    data-token="{{ csrf_token('delete' ~ product.id) }}"
+                                    data-url="{{ path('app_product_delete', {'id': product.id}) }}"
+                                    style="background: none; border: none; color: #dc3545; font-size: 1.5rem; line-height: 1;"
+                                >
+                                    <i class="bi bi-x"></i>
+                                </button>
+                            </form> #}

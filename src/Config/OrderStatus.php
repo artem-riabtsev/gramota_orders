@@ -12,7 +12,7 @@ enum OrderStatus: int
 
     public function label(): string
     {
-        return match($this) {
+        return match ($this) {
             self::EMPTY => 'Пустой',
             self::UNPAID => 'Не оплачен',
             self::PARTIALLY_PAID => 'Частично оплачен',
