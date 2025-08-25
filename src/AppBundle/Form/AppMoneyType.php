@@ -1,8 +1,9 @@
 <?php
 
-namespace App\Form;
+namespace App\AppBundle\Form;
 
 use Brick\Money\Money;
+use InvalidArgumentException;
 use Symfony\Component\Form\AbstractType;
 use Symfony\Component\Form\CallbackTransformer;
 use Symfony\Component\Form\Exception\TransformationFailedException;
@@ -17,7 +18,10 @@ class AppMoneyType extends AbstractType
         $builder->addModelTransformer(new CallbackTransformer(
             // Transform: Model → Normalized (форма)
             function ($money) {
-                return (string)$money->getAmount();
+                if (!$money instanceof Money) {
+                    throw new InvalidArgumentException('Expected Money instance');
+                }
+                return $money->getMinorAmount()->toInt() / 100;
             },
 
             // ReverseTransform: Normalized (форма) → Model (после submit)
@@ -26,9 +30,8 @@ class AppMoneyType extends AbstractType
                 if ($floatValue === null || $floatValue === '' || !is_numeric($floatValue)) {
                     throw new TransformationFailedException();
                 }
-
                 try {
-                    return Money::of($floatValue, 'RUB');
+                    return Money::ofMinor($floatValue * 100, 'RUB');
                 } catch (\Exception $e) {
                     throw new TransformationFailedException();
                 }
@@ -41,6 +44,7 @@ class AppMoneyType extends AbstractType
         $resolver->setDefaults([
             'invalid_message' => 'Введите правильно сумму',
             'scale' => 2,
+            'rounding_mode' => \NumberFormatter::ROUND_HALFUP,
             'html5' => true,
             'attr' => [
                 'step' => '0.01',
