@@ -20,23 +20,6 @@ use App\Config\OrderStatus;
 final class OrderController extends AbstractController
 {
 
-
-    #[Route('/order/{id}/date', name: 'app_edit_date', methods: ['GET', 'POST'])]
-    public function editDate(Request $request, Order $order, EntityManagerInterface $entityManager): Response
-    {
-        $form = $this->createForm(OrderForm::class, $order);
-        $form->handleRequest($request);
-
-        if ($form->isSubmitted() && $form->isValid()) {
-            $entityManager->flush();
-            return $this->redirectToRoute('app_order_edit', ['id' => $order->getId()], Response::HTTP_SEE_OTHER);
-        }
-
-        return $this->render('order/edit.date.html.twig', [
-            'form' => $form,
-        ]);
-    }
-
     #[Route(['/order', '/'], name: 'app_order_index', methods: ['GET'])]
     public function index(
         Request $request,
@@ -90,6 +73,22 @@ final class OrderController extends AbstractController
 
         return $this->render('order/select.html.twig', [
             'orders' => $orders,
+        ]);
+    }
+
+    #[Route('/order/{id}/date', name: 'app_edit_date', methods: ['GET', 'POST'])]
+    public function editDate(Request $request, Order $order, EntityManagerInterface $entityManager): Response
+    {
+        $form = $this->createForm(OrderForm::class, $order);
+        $form->handleRequest($request);
+
+        if ($form->isSubmitted() && $form->isValid()) {
+            $entityManager->flush();
+            return $this->redirectToRoute('app_order_edit', ['id' => $order->getId()], Response::HTTP_SEE_OTHER);
+        }
+
+        return $this->render('order/edit.date.html.twig', [
+            'form' => $form,
         ]);
     }
 

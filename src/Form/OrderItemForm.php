@@ -25,36 +25,8 @@ class OrderItemForm extends AbstractType
 
     public function buildForm(FormBuilderInterface $builder, array $options): void
     {
-        $currentProduct = ($options['data'] ?? null) instanceof OrderItem ? $options['data']->getProduct() : null;
-        $currentProject = $currentProduct ? $currentProduct->getProject() : null;
-
         $builder
-            ->add('description', ChoiceType::class, [
-                'label' => 'Шаблон',
-                'mapped' => false,
-                'choices' => array_combine(
-                    array_column($options['prices'], 'description'),
-                    array_column($options['prices'], 'description')
-                ),
-                'choice_attr' => function ($choice, $key, $value) use ($options) {
-                    $price = array_values(array_filter($options['prices'], function ($item) use ($value) {
-                        return $item['description'] === $value;
-                    }))[0] ?? null;
-
-                    return [
-                        'data-price' => $price['price'] ?? '',
-                        'data-product-id' => $price['product']['id'] ?? '',
-                        'data-product-name' => $price['product']['description'] ?? '',
-                        'data-project-id' => $price['product']['project_id'] ?? null
-                    ];
-                },
-                'placeholder' => 'Выберите шаблон',
-                'attr' => [
-                    'class' => 'form-select price-source mb-3',
-                    'id' => 'order_item_form_description'
-                ]
-            ])
-            ->add('description_text', TextType::class, [
+            ->add('description', TextType::class, [
                 'label' => 'Название позиции',
                 'attr' => [
                     'class' => 'form-control mb-3',

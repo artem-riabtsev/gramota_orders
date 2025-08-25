@@ -98,7 +98,10 @@
                         {{ orderItem.description }}
                     </span>
                     <button type="button" class="btn p-0 mb-1 edit-item" 
-                        data-id="{{ orderItem.id }}"><i class="bi bi-pencil" style="font-size: 1rem; color: #6c757d;"></i>
+                        data-id="{{ orderItem.id }}"><a href="{{ path('app_new_item', {'id': order.id}) }}"><i class="bi bi-pencil" style="font-size: 1rem; color: #6c757d;"></i></a>
+                    </button>
+                    <button type="button" class="btn p-0 mb-1 edit-item" 
+                        data-id="{{ orderItem.id }}"><i class="bi bi-pencil" style="font-size: 1rem; color: #7d746cff;"></i>
                     </button>
                 </td>
                 <td data-product-id="{{ orderItem.product.id }}" >{{ orderItem.product.description }}</td>
@@ -122,6 +125,9 @@
 
 <button type="button" class="btn btn-outline-secondary mb-3" id="add-item" data-bs-toggle="modal" data-bs-target="#itemModal">
     ➕ Добавить позицию
+</button>
+<button type="button" class="btn btn-outline-secondary mb-3" id="add-item">
+    <a href="{{ path('app_choose_template', {'id': order.id}) }}">➕ Добавить позицию</a>
 </button>
 
 <div class="mt-3">
