@@ -10,7 +10,7 @@ use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
 use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\HttpFoundation\Response;
 use Symfony\Component\Routing\Attribute\Route;
-use App\Enum\OrderStatus;
+use App\Config\OrderStatus;
 
 #[Route('/customer')]
 final class CustomerController extends AbstractController
@@ -22,7 +22,7 @@ final class CustomerController extends AbstractController
         CustomerRepository $customerRepository
     ): Response {
         $query = $request->query->get('q');
-        $customer = New Customer;
+        $customer = new Customer;
         $hasorders = $customer->hasOrders();
 
         if ($query) {
