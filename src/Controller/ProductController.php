@@ -22,16 +22,9 @@ final class ProductController extends AbstractController
         ProductRepository $productRepository
     ): Response {
 
-        $query = $request->query->get('q');
-
-        if ($query) {
-            $products = $productRepository->findByName($query);
-        } else {
-            $products = $productRepository->findAll();
-        }
-
+        $query = $request->query->get('q') ?? '';
         return $this->render('product/index.html.twig', [
-            'products' => $products,
+            'products' => $productRepository->findByNameOrderByDate($query),
             'query' => $query,
         ]);
     }

@@ -1,46 +1,46 @@
 {% extends 'base.html.twig' %}
 
-{% block title %}Продукт{% endblock %}
+{% block title %}Продукты {% endblock %}
 
 {% block content %}
-    <h1>Продукты</h1>
+<h1>Продукты</h1>
 
-    <div class="mb-4 d-flex flex-column flex-md-row justify-content-between gap-3">
-        {% include 'product/_filter.html.twig' %}
-        <div class="flex-shrink-0">
-            <a href="{{ path('app_product_new') }}" class="btn btn-primary">
-                Создать новый продукт
-            </a>
-        </div>
+<div class="mb-4 d-flex flex-column flex-md-row justify-content-between gap-3">
+    {% include 'product/_filter.html.twig' %}
+    <div class="flex-shrink-0">
+        <a href="{{ path('app_product_new') }}" class="btn btn-primary">
+            Создать новый продукт
+        </a>
     </div>
+</div>
 
-    <table class="table table-hover table-bordered align-middle">
-        <thead>
-            <tr>
-                <th>Id</th>
-                <th>Наименование</th>
-                <th>Дата</th>
-                <th></th>
-            </tr>
-        </thead>
-        <tbody>
-            {% for product in products %}
-                <tr>
-                    <td>{{ product.id }}</td>
-                    <td>
-                        <span class="me-2">{{ product.description }}</span>
-                        <a href="{{ path('app_product_edit', {'id': product.id}) }}" class="btn p-0 mb-1">
-                            <i class="bi bi-pencil" style="font-size: 1rem; color: #6c757d;"></i>
-                        </a>
-                    </td>
-                    <td>{{ product.date|date('d.m.Y') }}</td>
-                    <td>
-                        <div class="d-flex justify-content-center">
-                            {% include 'product/_delete.html.twig' %}
-                        </div>
-                    </td>
-                </tr>
-            {% endfor %}
-        </tbody>
-    </table>
+<table class="table table-hover align-middle">
+    <thead>
+        <tr>
+            <th>Id</th>
+            <th>Наименование</th>
+            <th>Дата</th>
+            <th></th>
+        </tr>
+    </thead>
+    <tbody>
+        {% for product in products %}
+        <tr>
+            <td>{{ product.id }}</td>
+            <td>
+                <span class="me-2">{{ product.description }}</span>
+                <a href="{{ path('app_product_edit', {'id': product.id}) }}" class="btn p-0 mb-1">
+                    <i class="bi bi-pencil" style="font-size: 1rem; color: #6c757d;"></i>
+                </a>
+            </td>
+            <td>{{ product.date|date('d.m.Y') }}</td>
+            <td>
+                <div class="d-flex justify-content-center">
+                    {% include 'product/_delete.html.twig' %}
+                </div>
+            </td>
+        </tr>
+        {% endfor %}
+    </tbody>
+</table>
 {% endblock %}

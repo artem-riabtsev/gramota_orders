@@ -16,13 +16,13 @@ class ProductRepository extends ServiceEntityRepository
         parent::__construct($registry, Product::class);
     }
 
-    public function findByName(? string $query): array 
+    public function findByNameOrderByDate(string $query): array
     {
         $qb = $this->createQueryBuilder('c');
 
-        if ($query) {
-            $qb->where('LOWER(c.description) LIKE :q')
-            ->setParameter('q', '%' . strtolower($query) . '%');
+        if (!empty($query)) {
+            $qb->where('c.description LIKE :q')
+                ->setParameter('q', "%$query%");
         }
 
         return $qb->getQuery()->getResult();
