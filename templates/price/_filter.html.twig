@@ -1,4 +1,4 @@
-<form method="get" action="{{ path('app_product_index') }}" class="flex-grow-1 me-md-3">
+<form method="get" action="{{ path('app_price_index') }}" class="flex-grow-1 me-md-3">
     <div class="row g-3">
         <div class="col-12 col-md-8 d-flex gap-2">
             <div class="input-group flex-grow-1">
@@ -8,14 +8,14 @@
                     name="q"
                     value="{{ query ?? '' }}"
                     class="form-control border-end-0"
-                    placeholder="Введите название продукта"
+                    placeholder="Введите название прайса"
                 >
                 <button class="btn btn-secondary" type="submit" title="Поиск">
                     <i class="bi bi-search text-white"></i>
                 </button>
             </div>
             {% if app.request.get('q') %}
-                <a href="{{ path('app_product_index') }}" 
+                <a href="{{ path('app_price_index') }}" 
                 class="btn btn-outline-secondary d-flex align-items-center">
                     <i class="bi bi-x-lg"></i>
                 </a>
