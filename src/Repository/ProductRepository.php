@@ -25,6 +25,8 @@ class ProductRepository extends ServiceEntityRepository
                 ->setParameter('q', "%$query%");
         }
 
+        $qb->orderBy('c.date', 'DESC');
+
         return $qb->getQuery()->getResult();
     }
 }
