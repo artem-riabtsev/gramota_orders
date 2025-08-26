@@ -3,16 +3,16 @@
 {% block title %}Прайс-лист{% endblock %}
 
 {% block content %}
-    <h1>Прайс-лист</h1>
+<h1>Прайс-лист</h1>
 
-    <div class="mb-4 d-flex flex-column flex-md-row justify-content-between gap-3">
-        {% include 'price/_filter.html.twig' %}
-        <div class="flex-shrink-0">
-            <a href="{{ path('app_price_new') }}" class="btn btn-primary">
-                Добавить позицию прайса
-            </a>
-        </div>
+<div class="mb-4 d-flex flex-column flex-md-row justify-content-between gap-3">
+    {% include 'price/_filter.html.twig' %}
+    <div class="flex-shrink-0">
+        <a href="{{ path('app_price_new') }}" class="btn btn-primary">
+            Добавить позицию
+        </a>
     </div>
+</div>
 
 <table class="table table-hover align-middle">
     <thead>
@@ -25,21 +25,21 @@
     </thead>
     <tbody>
         {% for price in prices %}
-            <tr>
-                <td>{{ price.id }}</td>
-                <td>
-                    <span class="me-2">{{ price.description }}</span>
-                    <a href="{{ path('app_price_edit', {'id': price.id}) }}" class="btn p-0 mb-1">
-                        <i class="bi bi-pencil" style="font-size: 1rem; color: #6c757d;"></i>
-                    </a>
-                </td>
-                <td>{{ price.price.amount }}</td>
-                <td>
-                    <div class="d-flex justify-content-center">
-                        {% include 'price/_delete.html.twig' %}
-                    </div>
-                </td>
-            </tr>
+        <tr>
+            <td>{{ price.id }}</td>
+            <td>
+                <span class="me-2">{{ price.description }}</span>
+                <a href="{{ path('app_price_edit', {'id': price.id}) }}" class="btn p-0 mb-1">
+                    <i class="bi bi-pencil" style="font-size: 1rem; color: #6c757d;"></i>
+                </a>
+            </td>
+            <td>{{ price.price.amount }}</td>
+            <td>
+                <div class="d-flex justify-content-center">
+                    {% include 'price/_delete.html.twig' %}
+                </div>
+            </td>
+        </tr>
         {% else %}
         <tr>
             <td colspan="4">Записи не найдены</td>
