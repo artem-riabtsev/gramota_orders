@@ -3,17 +3,22 @@
 {% block title %}Прайс-лист{% endblock %}
 
 {% block content %}
-
 <h1>Прайс-лист</h1>
 
-{% include 'search/search_form.html.twig' %}
-{% include 'modals/modal_delete.html.twig' %}
+<div class="mb-4 d-flex flex-column flex-md-row justify-content-between gap-3">
+    {% include 'price/_filter.html.twig' %}
+    <div class="flex-shrink-0">
+        <a href="{{ path('app_price_new') }}" class="btn btn-primary">
+            Добавить позицию прайса
+        </a>
+    </div>
+</div>
 
-<table class="table table-hover table-bordered align-middle">
+<table class="table table-hover align-middle">
     <thead>
         <tr>
             <th>Id</th>
-            <th>Описание</th>
+            <th>Наименование</th>
             <th>Цена</th>
             <th></th>
         </tr>
@@ -31,9 +36,7 @@
             <td>{{ price.price.amount }}</td>
             <td>
                 <div class="d-flex justify-content-center">
-                    <button type="button" class="btn p-0 remove-item" data-id="{{ price.id }}" data-token="{{ csrf_token('delete' ~ price.id) }}" data-url="{{ path('app_price_delete', {'id': price.id}) }}" style="background: none; border: none; color: #dc3545; font-size: 1.5rem; line-height: 1;">
-                        <i class="bi bi-x"></i>
-                    </button>
+                    {% include 'price/_delete.html.twig' %}
                 </div>
             </td>
         </tr>

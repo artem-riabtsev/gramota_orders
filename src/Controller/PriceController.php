@@ -15,18 +15,11 @@ use Symfony\Component\Routing\Attribute\Route;
 final class PriceController extends AbstractController
 {
     #[Route(name: 'app_price_index', methods: ['GET'])]
-    public function index(Request $request, PriceRepository $priceRepository): Response 
+    public function index(Request $request, PriceRepository $priceRepository): Response
     {
-        $query = $request->query->get('q');
-
-        if ($query) {
-            $prices = $priceRepository->findByDescription($query);
-        } else {
-            $prices = $priceRepository->findAll();
-        }
-
+        $query = $request->query->get('q') ?? '';
         return $this->render('price/index.html.twig', [
-            'prices' => $prices,
+            'prices' => $priceRepository->findByDescriptionOrderByDescription($query),
             'query' => $query,
         ]);
     }
@@ -46,16 +39,7 @@ final class PriceController extends AbstractController
         }
 
         return $this->render('price/new.html.twig', [
-            'price' => $price,
             'form' => $form,
-        ]);
-    }
-
-    #[Route('/{id}', name: 'app_price_show', methods: ['GET'])]
-    public function show(Price $price): Response
-    {
-        return $this->render('price/show.html.twig', [
-            'price' => $price,
         ]);
     }
 
@@ -80,7 +64,7 @@ final class PriceController extends AbstractController
     #[Route('/{id}', name: 'app_price_delete', methods: ['POST'])]
     public function delete(Request $request, Price $price, EntityManagerInterface $entityManager): Response
     {
-        if ($this->isCsrfTokenValid('delete'.$price->getId(), $request->getPayload()->getString('_token'))) {
+        if ($this->isCsrfTokenValid('delete' . $price->getId(), $request->getPayload()->getString('_token'))) {
             $entityManager->remove($price);
             $entityManager->flush();
         }

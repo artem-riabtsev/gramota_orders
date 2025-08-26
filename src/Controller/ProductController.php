@@ -21,20 +21,12 @@ final class ProductController extends AbstractController
         Request $request,
         ProductRepository $productRepository
     ): Response {
-        
-        $query = $request->query->get('q');
 
-        if ($query) {
-            $products = $productRepository->findByName($query);
-        } else {
-            $products = $productRepository->findAll();
-        }
-
+        $query = $request->query->get('q') ?? '';
         return $this->render('product/index.html.twig', [
-            'products' => $products,
+            'products' => $productRepository->findByNameOrderByDateByDescription($query),
             'query' => $query,
         ]);
-
     }
 
     #[Route('/new', name: 'app_product_new', methods: ['GET', 'POST'])]
@@ -52,7 +44,6 @@ final class ProductController extends AbstractController
         }
 
         return $this->render('product/new.html.twig', [
-            'product' => $product,
             'form' => $form,
         ]);
     }
@@ -80,16 +71,15 @@ final class ProductController extends AbstractController
     {
 
         $hasItems = $entityManager->getRepository(OrderItem::class)
-        ->productHasOrderItems($product);
+            ->productHasOrderItems($product);
 
-        if ($this->isCsrfTokenValid('delete'.$product->getId(), $request->getPayload()->getString('_token'))) {
-            if ( (!$hasItems) ) {
+        if ($this->isCsrfTokenValid('delete' . $product->getId(), $request->request->get('_token'))) {
+            if ((!$hasItems)) {
                 $entityManager->remove($product);
                 $entityManager->flush();
             } else {
-                $this->addFlash('error', 'Данный продукт указан в заказе!');
+                $this->addFlash('danger', 'Данный продукт указан в заказе!');
             }
-
         }
 
         return $this->redirectToRoute('app_product_index', [], Response::HTTP_SEE_OTHER);

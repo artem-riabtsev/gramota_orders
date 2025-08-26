@@ -34,7 +34,7 @@
 {% set currentRoute = app.request.attributes.get('_route') %}
 {% set currentConfig = config[currentRoute] ?? config['default'] %}
 
-<div class="mb-4 d-flex justify-content-between">
+{# <div class="mb-4 d-flex justify-content-between">
     <form method="get" action="{{ path(app.request.attributes.get('_route')) }}" class="flex-grow-1" style="flex-basis: 40%">
         <div class="row g-3">
 
@@ -95,4 +95,38 @@
             </form>
         </div>
     {% endif %}
+</div> #}
+
+<div class="mb-4 d-flex flex-column flex-md-row justify-content-between gap-3">
+    <form method="get" action="{{ path(app.request.attributes.get('_route')) }}" class="flex-grow-1 me-md-3">
+        <div class="row g-3">
+            <div class="col-12 col-md-8 d-flex gap-2">
+                <div class="input-group flex-grow-1">
+                    <input
+                        type="text"
+                        id="filterQuery"
+                        name="q"
+                        value="{{ query ?? '' }}"
+                        class="form-control border-end-0"
+                        placeholder="{{ currentConfig.placeholder }}"
+                    >
+                    <button class="btn btn-secondary" type="submit" title="Поиск">
+                        <i class="bi bi-search text-white"></i>
+                    </button>
+                </div>
+                {% if app.request.get('q') %}
+                    <a href="{{ path(app.request.attributes.get('_route')) }}" 
+                       class="btn btn-outline-secondary d-flex align-items-center">
+                        <i class="bi bi-x-lg"></i>
+                    </a>
+                {% endif %}
+            </div>
+        </div>
+    </form>
+    
+    <div class="flex-shrink-0">
+        <a href="{{ path(currentConfig.new_route, currentConfig.arg) }}" class="btn btn-primary">
+            {{ currentConfig.new_text }}
+        </a>
+    </div>
 </div>

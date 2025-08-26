@@ -17,12 +17,13 @@ class ProductForm extends AbstractType
     {
         $builder
             ->add('description', null, ['label' => 'Наименование'])
-             ->add('date', null, [
+            ->add('date', null, [
                 'label' => 'Дата',
+                'html5' => true,
+                'widget' => 'single_text',
             ])
             ->add('basic', CheckboxType::class, [
                 'label' => 'Является базовым значением',
-                'data' => $options['data']->getBasic() ?? false,
                 'required' => false,
             ])
             ->add('project', EntityType::class, [
