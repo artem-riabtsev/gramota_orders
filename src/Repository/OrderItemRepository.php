@@ -16,16 +16,4 @@ class OrderItemRepository extends ServiceEntityRepository
     {
         parent::__construct($registry, OrderItem::class);
     }
-
-    public function productHasOrderItems(Product $product): bool
-    {
-        $count = $this->createQueryBuilder('oi')
-            ->select('COUNT(oi.id)')
-            ->where('oi.product = :product')
-            ->setParameter('product', $product)
-            ->getQuery()
-            ->getSingleScalarResult();
-
-        return $count > 0;
-    }
 }
