@@ -24,7 +24,7 @@ final class ProductController extends AbstractController
 
         $query = $request->query->get('q') ?? '';
         return $this->render('product/index.html.twig', [
-            'products' => $productRepository->findByNameOrderByDate($query),
+            'products' => $productRepository->findByNameOrderByDateByDescription($query),
             'query' => $query,
         ]);
     }
@@ -44,7 +44,6 @@ final class ProductController extends AbstractController
         }
 
         return $this->render('product/new.html.twig', [
-            'product' => $product,
             'form' => $form,
         ]);
     }

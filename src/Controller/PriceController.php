@@ -17,16 +17,9 @@ final class PriceController extends AbstractController
     #[Route(name: 'app_price_index', methods: ['GET'])]
     public function index(Request $request, PriceRepository $priceRepository): Response
     {
-        $query = $request->query->get('q');
-
-        if ($query) {
-            $prices = $priceRepository->findByDescription($query);
-        } else {
-            $prices = $priceRepository->findAll();
-        }
-
+        $query = $request->query->get('q') ?? '';
         return $this->render('price/index.html.twig', [
-            'prices' => $prices,
+            'prices' => $priceRepository->findByDescriptionOrderByDescription($query),
             'query' => $query,
         ]);
     }
@@ -46,7 +39,6 @@ final class PriceController extends AbstractController
         }
 
         return $this->render('price/new.html.twig', [
-            'price' => $price,
             'form' => $form,
         ]);
     }

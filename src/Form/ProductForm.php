@@ -24,7 +24,6 @@ class ProductForm extends AbstractType
             ])
             ->add('basic', CheckboxType::class, [
                 'label' => 'Является базовым значением',
-                'data' => $options['data']->getBasic() ?? false,
                 'required' => false,
             ])
             ->add('project', EntityType::class, [

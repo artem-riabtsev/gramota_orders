@@ -1,9 +1,9 @@
 {% extends 'base.html.twig' %}
 
-{% block title %}Новый прайс{% endblock %}
+{% block title %}Новая позиция прайса{% endblock %}
 
 {% block content %}
-<h1>Создать прайс</h1>
+<h1>Создать позицию прайса</h1>
 
 <div class="card">
     <div class="card-body">
@@ -11,9 +11,9 @@
         {{ form_row(form.description) }}
         {{ form_row(form.price) }}
         {{ form_row(form.product) }}
-        <button class="btn btn-success">Создать</button>
-        <a href="{{ path('app_price_index') }}" class="btn btn-secondary">
-            Назад к списку
+        <button class="btn btn-success mt-2">Создать</button>
+        <a href="{{ path('app_price_index') }}" class="btn btn-secondary ms-1 mt-2">
+            Назад
         </a>
         {{ form_end(form) }}
     </div>

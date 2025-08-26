@@ -13,15 +13,15 @@ class PriceRepository extends ServiceEntityRepository
         parent::__construct($registry, Price::class);
     }
 
-    public function findByDescription(?string $query): array
+    public function findByDescriptionOrderByDescription(?string $query): array
     {
         $qb = $this->createQueryBuilder('p');
 
         if ($query) {
             $qb->where('LOWER(p.description) LIKE :q')
-                ->setParameter('q', '%' . strtolower($query) . '%')
-                ->orderBy('p.description', 'ASC');
+                ->setParameter('q', '%' . strtolower($query) . '%');
         }
+        $qb->orderBy('p.description', 'ASC');
 
         return $qb->getQuery()->getResult();
     }

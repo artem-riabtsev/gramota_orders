@@ -16,7 +16,7 @@ class ProductRepository extends ServiceEntityRepository
         parent::__construct($registry, Product::class);
     }
 
-    public function findByNameOrderByDate(string $query): array
+    public function findByNameOrderByDateByDescription(string $query): array
     {
         $qb = $this->createQueryBuilder('c');
 
@@ -25,7 +25,8 @@ class ProductRepository extends ServiceEntityRepository
                 ->setParameter('q', "%$query%");
         }
 
-        $qb->orderBy('c.date', 'DESC');
+        $qb->orderBy('c.date', 'DESC')
+            ->addOrderBy('c.description', 'ASC');
 
         return $qb->getQuery()->getResult();
     }

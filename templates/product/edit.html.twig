@@ -1,7 +1,9 @@
 {% extends 'base.html.twig' %}
 
+{% block title %}Изменение продукта{% endblock %}
+
 {% block content %}
-<h1>Редактировать продукт {{ product.id }}</h1>
+<h1>Изменение продукта {{ product.id }}</h1>
 
 <div class="card">
     <div class="card-body">
@@ -15,7 +17,7 @@
         </div>
 
         <button class="btn btn-success">Сохранить</button>
-        <a href="{{ app.request.headers.get('referer') ?: path('app_product_index') }}" class="btn btn-secondary">
+        <a href="{{ app.request.headers.get('referer') ?: path('app_product_index') }}" class="btn btn-secondary ms-1">
             Назад
         </a>
 
