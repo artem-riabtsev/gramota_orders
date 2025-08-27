@@ -34,12 +34,12 @@ final class PaymentController extends AbstractController
             $payments = $paymentRepository->findLastMonthOrders();
         }
 
-        $totalAmount = array_reduce($payments, fn($carry, $p) => $carry + $p->getAmount(), 0);
+        // $totalAmount = array_reduce($payments, fn($carry, $p) => $carry + $p->getAmount(), 0);
 
         return $this->render('payment/index.html.twig', [
             'payments' => $payments,
             'query' => $query,
-            'totalAmount' => $totalAmount,
+            // 'totalAmount' => $totalAmount,
         ]);
     }
 

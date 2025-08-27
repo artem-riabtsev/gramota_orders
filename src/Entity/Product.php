@@ -5,6 +5,8 @@ namespace App\Entity;
 use App\Repository\ProductRepository;
 use Doctrine\DBAL\Types\Types;
 use Doctrine\ORM\Mapping as ORM;
+use Doctrine\Common\Collections\Collection;
+use Doctrine\Common\Collections\ArrayCollection;
 
 #[ORM\Entity(repositoryClass: ProductRepository::class)]
 class Product
@@ -22,6 +24,12 @@ class Product
 
     #[ORM\Column]
     private ?bool $basic = false;
+
+    #[ORM\OneToMany(mappedBy: 'product', targetEntity: OrderItem::class)]
+    private Collection $orderItems;
+
+    #[ORM\OneToMany(mappedBy: 'product', targetEntity: Price::class)]
+    private Collection $prices;
 
     #[ORM\ManyToOne]
     #[ORM\JoinColumn(nullable: false)]
@@ -74,5 +82,21 @@ class Product
     {
         $this->project = $project;
         return $this;
+    }
+
+    public function __construct()
+    {
+        $this->orderItems = new ArrayCollection();
+        $this->prices = new ArrayCollection();
+    }
+
+    public function hasOrderItems(): bool
+    {
+        return !$this->orderItems->isEmpty();
+    }
+
+    public function hasPrices(): bool
+    {
+        return !$this->prices->isEmpty();
     }
 }

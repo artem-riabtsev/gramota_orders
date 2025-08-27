@@ -9,6 +9,7 @@ use App\Entity\Customer;
 use App\Entity\OrderItem;
 use Doctrine\Common\Collections\ArrayCollection;
 use Doctrine\Common\Collections\Collection;
+use Brick\Money\Money;
 use App\Config\OrderStatus;
 
 #[ORM\Entity(repositoryClass: OrderRepository::class)]
@@ -27,11 +28,11 @@ class Order
     #[ORM\JoinColumn(nullable: false)]
     private Customer $customer;
 
-    #[ORM\Column(type: Types::DECIMAL, precision: 10, scale: 2)]
-    private ?string $orderTotal = '0.00';
+    #[ORM\Column(type: Types::BIGINT)]
+    private ?int $orderTotal = 0;
 
-    #[ORM\Column(type: Types::DECIMAL, precision: 10, scale: 2)]
-    private string $totalPaid = '0.00';
+    #[ORM\Column(type: Types::BIGINT)]
+    private ?int $totalPaid = 0;
 
     #[ORM\Column(enumType: OrderStatus::class)]
     private OrderStatus $status = OrderStatus::EMPTY;
@@ -59,27 +60,25 @@ class Order
         return $this;
     }
 
-    public function getOrderTotal(): ?string
+    public function getOrderTotal(): Money
     {
-        return $this->orderTotal;
+        return Money::ofMinor($this->orderTotal, 'RUB');
     }
 
-    public function setOrderTotal(string $orderTotal): static
+    public function setOrderTotal(Money $orderTotal): static
     {
-        $this->orderTotal = $orderTotal;
-
+        $this->orderTotal = $orderTotal->getMinorAmount()->toInt();
         return $this;
     }
 
-    public function getTotalPaid(): ?string
+    public function getTotalPaid(): Money
     {
-        return $this->totalPaid;
+        return Money::ofMinor($this->totalPaid, 'RUB');
     }
 
-    public function setTotalPaid(string $totalPaid): static
+    public function setTotalPaid(Money $totalPaid): static
     {
-        $this->totalPaid = $totalPaid;
-
+        $this->totalPaid = $totalPaid->getMinorAmount()->toInt();
         return $this;
     }
 

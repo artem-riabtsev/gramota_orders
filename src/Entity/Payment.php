@@ -6,6 +6,8 @@ use App\Repository\PaymentRepository;
 use Doctrine\DBAL\Types\Types;
 use Doctrine\ORM\Mapping as ORM;
 use App\Entity\Order;
+use Symfony\Component\Validator\Constraints as Assert;
+use Brick\Money\Money;
 
 #[ORM\Entity(repositoryClass: PaymentRepository::class)]
 class Payment
@@ -22,8 +24,9 @@ class Payment
     #[ORM\Column]
     private ?\DateTimeImmutable $date = null;
 
-    #[ORM\Column(type: Types::DECIMAL, precision: 10, scale: 2)]
-    private ?string $amount = '0.00';
+    #[Assert\PositiveOrZero(message: 'Введите положительное число.')]
+    #[ORM\Column(type: Types::BIGINT)]
+    private ?int $amount = 0;
 
     public function getId(): ?int
     {
@@ -53,14 +56,14 @@ class Payment
         return $this;
     }
 
-    public function getAmount(): ?string
+    public function getAmount(): Money
     {
-        return $this->amount;
+        return Money::ofMinor($this->amount, 'RUB');
     }
 
-    public function setAmount(string $amount): static
+    public function setAmount(Money $amount): static
     {
-        $this->amount = $amount;
+        $this->amount = $amount->getMinorAmount()->toInt();
         return $this;
     }
 }

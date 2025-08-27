@@ -5,7 +5,7 @@
 
 {% include 'modals/modal_delete.html.twig' %}
 
-{% include 'modals/modal_order_item.html.twig' %}
+{# {% include 'modals/modal_order_item.html.twig' %} #}
 
 <form method="post" action="{{ path('app_order_edit', {'id': order.id}) }}" id="order-form">
     <input type="hidden" name="deleted_items[]" id="deleted-items" value="">
@@ -67,8 +67,8 @@
                 <span class="text-danger">Переплата</span>
             {% endif %}
             <div class="d-flex" style="gap: 50px;">
-                <div>Сумма заказа: <strong>{{ order.orderTotal }}</strong></div>
-                <div>Сумма оплаты: {{ order.totalPaid }}</div>
+                <div>Сумма заказа: <strong>{{ order.orderTotal.amount }}</strong></div>
+                <div>Сумма оплаты: {{ order.totalPaid.amount }}</div>
             </div>
         </div>
     </div>
@@ -106,8 +106,8 @@
                 </td>
                 <td data-product-id="{{ orderItem.product.id }}" >{{ orderItem.product.description }}</td>
                 <td>{{ orderItem.quantity }}</td>
-                <td>{{ orderItem.price }}</td>
-                <td>{{ orderItem.lineTotal }}</td>
+                <td>{{ orderItem.price.amount }}</td>
+                <td>{{ orderItem.lineTotal.amount }}</td>
                 <td>
                     <div class='d-flex justify-content-center'>
                         <button type="button" class="btn p-0 remove-item" 

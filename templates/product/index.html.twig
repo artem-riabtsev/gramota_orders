@@ -4,7 +4,12 @@
 
 {% block content %}
 <h1>Продукты</h1>
-
+{% for message in app.flashes('error') %}
+    <div class="alert alert-danger alert-dismissible fade show" role="alert">
+        {{ message }}
+        <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Закрыть"></button>
+    </div>
+{% endfor %}
 <div class="mb-4 d-flex flex-column flex-md-row justify-content-between gap-3">
     {% include 'product/_filter.html.twig' %}
     <div class="flex-shrink-0">

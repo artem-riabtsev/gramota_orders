@@ -8,6 +8,7 @@ use Symfony\Bridge\Doctrine\Form\Type\EntityType;
 use Symfony\Component\Form\AbstractType;
 use Symfony\Component\Form\FormBuilderInterface;
 use Symfony\Component\OptionsResolver\OptionsResolver;
+use App\AppBundle\Form\AppMoneyType;
 
 class PaymentForm extends AbstractType
 {
@@ -15,7 +16,7 @@ class PaymentForm extends AbstractType
     {
         $builder
             ->add('date', null, ['label' => 'Дата'])
-            ->add('amount', null, ['label' => 'Сумма платежа'])
+            ->add('amount', AppMoneyType::class, ['label' => 'Сумма платежа'])
             ->add('order', EntityType::class, [
                 'class' => Order::class,
                 'label' => 'Номер заказа',

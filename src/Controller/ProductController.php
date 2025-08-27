@@ -70,15 +70,14 @@ final class ProductController extends AbstractController
     public function delete(Request $request, Product $product, EntityManagerInterface $entityManager): Response
     {
 
-        $hasItems = $entityManager->getRepository(OrderItem::class)
-            ->productHasOrderItems($product);
-
         if ($this->isCsrfTokenValid('delete' . $product->getId(), $request->request->get('_token'))) {
-            if ((!$hasItems)) {
+            if (($product->hasOrderItems())) {
+                $this->addFlash('error', 'Данный продукт указан в заказе!');
+            } elseif ($product->hasPrices()) {
+                $this->addFlash('error', 'Данный продукт указан в прайсе!');
+            } else {
                 $entityManager->remove($product);
                 $entityManager->flush();
-            } else {
-                $this->addFlash('danger', 'Данный продукт указан в заказе!');
             }
         }
 
