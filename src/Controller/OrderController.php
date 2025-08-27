@@ -143,9 +143,9 @@ final class OrderController extends AbstractController
             ];
         }
 
-        $orderItemForm = $this->createForm(OrderItemForm::class, null, [
-            'prices' => $priceChoices
-        ]);
+        // $orderItemForm = $this->createForm(OrderItemForm::class, null, [
+        //     'prices' => $priceChoices
+        // ]);
 
         if ($request->isMethod('POST')) {
             // Получаем текущие позиции заказа
@@ -219,7 +219,7 @@ final class OrderController extends AbstractController
                 $orderTotal = '0';
             }
 
-            $order->setOrderTotal($orderTotal);
+            // $order->setOrderTotal($orderTotal);
             $totalPaid = $order->getTotalPaid();
 
             $order->recalcStatus($totalPaid, $orderTotal);
@@ -230,7 +230,7 @@ final class OrderController extends AbstractController
 
         return $this->render('order/edit.html.twig', [
             'order' => $order,
-            'orderItemForm' => $orderItemForm->createView(),
+            // 'orderItemForm' => $orderItemForm->createView(),
             'products' => $productRepository->findAll(),
             'prices' => $priceRepository->findAll(),
         ]);

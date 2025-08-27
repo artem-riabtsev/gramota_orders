@@ -13,6 +13,7 @@ use Symfony\Component\Form\Extension\Core\Type\ChoiceType;
 use Symfony\Component\Form\Extension\Core\Type\TextType;
 use Doctrine\ORM\EntityManagerInterface;
 use App\Repository\ProductRepository;
+use App\AppBundle\Form\AppMoneyType;
 
 class OrderItemForm extends AbstractType
 {
@@ -57,14 +58,14 @@ class OrderItemForm extends AbstractType
                     'id' => 'order_item_form_quantity',
                 ]
             ])
-            ->add('price', TextType::class, [
+            ->add('price', AppMoneyType::class, [
                 'label' => 'Цена',
                 'attr' => [
                     'class' => 'form-control price mb-3',
                     'id' => 'order_item_form_price',
                 ]
             ])
-            ->add('line_total', TextType::class, [
+            ->add('line_total', AppMoneyType::class, [
                 'label' => 'Всего',
                 'attr' => [
                     'class' => 'form-control total mb-3',

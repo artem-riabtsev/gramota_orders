@@ -29,8 +29,8 @@
                 </a>
             </td>
             <td>{{ order.date ? order.date|date('d.m.Y') : '' }}</td>
-            <td>{{ order.orderTotal }}</td>
-            <td>{{ order.totalPaid }}</td>
+            <td>{{ order.orderTotal.amount }}</td>
+            <td>{{ order.totalPaid.amount }}</td>
             <td>
                 <a href="{{ path('app_customer_show', {'id': order.customer.id}) }}"
                 class="text-muted"
