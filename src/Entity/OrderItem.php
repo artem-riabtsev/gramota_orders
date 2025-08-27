@@ -5,6 +5,8 @@ namespace App\Entity;
 use App\Repository\OrderItemRepository;
 use Doctrine\DBAL\Types\Types;
 use Doctrine\ORM\Mapping as ORM;
+use Symfony\Component\Validator\Constraints as Assert;
+use Brick\Money\Money;
 
 #[ORM\Entity(repositoryClass: OrderItemRepository::class)]
 class OrderItem
@@ -18,18 +20,19 @@ class OrderItem
     #[ORM\JoinColumn(nullable: false)]
     private Order $order;
 
-    #[ORM\ManyToOne]
+    #[ORM\ManyToOne(targetEntity: Product::class, inversedBy: 'orderItems')]
     #[ORM\JoinColumn(nullable: false)]
     private Product $product;
 
     #[ORM\Column]
     private ?int $quantity = 1;
 
-    #[ORM\Column(type: Types::DECIMAL, precision: 10, scale: 2)]
-    private ?string $price = null;
+    #[Assert\PositiveOrZero(message: 'Введите положительное число.')]
+    #[ORM\Column(type: Types::BIGINT)]
+    private ?int $price = 0;
 
-    #[ORM\Column(type: Types::DECIMAL, precision: 10, scale: 2)]
-    private ?string $lineTotal = null;
+    #[ORM\Column(type: Types::BIGINT)]
+    private ?int $lineTotal = 0;
 
     #[ORM\Column]
     private ?string $description = null;
@@ -74,28 +77,25 @@ class OrderItem
         return $this;
     }
 
-    public function getPrice(): ?string
+    public function getPrice(): Money
     {
-        return $this->price;
+        return Money::ofMinor($this->price, 'RUB');
     }
 
-
-    public function setPrice(string $price): static
+    public function setPrice(Money $price): static
     {
-        $this->price = $price;
-
+        $this->price = $price->getMinorAmount()->toInt();
         return $this;
     }
 
-    public function getLineTotal(): ?string
+    public function getLineTotal(): Money
     {
-        return $this->lineTotal;
+        return Money::ofMinor($this->lineTotal, 'RUB');
     }
 
-    public function setLineTotal(string $lineTotal): static
+    public function setLineTotal(Money $lineTotal): static
     {
-        $this->lineTotal = $lineTotal;
-
+        $this->lineTotal = $lineTotal->getMinorAmount()->toInt();
         return $this;
     }
 

@@ -24,7 +24,7 @@ class Price
     #[ORM\Column(type: Types::BIGINT)]
     private ?int $price = 0;
 
-    #[ORM\ManyToOne]
+    #[ORM\ManyToOne(targetEntity: Product::class, inversedBy: 'prices')]
     #[ORM\JoinColumn(nullable: false)]
     private Product $product;
 
