@@ -65,9 +65,12 @@ class Order
         return Money::ofMinor($this->orderTotal, 'RUB');
     }
 
-    public function setOrderTotal(Money $orderTotal): static
+    public function culculateOrderTotal(): static
     {
-        $this->orderTotal = $orderTotal->getMinorAmount()->toInt();
+        $this->orderTotal = 0;
+        foreach ($this->orderItems as $orderItem) {
+            $this->orderTotal += $orderItem->getLineTotal()->getMinorAmount()->toInt();
+        }
         return $this;
     }
 
@@ -76,9 +79,12 @@ class Order
         return Money::ofMinor($this->totalPaid, 'RUB');
     }
 
-    public function setTotalPaid(Money $totalPaid): static
+    public function culculateTotalPaid(): static
     {
-        $this->totalPaid = $totalPaid->getMinorAmount()->toInt();
+        $this->totalPaid = 0;
+        foreach ($this->payments as $payment) {
+            $this->totalPaid += $payment->getAmount()->getMinorAmount()->toInt();
+        }
         return $this;
     }
 
