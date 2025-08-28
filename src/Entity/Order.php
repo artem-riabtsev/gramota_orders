@@ -71,7 +71,7 @@ class Order
         foreach ($this->orderItems as $orderItem) {
             $this->orderTotal += $orderItem->getLineTotal()->getMinorAmount()->toInt();
         }
-        $this->setStatus();
+        //$this->setStatus();
         return $this;
     }
 
@@ -86,7 +86,7 @@ class Order
         foreach ($this->payments as $payment) {
             $this->totalPaid += $payment->getAmount()->getMinorAmount()->toInt();
         }
-        $this->setStatus();
+        //$this->setStatus();
         return $this;
     }
 
