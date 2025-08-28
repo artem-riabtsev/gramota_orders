@@ -83,7 +83,7 @@ final class PaymentController extends AbstractController
 
             $totalPaid = $order->getTotalPaid();
             $orderTotal = $order->getOrderTotal();
-            $order->recalcStatus($totalPaid, $orderTotal);
+            // $order->recalcStatus($totalPaid, $orderTotal);
             $entityManager->persist($order);
             $entityManager->flush();
 
@@ -106,7 +106,7 @@ final class PaymentController extends AbstractController
             $paymentRepository->recalculateOrderPaymentAmount($payment->getOrder());
             $totalPaid = $order->getTotalPaid();
             $orderTotal = $order->getOrderTotal();
-            $order->recalcStatus($totalPaid, $orderTotal);
+            // $order->recalcStatus($totalPaid, $orderTotal);
 
             $entityManager->persist($order);
             $entityManager->flush();
