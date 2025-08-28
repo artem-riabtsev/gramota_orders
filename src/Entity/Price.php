@@ -2,7 +2,7 @@
 
 namespace App\Entity;
 
-use Symfony\Component\Validator\Constraints as Assert;
+use App\AppBundle\Validator\Constraints as AppAssert;
 use App\Entity\Product;
 use App\Repository\PriceRepository;
 use Brick\Money\Money;
@@ -20,9 +20,10 @@ class Price
     #[ORM\Column]
     private ?string $description = null;
 
-    #[Assert\PositiveOrZero(message: 'Введите положительное число.')]
+
+    #[AppAssert\MoneyPositiveOrZero(message: 'Введите положительное число или ноль')]
     #[ORM\Column(type: Types::BIGINT)]
-    private ?int $price = 0;
+    private ?string $price = '0';
 
     #[ORM\ManyToOne(targetEntity: Product::class, inversedBy: 'prices')]
     #[ORM\JoinColumn(nullable: false)]
@@ -52,7 +53,7 @@ class Price
 
     public function setPrice(Money $price): static
     {
-        $this->price = $price->getMinorAmount()->toInt();
+        $this->price = (string)$price->getMinorAmount();
         return $this;
     }
 

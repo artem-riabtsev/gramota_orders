@@ -29,10 +29,10 @@ class Order
     private Customer $customer;
 
     #[ORM\Column(type: Types::BIGINT)]
-    private ?int $orderTotal = 0;
+    private ?string $orderTotal = '0';
 
     #[ORM\Column(type: Types::BIGINT)]
-    private ?int $totalPaid = 0;
+    private ?string $totalPaid = '0';
 
     #[ORM\Column(enumType: OrderStatus::class)]
     private OrderStatus $status = OrderStatus::EMPTY;
@@ -67,10 +67,11 @@ class Order
 
     public function culculateOrderTotal(): static
     {
-        $this->orderTotal = 0;
+        $summa = Money::of(0, 'RUB');
         foreach ($this->orderItems as $orderItem) {
-            $this->orderTotal += $orderItem->getLineTotal()->getMinorAmount()->toInt();
+            $summa = $summa->plus($orderItem->getLineTotal());
         }
+        $this->orderTotal = (string)$summa->getMinorAmount();
         //$this->setStatus();
         return $this;
     }
@@ -82,10 +83,11 @@ class Order
 
     public function culculateTotalPaid(): static
     {
-        $this->totalPaid = 0;
+        $summa = Money::of(0, 'RUB');
         foreach ($this->payments as $payment) {
-            $this->totalPaid += $payment->getAmount()->getMinorAmount()->toInt();
+            $summa = $summa->plus($payment->getAmount());
         }
+        $this->totalPaid = (string)$summa->getMinorAmount();
         //$this->setStatus();
         return $this;
     }
