@@ -3,7 +3,7 @@
 {% block content %}
 <h1>Заказ {{ order.id }}</h1>
 
-{% include 'modals/modal_delete.html.twig' %}
+{# {% include 'modals/modal_delete.html.twig' %} #}
 
 {# {% include 'modals/modal_order_item.html.twig' %} #}
 
@@ -72,8 +72,8 @@
             </div>
         </div>
     </div>
-
-    <table class="table table-hover table-bordered align-middle" id="orderItem-table">
+</form>
+<table class="table table-hover table-bordered align-middle" id="orderItem-table">
     <thead>
         <tr>
             <th>Наименование</th>
@@ -98,10 +98,7 @@
                         {{ orderItem.description }}
                     </span>
                     <button type="button" class="btn p-0 mb-1 edit-item" 
-                        data-id="{{ orderItem.id }}"><a href="{{ path('app_new_item', {'id': order.id}) }}"><i class="bi bi-pencil" style="font-size: 1rem; color: #6c757d;"></i></a>
-                    </button>
-                    <button type="button" class="btn p-0 mb-1 edit-item" 
-                        data-id="{{ orderItem.id }}"><i class="bi bi-pencil" style="font-size: 1rem; color: #7d746cff;"></i>
+                        data-id="{{ orderItem.id }}"><a href="{{ path('app_orderItem_edit', {'id': orderItem.id}) }}"><i class="bi bi-pencil" style="font-size: 1rem; color: #6c757d;"></i></a>
                     </button>
                 </td>
                 <td data-product-id="{{ orderItem.product.id }}" >{{ orderItem.product.description }}</td>
@@ -110,12 +107,7 @@
                 <td>{{ orderItem.lineTotal.amount }}</td>
                 <td>
                     <div class='d-flex justify-content-center'>
-                        <button type="button" class="btn p-0 remove-item" 
-                            data-id="{{ orderItem.id }}"
-                            data-url="{{ path('app_order_edit', {'id': order.id}) }}"
-                            style="background: none; border: none; color: #dc3545; font-size: 1.5rem; line-height: 1;">
-                            <i class="bi bi-x"></i>
-                        </button>
+                       {% include 'order_item/_delete.html.twig' %}
                     </div>
                 </td>
             </tr>
@@ -123,11 +115,8 @@
     </tbody>
 </table>
 
-<button type="button" class="btn btn-outline-secondary mb-3" id="add-item" data-bs-toggle="modal" data-bs-target="#itemModal">
-    ➕ Добавить позицию
-</button>
 <button type="button" class="btn btn-outline-secondary mb-3" id="add-item">
-    <a href="{{ path('app_choose_template', {'id': order.id}) }}">➕ Добавить позицию</a>
+    <a href="{{ path('app_orderItem_new', {'order_id': order.id}) }}" class="text-decoration-none">➕ Добавить позицию</a>
 </button>
 
 <div class="mt-3">
@@ -135,5 +124,4 @@
         Назад
     </a>
 </div>
-</form>
 {% endblock %}

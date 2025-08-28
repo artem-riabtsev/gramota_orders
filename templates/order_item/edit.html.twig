@@ -1,0 +1,43 @@
+{% extends 'base.html.twig' %}
+
+{% block title %}Изменение позиции заказа{% endblock %}
+
+{% block content %}
+<h1>Изменение позиции заказа {{ orderItem.order.id }}</h1>
+<div class="card">
+    <div class="card-body">
+            {{ form_start(form) }}
+            {{ form_widget(form) }}
+            <button class="btn btn-success mt-2">Сохранить</button>
+            <a href="{{ path('app_order_edit', {'id': orderItem.order.id}) }}" class="btn btn-secondary ms-1 mt-2">Назад</a>
+
+            {{ form_end(form) }}
+    </div>
+</div>
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    const quantityInput = document.getElementById('{{ form.quantity.vars.id }}');
+    const priceInput = document.getElementById('{{ form.price.vars.id }}');
+    const totalInput = document.getElementById('{{ form.line_total.vars.id }}');
+
+    function calculateTotal() {
+        const quantity = parseFloat(quantityInput.value);
+        const price = parseFloat(priceInput.value) || 0;
+        totalInput.value = (quantity * price).toFixed(2);
+    }
+
+    function calculatePrice() {
+        const quantity = parseFloat(quantityInput.value);
+        const total = parseFloat(totalInput.value) || 0;
+        priceInput.value = (total / quantity).toFixed(2);
+    }
+
+    quantityInput.addEventListener('input', calculateTotal);
+    priceInput.addEventListener('input', calculateTotal);
+
+    totalInput.addEventListener('input', calculatePrice);
+
+    calculateTotal();
+});
+</script>
+{% endblock %}
