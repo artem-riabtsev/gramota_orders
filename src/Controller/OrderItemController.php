@@ -2,20 +2,14 @@
 
 namespace App\Controller;
 
-use App\Entity\Price;
-use App\Form\OrderItemTemplateForm;
 use App\Form\OrderItemForm;
 use App\Repository\OrderRepository;
-use App\Repository\ProductRepository;
-use App\Repository\PriceRepository;
 use App\Entity\OrderItem;
 use Doctrine\ORM\EntityManagerInterface;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
 use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\HttpFoundation\Response;
 use Symfony\Component\Routing\Attribute\Route;
-use App\Repository\CustomerRepository;
-use App\Config\OrderStatus;
 
 #[Route('/orderitem')]
 final class OrderItemController extends AbstractController
@@ -32,6 +26,7 @@ final class OrderItemController extends AbstractController
         $form->handleRequest($request);
 
         if ($form->isSubmitted() && $form->isValid()) {
+            $order->culculateOrderItem();
             $entityManager->persist($orderItem);
             $entityManager->flush();
             return $this->redirectToRoute('app_order_edit', ['id' => $orderId]);
@@ -50,6 +45,7 @@ final class OrderItemController extends AbstractController
         $form->handleRequest($request);
 
         if ($form->isSubmitted() && $form->isValid()) {
+            $orderItem->getOrder()->culculateOrderItem();
             $entityManager->flush();
             return $this->redirectToRoute('app_order_edit', ['id' => $orderItem->getOrder()->getId()]);
         }
@@ -64,44 +60,10 @@ final class OrderItemController extends AbstractController
     public function delete(Request $request, OrderItem $orderItem, EntityManagerInterface $entityManager): Response
     {
         if ($this->isCsrfTokenValid('delete' . $orderItem->getId(), $request->request->get('_token'))) {
-            $orderId = $request->request->get('order_id');
             $entityManager->remove($orderItem);
             $entityManager->flush();
         }
 
-        return $this->redirectToRoute('app_order_edit', ['id' => $orderId], Response::HTTP_SEE_OTHER);
+        return $this->redirectToRoute('app_order_edit', ['id' => $orderItem->getOrder()->getId()], Response::HTTP_SEE_OTHER);
     }
-
-    // #[Route('/order/{id}/new-orderitem', name: 'app_choose_template', methods: ['GET', 'POST'])]
-    // public function chooseTemplate($id, Request $request, EntityManagerInterface $entityManager): Response
-    // {
-
-    //     $prices = $entityManager->getRepository(Price::class)->findAll();
-
-    //     $priceChoices = [];
-    //     foreach ($prices as $price) {
-    //         $priceChoices[$price->getDescription()] = $price->getId();
-    //     }
-
-    //     $form = $this->createForm(OrderItemTemplateForm::class, null, [
-    //         'price_choices' => $priceChoices
-    //     ]);
-    //     $form->handleRequest($request);
-
-    //     if ($form->isSubmitted() && $form->isValid()) {
-    //         $formData = $form->getData();
-    //         $selectedPriceId = $formData['select_template'];
-
-    //         $entityManager->flush();
-    //         return $this->redirectToRoute('app_new_item', [
-    //             'id' => $id,
-    //             'price_template' => $selectedPriceId,
-    //         ]);
-    //     }
-
-    //     return $this->render('order_item/choose_template.html.twig', [
-    //         'form' => $form,
-    //         'id' => $id,
-    //     ]);
-    // }
 }
