@@ -31,6 +31,7 @@ class OrderItem
     #[ORM\Column(type: Types::BIGINT)]
     private ?int $price = 0;
 
+    #[Assert\PositiveOrZero(message: 'Введите положительное число.')]
     #[ORM\Column(type: Types::BIGINT)]
     private ?int $lineTotal = 0;
 

@@ -65,9 +65,13 @@ class Order
         return Money::ofMinor($this->orderTotal, 'RUB');
     }
 
-    public function setOrderTotal(Money $orderTotal): static
+    public function culculateOrderTotal(): static
     {
-        $this->orderTotal = $orderTotal->getMinorAmount()->toInt();
+        $this->orderTotal = 0;
+        foreach ($this->orderItems as $orderItem) {
+            $this->orderTotal += $orderItem->getLineTotal()->getMinorAmount()->toInt();
+        }
+        $this->setStatus();
         return $this;
     }
 
@@ -76,9 +80,13 @@ class Order
         return Money::ofMinor($this->totalPaid, 'RUB');
     }
 
-    public function setTotalPaid(Money $totalPaid): static
+    public function culculateTotalPaid(): static
     {
-        $this->totalPaid = $totalPaid->getMinorAmount()->toInt();
+        $this->totalPaid = 0;
+        foreach ($this->payments as $payment) {
+            $this->totalPaid += $payment->getAmount()->getMinorAmount()->toInt();
+        }
+        $this->setStatus();
         return $this;
     }
 
@@ -87,10 +95,29 @@ class Order
         return $this->status;
     }
 
-    public function setStatus(OrderStatus $status): self
+    public function setStatus(): void
     {
-        $this->status = $status;
-        return $this;
+        switch (true) {
+            case (!$this->hasOrderItems() && $this->totalPaid == 0):
+                $this->setStatus(OrderStatus::EMPTY); // Пустой
+                break;
+
+            case ($this->orderTotal > $this->totalPaid && $this->totalPaid == 0):
+                $this->setStatus(OrderStatus::UNPAID); // Не оплачен
+                break;
+
+            case ($this->orderTotal > $this->totalPaid && $this->totalPaid > 0):
+                $this->setStatus(OrderStatus::PARTIALLY_PAID); // Частично оплачен
+                break;
+
+            case ($this->orderTotal < $this->totalPaid):
+                $this->setStatus(OrderStatus::OVERPAID); // Переплата
+                break;
+
+            case ($this->totalPaid == $this->orderTotal):
+                $this->setStatus(OrderStatus::PAID); // Оплачен
+                break;
+        }
     }
 
     public function getCustomer(): ?Customer
@@ -112,24 +139,19 @@ class Order
         $this->payments = new ArrayCollection();
     }
 
+    // dim909 todo удалить, тк используется в старом коде
     public function getOrderItem(): Collection
     {
         return $this->orderItems;
     }
 
+    // dim909 todo удалить, тк используется в старом коде
     public function addOrderItem(OrderItem $item): static
     {
         if (!$this->orderItems->contains($item)) {
             $this->orderItems[] = $item;
             $item->setOrder($this);
         }
-
-        return $this;
-    }
-
-    public function removeOrderItem(OrderItem $item): static
-    {
-        $this->orderItems->removeElement($item);
         return $this;
     }
 
@@ -138,18 +160,8 @@ class Order
         return !$this->payments->isEmpty();
     }
 
-    // public function recalcStatus($totalPaid, $orderTotal): void
-    // {
-    //     if (bccomp($totalPaid, '0', 2) === 0 && bccomp($orderTotal, '0', 2) === 0) {
-    //         $this->setStatus(OrderStatus::EMPTY); // Пустой
-    //     } elseif (bccomp($totalPaid, '0', 2) === 0 && bccomp($totalPaid, $orderTotal, 2) === -1) {
-    //         $this->setStatus(OrderStatus::UNPAID); // Не оплачен
-    //     } elseif (bccomp($totalPaid, '0', 2) === 1 && bccomp($totalPaid, $orderTotal, 2) === -1) {
-    //         $this->setStatus(OrderStatus::PARTIALLY_PAID); // Частично оплачен
-    //     } elseif (bccomp($totalPaid, $orderTotal, 2) === 0) {
-    //         $this->setStatus(OrderStatus::PAID); // Оплачен
-    //     } elseif (bccomp($totalPaid, $orderTotal, 2) === 1) {
-    //         $this->setStatus(OrderStatus::OVERPAID); // Переплата
-    //     }
-    // }
+    public function hasOrderItems(): bool
+    {
+        return !$this->orderItems->isEmpty();
+    }
 }
