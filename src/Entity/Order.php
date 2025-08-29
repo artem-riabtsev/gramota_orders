@@ -29,19 +29,26 @@ class Order
     private Customer $customer;
 
     #[ORM\Column(type: Types::BIGINT)]
-    private ?int $orderTotal = 0;
+    private ?string $orderTotal = '0';
 
     #[ORM\Column(type: Types::BIGINT)]
-    private ?int $totalPaid = 0;
+    private ?string $totalPaid = '0';
 
     #[ORM\Column(enumType: OrderStatus::class)]
     private OrderStatus $status = OrderStatus::EMPTY;
 
-    #[ORM\OneToMany(mappedBy: 'order', targetEntity: OrderItem::class, cascade: ['persist', 'remove'])]
+    #[ORM\OneToMany(mappedBy: 'order', targetEntity: OrderItem::class, cascade: ['persist', 'remove'], orphanRemoval: true)]
     private Collection $orderItems;
 
     #[ORM\OneToMany(mappedBy: 'order', targetEntity: Payment::class)]
     private Collection $payments;
+
+    public function __construct()
+    {
+        $this->date = new \DateTimeImmutable();
+        $this->orderItems = new ArrayCollection();
+        $this->payments = new ArrayCollection();
+    }
 
     public function getId(): ?int
     {
@@ -67,11 +74,12 @@ class Order
 
     public function culculateOrderTotal(): static
     {
-        $this->orderTotal = 0;
+        $summa = Money::of(0, 'RUB');
         foreach ($this->orderItems as $orderItem) {
-            $this->orderTotal += $orderItem->getLineTotal()->getMinorAmount()->toInt();
+            $summa = $summa->plus($orderItem->getLineTotal());
         }
-        //$this->setStatus();
+        $this->orderTotal = (string)$summa->getMinorAmount();
+        $this->setStatus();
         return $this;
     }
 
@@ -82,11 +90,12 @@ class Order
 
     public function culculateTotalPaid(): static
     {
-        $this->totalPaid = 0;
+        $summa = Money::of(0, 'RUB');
         foreach ($this->payments as $payment) {
-            $this->totalPaid += $payment->getAmount()->getMinorAmount()->toInt();
+            $summa = $summa->plus($payment->getAmount());
         }
-        //$this->setStatus();
+        $this->totalPaid = (string)$summa->getMinorAmount();
+        $this->setStatus();
         return $this;
     }
 
@@ -95,27 +104,27 @@ class Order
         return $this->status;
     }
 
-    public function setStatus(): void
+    private function setStatus(): void
     {
         switch (true) {
             case (!$this->hasOrderItems() && $this->totalPaid == 0):
-                $this->setStatus(OrderStatus::EMPTY); // Пустой
+                $this->status = OrderStatus::EMPTY; // Пустой
                 break;
 
             case ($this->orderTotal > $this->totalPaid && $this->totalPaid == 0):
-                $this->setStatus(OrderStatus::UNPAID); // Не оплачен
+                $this->status = OrderStatus::UNPAID; // Не оплачен
                 break;
 
             case ($this->orderTotal > $this->totalPaid && $this->totalPaid > 0):
-                $this->setStatus(OrderStatus::PARTIALLY_PAID); // Частично оплачен
+                $this->status = OrderStatus::PARTIALLY_PAID; // Частично оплачен
                 break;
 
             case ($this->orderTotal < $this->totalPaid):
-                $this->setStatus(OrderStatus::OVERPAID); // Переплата
+                $this->status = OrderStatus::OVERPAID; // Переплата
                 break;
 
             case ($this->totalPaid == $this->orderTotal):
-                $this->setStatus(OrderStatus::PAID); // Оплачен
+                $this->status = OrderStatus::PAID; // Оплачен
                 break;
         }
     }
@@ -132,36 +141,36 @@ class Order
         return $this;
     }
 
-    public function __construct()
+    public function getOrderItems(): array
     {
-        $this->date = new \DateTimeImmutable();
-        $this->orderItems = new ArrayCollection();
-        $this->payments = new ArrayCollection();
+        return $this->orderItems->toArray();
     }
 
-    // dim909 todo удалить, тк используется в старом коде
-    public function getOrderItem(): Collection
+    public function addOrderItem(OrderItem $orderItem): static
     {
-        return $this->orderItems;
-    }
-
-    // dim909 todo удалить, тк используется в старом коде
-    public function addOrderItem(OrderItem $item): static
-    {
-        if (!$this->orderItems->contains($item)) {
-            $this->orderItems[] = $item;
-            $item->setOrder($this);
+        if (!$this->orderItems->contains($orderItem)) {
+            $this->orderItems->add($orderItem);
+            $orderItem->setOrder($this);
+            $this->culculateOrderTotal();
         }
         return $this;
     }
 
-    public function hasPayments(): bool
+    public function removeOrderItem(OrderItem $orderItem): self
     {
-        return !$this->payments->isEmpty();
+        if ($this->orderItems->removeElement($orderItem)) {
+            $this->culculateOrderTotal();
+        }
+        return $this;
     }
 
     public function hasOrderItems(): bool
     {
         return !$this->orderItems->isEmpty();
+    }
+
+    public function hasPayments(): bool
+    {
+        return !$this->payments->isEmpty();
     }
 }

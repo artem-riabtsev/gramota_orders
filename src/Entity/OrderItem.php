@@ -2,10 +2,10 @@
 
 namespace App\Entity;
 
+use App\AppBundle\Validator\Constraints as AppAssert;
 use App\Repository\OrderItemRepository;
 use Doctrine\DBAL\Types\Types;
 use Doctrine\ORM\Mapping as ORM;
-use Symfony\Component\Validator\Constraints as Assert;
 use Brick\Money\Money;
 
 #[ORM\Entity(repositoryClass: OrderItemRepository::class)]
@@ -27,13 +27,13 @@ class OrderItem
     #[ORM\Column]
     private ?int $quantity = 1;
 
-    #[Assert\PositiveOrZero(message: 'Введите положительное число.')]
+    #[AppAssert\MoneyPositiveOrZero(message: 'Введите положительное число или ноль')]
     #[ORM\Column(type: Types::BIGINT)]
-    private ?int $price = 0;
+    private ?string $price = '0';
 
-    #[Assert\PositiveOrZero(message: 'Введите положительное число.')]
+    #[AppAssert\MoneyPositiveOrZero(message: 'Введите положительное число или ноль')]
     #[ORM\Column(type: Types::BIGINT)]
-    private ?int $lineTotal = 0;
+    private ?string $lineTotal = '0';
 
     #[ORM\Column]
     private ?string $description = null;
@@ -85,7 +85,7 @@ class OrderItem
 
     public function setPrice(Money $price): static
     {
-        $this->price = $price->getMinorAmount()->toInt();
+        $this->price = (string)$price->getMinorAmount();
         return $this;
     }
 
@@ -96,7 +96,8 @@ class OrderItem
 
     public function setLineTotal(Money $lineTotal): static
     {
-        $this->lineTotal = $lineTotal->getMinorAmount()->toInt();
+        $this->lineTotal = (string)$lineTotal->getMinorAmount();
+        $this->getOrder()->culculateOrderTotal();
         return $this;
     }
 
