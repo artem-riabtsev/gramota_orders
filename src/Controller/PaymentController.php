@@ -19,6 +19,22 @@ use DateTimeImmutable;
 final class PaymentController extends AbstractController
 {
 
+    #[Route('/order/select', name: 'app_order_select')]
+    public function select(Request $request, OrderRepository $orderRepository): Response
+    {
+        $query = $request->query->get('q');
+
+        if ($query) {
+            $orders = $orderRepository->findById($query);
+        } else {
+            $orders = $orderRepository->findBy([], ['id' => 'ASC']);
+        }
+
+        return $this->render('order/select.html.twig', [
+            'orders' => $orders,
+        ]);
+    }
+
     #[Route(name: 'app_payment_index', methods: ['GET'])]
     public function index(Request $request, PaymentRepository $paymentRepository): Response
     {

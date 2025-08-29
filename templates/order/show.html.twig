@@ -12,11 +12,7 @@
                 <div class="col-md-6 mb-3 d-flex align-items-center" style="gap: 12px;">
                     <strong>Дата заказа:</strong>
                     <span id="order-date-display">{{ order.date|date('d.m.Y') }}</span>
-                    <a href="{{ path('app_order_edit', {'id': order.id}) }}" 
-                        class="btn btn-sm btn-outline-primary d-inline-flex align-items-center justify-content-center border-0 shadow-none" 
-                        style="width: 25px; height: 25px; padding: 0; background-color: #6c757d;"
-                        onmouseover="this.style.backgroundColor='#5a6268'" 
-                        onmouseout="this.style.backgroundColor='#6c757d'">
+                    <a href="{{ path('app_order_edit', {'id': order.id}) }}" class="btn btn-sm btn-outline-primary d-inline-flex align-items-center justify-content-center border-0 shadow-none" style="width: 25px; height: 25px; padding: 0; background-color: #6c757d;" onmouseover="this.style.backgroundColor='#5a6268'" onmouseout="this.style.backgroundColor='#6c757d'">
                         <i class="bi bi-pencil" style="font-size: 1rem; color: white;"></i>
                     </a>
                 </div>
@@ -30,24 +26,20 @@
 
             <div class="d-flex" style="gap: 8px; ">
                 <div class="mb-4">Заказчик: {{ order.customer.name }} ({{ order.customer.email }}, {{ order.customer.phone }})</div>
-                <a href="{{ path('app_customer_edit', {'id': order.customer.id}) }}" 
-                    class="btn btn-sm btn-outline-primary d-inline-flex align-items-center justify-content-center border-0 shadow-none" 
-                    style="width: 25px; height: 25px; padding: 0; background-color: #6c757d;"
-                    onmouseover="this.style.backgroundColor='#5a6268'" 
-                    onmouseout="this.style.backgroundColor='#6c757d'">
+                <a href="{{ path('app_customer_edit', {'id': order.customer.id}) }}" class="btn btn-sm btn-outline-primary d-inline-flex align-items-center justify-content-center border-0 shadow-none" style="width: 25px; height: 25px; padding: 0; background-color: #6c757d;" onmouseover="this.style.backgroundColor='#5a6268'" onmouseout="this.style.backgroundColor='#6c757d'">
                     <i class="bi bi-pencil" style="font-size: 1rem; color: white;"></i>
                 </a>
             </div>
             {% if order.status.value == constant('App\\Config\\OrderStatus::EMPTY').value %}
-                <span class="text-muted">Пустой</span>
+            <span class="text-muted">Пустой</span>
             {% elseif order.status.value == constant('App\\Config\\OrderStatus::UNPAID').value %}
-                <span class="text-secondary">Не оплачен</span>
+            <span class="text-secondary">Не оплачен</span>
             {% elseif order.status.value == constant('App\\Config\\OrderStatus::PARTIALLY_PAID').value %}
-                <span class="text-warning">Частично оплачен</span>
+            <span class="text-warning">Частично оплачен</span>
             {% elseif order.status.value == constant('App\\Config\\OrderStatus::PAID').value %}
-                <span class="text-success">Оплачен</span>
+            <span class="text-success">Оплачен</span>
             {% elseif order.status.value == constant('App\\Config\\OrderStatus::OVERPAID').value %}
-                <span class="text-danger">Переплата</span>
+            <span class="text-danger">Переплата</span>
             {% endif %}
             <div class="d-flex" style="gap: 50px;">
                 <div>Сумма заказа: <strong>{{ order.orderTotal.amount }}</strong></div>
@@ -69,37 +61,30 @@
     </thead>
     <tbody>
         {% for orderItem in order.orderItems %}
-            <tr data-id="{{ orderItem.id }}"
-                data-product-id="{{ orderItem.product.id }}"
-                data-description="{{ orderItem.description }}"
-                data-quantity="{{ orderItem.quantity }}"
-                data-price="{{ orderItem.price }}"
-                data-total="{{ orderItem.lineTotal }}"
-                >
-                <td>
-                    <span  class="me-2">
-                        {{ orderItem.description }}
-                    </span>
-                    <button type="button" class="btn p-0 mb-1 edit-item" 
-                        data-id="{{ orderItem.id }}"><a href="{{ path('app_orderItem_edit', {'id': orderItem.id}) }}"><i class="bi bi-pencil" style="font-size: 1rem; color: #6c757d;"></i></a>
-                    </button>
-                </td>
-                <td data-product-id="{{ orderItem.product.id }}" >{{ orderItem.product.description }}</td>
-                <td>{{ orderItem.quantity }}</td>
-                <td>{{ orderItem.price.amount }}</td>
-                <td>{{ orderItem.lineTotal.amount }}</td>
-                <td>
-                    <div class='d-flex justify-content-center'>
-                       {% include 'order_item/_delete.html.twig' %}
-                    </div>
-                </td>
-            </tr>
+        <tr data-id="{{ orderItem.id }}" data-product-id="{{ orderItem.product.id }}" data-description="{{ orderItem.description }}" data-quantity="{{ orderItem.quantity }}" data-price="{{ orderItem.price }}" data-total="{{ orderItem.lineTotal }}">
+            <td>
+                <span class="me-2">
+                    {{ orderItem.description }}
+                </span>
+                <button type="button" class="btn p-0 mb-1 edit-item" data-id="{{ orderItem.id }}"><a href="{{ path('app_orderItem_edit', {'id': orderItem.id}) }}"><i class="bi bi-pencil" style="font-size: 1rem; color: #6c757d;"></i></a>
+                </button>
+            </td>
+            <td data-product-id="{{ orderItem.product.id }}">{{ orderItem.product.description }}</td>
+            <td>{{ orderItem.quantity }}</td>
+            <td>{{ orderItem.price.amount }}</td>
+            <td>{{ orderItem.lineTotal.amount }}</td>
+            <td>
+                <div class='d-flex justify-content-center'>
+                    {% include 'order_item/_delete.html.twig' %}
+                </div>
+            </td>
+        </tr>
         {% endfor %}
     </tbody>
 </table>
 
 <button type="button" class="btn btn-outline-secondary mb-3" id="add-item">
-    <a href="{{ path('app_orderItem_new', {'order_id': order.id}) }}" class="text-decoration-none">➕ Добавить позицию</a>
+    <a href="{{ path('app_orderItem_new', {'order': order.id, 'price': '32'}) }}" class="text-decoration-none">➕ Добавить позицию</a>
 </button>
 
 <div class="mt-3">

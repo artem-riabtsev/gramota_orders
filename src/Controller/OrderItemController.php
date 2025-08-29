@@ -17,7 +17,7 @@ final class OrderItemController extends AbstractController
     #[Route('/new', name: 'app_orderItem_new', methods: ['GET', 'POST'])]
     public function new(Request $request, OrderRepository $orderRepository, EntityManagerInterface $entityManager): Response
     {
-        $orderId = $request->query->get('order_id');
+        $orderId = $request->query->get('order');
         $order = $orderRepository->find($orderId);
         $orderItem = new OrderItem();
         $orderItem->setOrder($order);
