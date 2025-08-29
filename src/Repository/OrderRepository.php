@@ -49,17 +49,4 @@ class OrderRepository extends ServiceEntityRepository
             ->getQuery()
             ->getResult();
     }
-
-    public function findLastMonthOrders(): array
-    {
-        $oneMonthAgo = new \DateTime('-1 month');
-
-        return $this->createQueryBuilder('o')
-            ->where('o.date >= :oneMonthAgo')
-            ->setParameter('oneMonthAgo', $oneMonthAgo)
-            ->orderBy('o.date', 'DESC')
-            ->setMaxResults(50)
-            ->getQuery()
-            ->getResult();
-    }
 }

@@ -3,7 +3,7 @@
         {{ form_start(form) }}
         {{ form_widget(form) }}
         <button type="submit" class="btn btn-success mt-2">Сохранить</button>
-        <a href="{{ path('app_order_edit', {'id': orderItem.order.id}) }}" class="btn btn-secondary ms-1 mt-2">Назад</a>
+        <a href="{{ path('app_order_show', {'id': orderItem.order.id}) }}" class="btn btn-secondary ms-1 mt-2">Назад</a>
 
         {{ form_end(form) }}
     </div>

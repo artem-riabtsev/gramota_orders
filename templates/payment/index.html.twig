@@ -23,7 +23,7 @@
             <tr>
                 <td>{{ payment.id }}</td>
                 <td>
-                    <a href="{{ path('app_order_edit', {'id': payment.order.id}) }}" 
+                    <a href="{{ path('app_order_show', {'id': payment.order.id}) }}" 
                         class="text-muted me-2" style="text-decoration: underline; text-decoration-thickness: 1px;">
                         {{ payment.order.id }}
                     </a>

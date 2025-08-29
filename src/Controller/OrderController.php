@@ -4,6 +4,7 @@ namespace App\Controller;
 
 use App\Entity\Order;
 use App\Form\OrderForm;
+use App\Form\OrderNewForm;
 use App\Repository\OrderRepository;
 use Doctrine\ORM\EntityManagerInterface;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
@@ -32,20 +33,24 @@ final class OrderController extends AbstractController
     #[Route('/order/new', name: 'app_order_new', methods: ['GET', 'POST'])]
     public function new(Request $request, EntityManagerInterface $entityManager, CustomerRepository $customerRepository): Response
     {
-        $order = new Order();
 
-        $customerId = $request->query->get('customer');
-        if ($customerId) {
-            $customer = $customerRepository->find($customerId);
-            if ($customer) {
-                $order->setCustomer($customer);
-            }
+        $order = new Order();
+        $form = $this->createForm(OrderNewForm::class, $order);
+        $form->handleRequest($request);
+
+        if ($form->isSubmitted() && $form->isValid()) {
+            $entityManager->persist($order);
+            $entityManager->flush();
+
+            return $this->redirectToRoute('app_order_show', ['id' => $order->getId()]);
         }
 
-        $entityManager->persist($order);
-        $entityManager->flush();
-
-        return $this->redirectToRoute('app_order_edit', ['id' => $order->getId()], Response::HTTP_SEE_OTHER);
+        $searchQuery = $request->query->get('q') ?? '';
+        return $this->render('order/new.html.twig', [
+            'customers' => $customerRepository->findByNameOrEmail($searchQuery),
+            'searchQuery' => $searchQuery,
+            'form' => $form
+        ]);
     }
 
     #[Route('/order/select', name: 'app_order_select')]
@@ -64,7 +69,7 @@ final class OrderController extends AbstractController
         ]);
     }
 
-    #[Route('/order/{id}/date', name: 'app_edit_date', methods: ['GET', 'POST'])]
+    #[Route('/order/{id}/edit', name: 'app_order_edit', methods: ['GET', 'POST'])]
     public function editDate(Request $request, Order $order, EntityManagerInterface $entityManager): Response
     {
         $form = $this->createForm(OrderForm::class, $order);
@@ -72,19 +77,20 @@ final class OrderController extends AbstractController
 
         if ($form->isSubmitted() && $form->isValid()) {
             $entityManager->flush();
-            return $this->redirectToRoute('app_order_edit', ['id' => $order->getId()], Response::HTTP_SEE_OTHER);
+            return $this->redirectToRoute('app_order_show', ['id' => $order->getId()], Response::HTTP_SEE_OTHER);
         }
 
-        return $this->render('order/edit.date.html.twig', [
+        return $this->render('order/edit.html.twig', [
             'form' => $form,
+            'order' => $order
         ]);
     }
 
-    #[Route('/order/{id}/edit', name: 'app_order_edit', methods: ['GET'])]
+    #[Route('/order/{id}/show', name: 'app_order_show', methods: ['GET'])]
     public function edit(Order $order): Response
     {
 
-        return $this->render('order/edit.html.twig', [
+        return $this->render('order/show.html.twig', [
             'order' => $order,
         ]);
     }
@@ -93,12 +99,10 @@ final class OrderController extends AbstractController
     public function delete(Request $request, Order $order, EntityManagerInterface $entityManager): Response
     {
         if ($this->isCsrfTokenValid('delete' . $order->getId(), $request->getPayload()->getString('_token'))) {
-
             if ($order->hasPayments()) {
                 $this->addFlash('error', 'Нельзя удалить заказ, у которого есть платежи.');
                 return $this->redirectToRoute('app_order_index');
             }
-
             $entityManager->remove($order);
             $entityManager->flush();
         }

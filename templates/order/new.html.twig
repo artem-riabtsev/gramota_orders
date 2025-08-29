@@ -1,0 +1,90 @@
+{% extends 'base.html.twig' %}
+
+{% block content %}
+<div class="container mt-4">
+    <h4>Выберите заказчика</h4>
+
+    <form method="get" class="mb-3" style="display: flex; gap: 20px">
+        <input type="text"
+               name="q"
+               class="form-control"
+               placeholder="Поиск по ФИО или email"
+               value="{{ searchQuery }}">
+        {% if searchQuery %}
+            <a href="{{ path('app_order_new') }}" class="btn btn-info">Очистить</a>
+        {% endif %}
+    </form>
+
+    <div id="customer-list" class="list-group mb-3" style="max-height: 300px; overflow-y: auto;">
+        {% for customer in customers %}
+            <button type="button"
+                    class="list-group-item list-group-item-action customer-select"
+                    data-id="{{ customer.id }}">
+                {{ customer.name }} ({{ customer.email }})
+            </button>
+        {% else %}
+            <div class="list-group-item text-muted">Ничего не найдено</div>
+        {% endfor %}
+    </div>
+
+    {{ form_start(form, {'attr': {'id': 'order-form'}}) }}
+        {{ form_widget(form.customer) }}
+    {{ form_end(form) }}
+
+    <button type="button" class="btn btn-success mt-3 mb-2" id="select-btn" style="display: none;">
+        Выбрать
+    </button>
+
+    <a href="{{ path('app_customer_new', {'from': 'order'}) }}" class="btn btn-primary">Создать нового заказчика</a>
+</div>
+
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    const customerList = document.getElementById('customer-list');
+    const orderForm = document.getElementById('order-form');
+    const selectBtn = document.getElementById('select-btn');
+    
+    const customerField = orderForm.querySelector('select');
+    let selectedId = null;
+    
+    customerList.querySelectorAll('.customer-select').forEach(button => {
+        button.addEventListener('click', function() {
+            const clickedId = this.getAttribute('data-id');
+            
+            customerList.querySelectorAll('.customer-select').forEach(b => {
+                b.classList.remove('active');
+                b.style.backgroundColor = '';
+            });
+            
+            this.classList.add('active');
+            this.style.backgroundColor = '#e0e0e0';
+            
+            selectedId = clickedId;
+            customerField.value = selectedId;
+            
+            selectBtn.style.display = 'block';
+            
+            console.log('Установлено значение:', customerField.value);
+        });
+        
+        button.addEventListener('dblclick', function() {
+            const clickedId = this.getAttribute('data-id');
+            customerField.value = clickedId;
+            orderForm.submit();
+        });
+    });
+    
+    selectBtn.addEventListener('click', function() {
+        if (selectedId) {
+            orderForm.submit();
+        }
+    });
+});
+</script>
+<style>
+.customer-select.active {
+    background-color: #e0e0e0;
+    color: #000 !important;
+}
+</style>
+{% endblock %}

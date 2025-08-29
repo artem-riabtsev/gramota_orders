@@ -9,7 +9,7 @@
                 'attr': {
                     'id': 'itemForm',
                     'method': 'post',
-                    'action': path('app_order_edit', {'id': order.id})
+                    'action': path('app_order_show', {'id': order.id})
                 }
             }) }}
                 <input type="hidden" name="_token" value="{{ csrf_token('edit' ~ order.id) }}">

@@ -16,18 +16,17 @@ class CustomerRepository extends ServiceEntityRepository
         parent::__construct($registry, Customer::class);
     }
 
-    public function findByNameOrEmail(?string $query): array
+    public function findByNameOrEmail(?string $query = null): array
     {
-        $qb = $this->createQueryBuilder('c');
-
-        if ($query) {
-            $qb->where('LOWER(c.name) LIKE :q')
-            ->orWhere('LOWER(c.email) LIKE :q')
-            ->setParameter('q', '%' . strtolower($query) . '%')
+        $qb = $this->createQueryBuilder('c')
             ->orderBy('c.name', 'ASC');
+
+        if ($query && $query !== '') {
+            $qb->where('c.name LIKE :q')
+                ->orWhere('c.email LIKE :q')
+                ->setParameter('q', '%' . $query . '%');
         }
 
         return $qb->getQuery()->getResult();
     }
-
 }

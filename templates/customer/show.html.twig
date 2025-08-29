@@ -46,7 +46,7 @@
                     <td>{{ order.totalPaid }}</td>
                     <td>
                         <div class="d-flex justify-content-center">
-                            <a href="{{ path('app_order_edit', {'id': order.id}) }}" class="btn btn-sm btn-outline-warning me-2">Редактировать</a>
+                            <a href="{{ path('app_order_show', {'id': order.id}) }}" class="btn btn-sm btn-outline-warning me-2">Редактировать</a>
                             <form method="post" action="{{ path('app_order_delete', {'id': order.id}) }}">
                                 <input type="hidden" name="_token" value="{{ csrf_token('delete' ~ order.id) }}">
                                 <button

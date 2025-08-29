@@ -28,7 +28,7 @@ final class OrderItemController extends AbstractController
         if ($form->isSubmitted() && $form->isValid()) {
             $order->addOrderItem($orderItem);
             $entityManager->flush();
-            return $this->redirectToRoute('app_order_edit', ['id' => $orderId]);
+            return $this->redirectToRoute('app_order_show', ['id' => $orderId]);
         }
 
         return $this->render('order_item/new.html.twig', [
@@ -45,7 +45,7 @@ final class OrderItemController extends AbstractController
 
         if ($form->isSubmitted() && $form->isValid()) {
             $entityManager->flush();
-            return $this->redirectToRoute('app_order_edit', ['id' => $orderItem->getOrder()->getId()]);
+            return $this->redirectToRoute('app_order_show', ['id' => $orderItem->getOrder()->getId()]);
         }
 
         return $this->render('order_item/edit.html.twig', [
@@ -61,6 +61,6 @@ final class OrderItemController extends AbstractController
             $orderItem->getOrder()->removeOrderItem($orderItem);
             $entityManager->flush();
         }
-        return $this->redirectToRoute('app_order_edit', ['id' => $orderItem->getOrder()->getId()], Response::HTTP_SEE_OTHER);
+        return $this->redirectToRoute('app_order_show', ['id' => $orderItem->getOrder()->getId()], Response::HTTP_SEE_OTHER);
     }
 }

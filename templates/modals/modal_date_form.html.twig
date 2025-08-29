@@ -3,7 +3,7 @@
     <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
 </div>
 <form 
-    hx-post="{{ path('app_edit_date', {'id': order.id}) }}"
+    hx-post="{{ path('app_order_edit', {'id': order.id}) }}"
     hx-target="#order-date-display"
     hx-swap="innerHTML"
     hx-on::after-request="if(event.detail.successful) bootstrap.Modal.getInstance(document.getElementById('dateModal')).hide()">
