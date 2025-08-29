@@ -30,17 +30,7 @@
                     <i class="bi bi-pencil" style="font-size: 1rem; color: white;"></i>
                 </a>
             </div>
-            {% if order.status.value == constant('App\\Config\\OrderStatus::EMPTY').value %}
-            <span class="text-muted">Пустой</span>
-            {% elseif order.status.value == constant('App\\Config\\OrderStatus::UNPAID').value %}
-            <span class="text-secondary">Не оплачен</span>
-            {% elseif order.status.value == constant('App\\Config\\OrderStatus::PARTIALLY_PAID').value %}
-            <span class="text-warning">Частично оплачен</span>
-            {% elseif order.status.value == constant('App\\Config\\OrderStatus::PAID').value %}
-            <span class="text-success">Оплачен</span>
-            {% elseif order.status.value == constant('App\\Config\\OrderStatus::OVERPAID').value %}
-            <span class="text-danger">Переплата</span>
-            {% endif %}
+            <span class="{{ order.status.color }}">{{ order.status.label }}</span>
             <div class="d-flex" style="gap: 50px;">
                 <div>Сумма заказа: <strong>{{ order.orderTotal.amount }}</strong></div>
                 <div>Сумма оплаты: {{ order.totalPaid.amount }}</div>

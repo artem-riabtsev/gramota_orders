@@ -8,10 +8,7 @@
 <div class="card">
     <div class="card-body">
         {{ form_start(form) }}
-
-        <div class="row">
-            {{ form_widget(form) }}
-        </div>
+        {{ form_widget(form) }}
 
         <button class="btn btn-success">Сохранить</button>
         <a href="{{ path('app_order_show', {'id': order.id}) }}" class="btn btn-secondary ms-1">

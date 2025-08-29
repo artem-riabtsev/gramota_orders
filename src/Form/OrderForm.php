@@ -7,7 +7,6 @@ use Symfony\Component\Form\AbstractType;
 use Symfony\Component\Form\Extension\Core\Type\DateType;
 use Symfony\Component\Form\FormBuilderInterface;
 use Symfony\Component\OptionsResolver\OptionsResolver;
-use Symfony\Component\Validator\Constraints as Assert;
 
 class OrderForm extends AbstractType
 {
@@ -15,15 +14,9 @@ class OrderForm extends AbstractType
     {
         $builder
             ->add('date', DateType::class, [
-                'label' => 'Новая дата',
+                'label' => 'Дата заказа',
                 'html5' => true,
                 'widget' => 'single_text',
-                'constraints' => [
-                    new Assert\LessThanOrEqual([
-                        'value' => 'today',
-                        'message' => 'Дата не может быть будущей'
-                    ]),
-                ],
             ]);
     }
 

@@ -1,12 +1,12 @@
-{% extends 'base.html.twig' %} 
+{% extends 'base.html.twig' %}
 
 {% block content %}
 <h1>Заказы</h1>
 {% for message in app.flashes('error') %}
-    <div class="alert alert-danger alert-dismissible fade show" role="alert">
-        {{ message }}
-        <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Закрыть"></button>
-    </div>
+<div class="alert alert-danger alert-dismissible fade show" role="alert">
+    {{ message }}
+    <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Закрыть"></button>
+</div>
 {% endfor %}
 <div class="mb-4 d-flex flex-column flex-md-row justify-content-between gap-3">
     {% include 'order/_filter.html.twig' %}
@@ -29,12 +29,10 @@
         </tr>
     </thead>
     <tbody>
-    {% for order in orders %}
+        {% for order in orders %}
         <tr>
             <td>
-                <a href="{{ path('app_order_show', {'id': order.id}) }}"
-                    class="text-muted"
-                    style="text-decoration: underline; text-decoration-thickness: 1px;">
+                <a href="{{ path('app_order_show', {'id': order.id}) }}" class="text-muted" style="text-decoration: underline; text-decoration-thickness: 1px;">
                     {{ order.id }}
                 </a>
             </td>
@@ -42,24 +40,12 @@
             <td>{{ order.orderTotal.amount }}</td>
             <td>{{ order.totalPaid.amount }}</td>
             <td>
-                <a href="{{ path('app_customer_show', {'id': order.customer.id}) }}"
-                class="text-muted"
-                style="text-decoration: underline; text-decoration-thickness: 1px;">
+                <a href="{{ path('app_customer_show', {'id': order.customer.id}) }}" class="text-muted" style="text-decoration: underline; text-decoration-thickness: 1px;">
                     {{ order.customer.name }}
                 </a>
             </td>
             <td>
-                {% if order.status.value == constant('App\\Config\\OrderStatus::EMPTY').value %}
-                    <span class="text-muted">Пустой</span>
-                {% elseif order.status.value == constant('App\\Config\\OrderStatus::UNPAID').value %}
-                    <span class="text-secondary">Не оплачен</span>
-                {% elseif order.status.value == constant('App\\Config\\OrderStatus::PARTIALLY_PAID').value %}
-                    <span class="text-warning">Частично оплачен</span>
-                {% elseif order.status.value == constant('App\\Config\\OrderStatus::PAID').value %}
-                    <span class="text-success">Оплачен</span>
-                {% elseif order.status.value == constant('App\\Config\\OrderStatus::OVERPAID').value %}
-                    <span class="text-danger">Переплата</span>
-                {% endif %}
+                <span class="{{ order.status.color }}">{{ order.status.label }}</span>
             </td>
             <td>
                 <div class="d-flex justify-content-center">
@@ -67,11 +53,11 @@
                 </div>
             </td>
         </tr>
-    {% else %}
+        {% else %}
         <tr>
             <td colspan="7">Заказы ненайдены</td>
         </tr>
-    {% endfor %}
+        {% endfor %}
     </tbody>
 </table>
 {% endblock %}

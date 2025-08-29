@@ -20,4 +20,15 @@ enum OrderStatus: int
             self::PAID => 'Оплачен',
         };
     }
+
+    public function color(): string
+    {
+        return match ($this) {
+            self::EMPTY => 'text-muted',
+            self::UNPAID => 'text-secondary',
+            self::PARTIALLY_PAID => 'text-warning',
+            self::OVERPAID => 'text-danger',
+            self::PAID => 'text-success',
+        };
+    }
 }
