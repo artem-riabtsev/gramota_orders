@@ -17,20 +17,30 @@ class OrderRepository extends ServiceEntityRepository
         parent::__construct($registry, Order::class);
     }
 
-    public function findByIdAndCustomerId(?string $query): array
+    public function findOrders(?string $query): array
     {
-        $qb = $this->createQueryBuilder('c')
-        ->leftJoin('c.customer', 'customer');
+        $qb = $this
+            ->createQueryBuilder('c')
+            ->leftJoin('c.customer', 'customer');
 
-        if ($query) {
-            $qb->where('CAST(c.id AS CHAR) LIKE :q OR LOWER(customer.name) LIKE :q')
-            ->setParameter('q', '%' . strtolower($query) . '%');
+        if (!empty($query)) {
+            $qb->where('customer.name LIKE :q')
+                ->orWhere('c.id = :id')
+                ->setParameter('q', '%' . $query . '%')
+                ->setParameter('id', $query);
+        } else {
+            $oneMonthAgo = new \DateTime('-1 month');
+            $qb->where('c.date >= :oneMonthAgo')
+                ->setParameter('oneMonthAgo', $oneMonthAgo);
         }
 
-        return $qb->getQuery()->getResult();
+        return $qb
+            ->orderBy('c.date', 'DESC')
+            ->getQuery()
+            ->getResult();
     }
 
-        public function findById(?string $query): array
+    public function findById(?string $query): array
     {
         return $this->createQueryBuilder('o')
             ->where('CAST(o.id AS CHAR) LIKE :q')
@@ -38,10 +48,9 @@ class OrderRepository extends ServiceEntityRepository
             ->orderBy('o.id', 'ASC')
             ->getQuery()
             ->getResult();
-
     }
 
-        public function findLastMonthOrders(): array
+    public function findLastMonthOrders(): array
     {
         $oneMonthAgo = new \DateTime('-1 month');
 
@@ -53,5 +62,4 @@ class OrderRepository extends ServiceEntityRepository
             ->getQuery()
             ->getResult();
     }
-
 }

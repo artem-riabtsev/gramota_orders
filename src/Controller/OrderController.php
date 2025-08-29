@@ -22,16 +22,9 @@ final class OrderController extends AbstractController
         OrderRepository $orderRepository,
     ): Response {
 
-        $query = $request->query->get('q');
-
-        if ($query) {
-            $orders = $orderRepository->findByIdAndCustomerId($query);
-        } else {
-            $orders = $orderRepository->findLastMonthOrders();
-        }
-
+        $query = $request->query->get('q') ?? '';
         return $this->render('order/index.html.twig', [
-            'orders' => $orders,
+            'orders' => $orderRepository->findOrders($query),
             'query' => $query,
         ]);
     }
@@ -40,7 +33,6 @@ final class OrderController extends AbstractController
     public function new(Request $request, EntityManagerInterface $entityManager, CustomerRepository $customerRepository): Response
     {
         $order = new Order();
-        $order->setStatus(OrderStatus::EMPTY);
 
         $customerId = $request->query->get('customer');
         if ($customerId) {
