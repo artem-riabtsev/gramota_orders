@@ -26,9 +26,7 @@ final class OrderItemController extends AbstractController
         $form->handleRequest($request);
 
         if ($form->isSubmitted() && $form->isValid()) {
-            // $order->culculateOrderTotal();
-            // $entityManager->persist($order);
-            $entityManager->persist($orderItem);
+            $order->addOrderItem($orderItem);
             $entityManager->flush();
             return $this->redirectToRoute('app_order_edit', ['id' => $orderId]);
         }
@@ -46,7 +44,6 @@ final class OrderItemController extends AbstractController
         $form->handleRequest($request);
 
         if ($form->isSubmitted() && $form->isValid()) {
-            // $orderItem->getOrder()->culculateOrderTotal();
             $entityManager->flush();
             return $this->redirectToRoute('app_order_edit', ['id' => $orderItem->getOrder()->getId()]);
         }
@@ -61,10 +58,8 @@ final class OrderItemController extends AbstractController
     public function delete(Request $request, OrderItem $orderItem, EntityManagerInterface $entityManager): Response
     {
         if ($this->isCsrfTokenValid('delete' . $orderItem->getId(), $request->request->get('_token'))) {
-            $entityManager->remove($orderItem);
+            $orderItem->getOrder()->removeOrderItem($orderItem);
             $entityManager->flush();
-            // $orderItem->getOrder()->culculateOrderTotal();
-            // $entityManager->flush();
         }
         return $this->redirectToRoute('app_order_edit', ['id' => $orderItem->getOrder()->getId()], Response::HTTP_SEE_OTHER);
     }

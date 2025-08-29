@@ -97,6 +97,7 @@ class OrderItem
     public function setLineTotal(Money $lineTotal): static
     {
         $this->lineTotal = (string)$lineTotal->getMinorAmount();
+        $this->getOrder()->culculateOrderTotal();
         return $this;
     }
 
