@@ -40,7 +40,7 @@ class Order
     #[ORM\OneToMany(mappedBy: 'order', targetEntity: OrderItem::class, cascade: ['persist', 'remove'], orphanRemoval: true)]
     private Collection $orderItems;
 
-    #[ORM\OneToMany(mappedBy: 'order', targetEntity: Payment::class)]
+    #[ORM\OneToMany(mappedBy: 'order', targetEntity: Payment::class, cascade: ['persist'], orphanRemoval: true)]
     private Collection $payments;
 
     public function __construct()
@@ -156,7 +156,7 @@ class Order
         return $this;
     }
 
-    public function removeOrderItem(OrderItem $orderItem): self
+    public function removeOrderItem(OrderItem $orderItem): static
     {
         if ($this->orderItems->removeElement($orderItem)) {
             $this->culculateOrderTotal();
@@ -164,9 +164,29 @@ class Order
         return $this;
     }
 
+
+
     public function hasOrderItems(): bool
     {
         return !$this->orderItems->isEmpty();
+    }
+
+    public function addPayment(Payment $payment): static
+    {
+        if (!$this->payments->contains($payment)) {
+            $this->payments->add($payment);
+            $payment->setOrder($this);
+            $this->culculateTotalPaid();
+        }
+        return $this;
+    }
+
+    public function removePayment(Payment $payment): static
+    {
+        if ($this->payments->removeElement($payment)) {
+            $this->culculateTotalPaid();
+        }
+        return $this;
     }
 
     public function hasPayments(): bool

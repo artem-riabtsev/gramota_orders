@@ -17,29 +17,13 @@ class PaymentRepository extends ServiceEntityRepository
         parent::__construct($registry, Payment::class);
     }
 
-    public function recalculateOrderPaymentAmount(Order $order): void
-    {
-    $em = $this->getEntityManager();
-
-    $lineTotal = (float) $this->createQueryBuilder('p')
-        ->select('SUM(p.amount)')
-        ->where('p.order = :order')
-        ->setParameter('order', $order)
-        ->getQuery()
-        ->getSingleScalarResult();
-
-    $order->setTotalPaid($lineTotal);
-
-    $em->flush();
-    }
-
     public function findByOrderId(?string $query): array
     {
         $qb = $this->createQueryBuilder('c');
 
         if ($query) {
             $qb->where('IDENTITY(c.order) LIKE :q')
-            ->setParameter('q', '%' . $query . '%');
+                ->setParameter('q', '%' . $query . '%');
         }
 
         return $qb->getQuery()->getResult();

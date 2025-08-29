@@ -64,6 +64,7 @@ class Payment
     public function setAmount(Money $amount): static
     {
         $this->amount = (string)$amount->getMinorAmount();
+        $this->getOrder()->culculateTotalPaid();
         return $this;
     }
 }
