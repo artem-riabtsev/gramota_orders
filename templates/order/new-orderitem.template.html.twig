@@ -1,0 +1,21 @@
+{% extends 'base.html.twig' %}
+
+{% block title %}Выбор шаблона позиции заказа{% endblock %}
+
+{% block content %}
+<h1>Выбор шаблона позиции заказа</h1>
+
+<div class="card">
+    <div class="card-body">
+        {{ form_start(form, {
+            'action': path('app_orderItem_new'),
+            'method': 'GET',
+            'name': ''
+        }) }}
+            {{ form_widget(form.price, {'attr': {'name': 'price'}}) }}
+            <input type="hidden" name="order" value="{{ order.id }}">
+            <button type="submit" class="btn btn-primary mt-3">Далее</button>
+        {{ form_end(form) }}
+    </div>
+</div>
+{% endblock %}

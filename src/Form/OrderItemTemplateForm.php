@@ -3,22 +3,22 @@
 namespace App\Form;
 
 use App\Entity\Price;
+use Symfony\Bridge\Doctrine\Form\Type\EntityType;
 use Symfony\Component\Form\AbstractType;
-use Symfony\Component\Form\Extension\Core\Type\DateType;
 use Symfony\Component\Form\FormBuilderInterface;
-use Symfony\Component\Form\Extension\Core\Type\ChoiceType;
 use Symfony\Component\OptionsResolver\OptionsResolver;
-use Symfony\Component\Validator\Constraints as Assert;
 
 class OrderItemTemplateForm extends AbstractType
 {
     public function buildForm(FormBuilderInterface $builder, array $options): void
     {
         $builder
-            ->add('select_template', ChoiceType::class, [
-                'choices' => $options['price_choices'],
+            ->add('price', EntityType::class, [
+                'class' => Price::class,
                 'label' => 'Шаблон',
-                'placeholder' => 'Выберете шаблон',
+                'choice_label' => 'description',
+                'placeholder' => 'Выберите шаблон',
+                'choice_value' => 'id'
             ]);
     }
 

@@ -3,8 +3,10 @@
 namespace App\Controller;
 
 use App\Entity\Order;
+use App\Entity\Price;
 use App\Form\OrderForm;
 use App\Form\OrderNewForm;
+use App\Form\OrderItemTemplateForm;
 use App\Repository\OrderRepository;
 use Doctrine\ORM\EntityManagerInterface;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
@@ -90,5 +92,16 @@ final class OrderController extends AbstractController
         }
 
         return $this->redirectToRoute('app_order_index', [], Response::HTTP_SEE_OTHER);
+    }
+
+    #[Route('/order/{id}/new-orderitem', name: 'app_order_template')]
+    public function selectTemplate(Order $order): Response
+    {
+        $form = $this->createForm(OrderItemTemplateForm::class);
+
+        return $this->render('order/new-orderitem.template.html.twig', [
+            'form' => $form->createView(),
+            'order' => $order,
+        ]);
     }
 }

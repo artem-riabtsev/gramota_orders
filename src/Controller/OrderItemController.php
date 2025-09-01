@@ -18,14 +18,18 @@ final class OrderItemController extends AbstractController
     #[Route('/new', name: 'app_orderItem_new', methods: ['GET', 'POST'])]
     public function new(Request $request, OrderRepository $orderRepository, PriceRepository $priceRepository, EntityManagerInterface $entityManager): Response
     {
-        $queryParams = $request->query->all();
-        $order = $orderRepository->find($queryParams['order']);
-        $price = $priceRepository->find($queryParams['price']);
+
+        ['order_item_template_form' => ['price' => $priceId], 'order' => $orderId] = $request->query->all();
+        $order = $orderRepository->find($orderId);
+        $price = $priceRepository->find($priceId);
+
         $orderItem = new OrderItem();
-        $orderItem->setOrder($order);
-        $orderItem->setDescription($price->getDescription());
-        $orderItem->setProduct($price->getProduct());
-        $orderItem->setPrice($price->getPrice());
+        $orderItem
+            ->setOrder($order)
+            ->setDescription($price->getDescription())
+            ->setProduct($price->getProduct())
+            ->setPrice($price->getPrice())
+            ->setLineTotal($price->getPrice());
 
         $form = $this->createForm(OrderItemForm::class, $orderItem);
         $form->handleRequest($request);
@@ -33,7 +37,7 @@ final class OrderItemController extends AbstractController
         if ($form->isSubmitted() && $form->isValid()) {
             $order->addOrderItem($orderItem);
             $entityManager->flush();
-            return $this->redirectToRoute('app_order_show', ['id' => $queryParams['order']]);
+            return $this->redirectToRoute('app_order_show', ['id' => $orderId]);
         }
 
         return $this->render('order_item/new.html.twig', [
