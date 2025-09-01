@@ -16,20 +16,23 @@ use App\AppBundle\Form\AppMoneyType;
 class OrderItemForm extends AbstractType
 {
 
-
     public function buildForm(FormBuilderInterface $builder, array $options): void
     {
+        $projectId = $options['data']->getProduct()->getProject()->getId();
+
         $builder
             ->add('description', TextType::class, [
                 'label' => 'Название позиции',
             ])
             ->add('product', EntityType::class, [
                 'label' => 'Продукт',
-                'placeholder' => 'Выберите продукт',
                 'class' => Product::class,
                 'choice_label' => 'description',
-                'query_builder' => function (ProductRepository $repo) {
-                    return $repo->createQueryBuilder('p')->orderBy('p.description', 'ASC');
+                'query_builder' => function (ProductRepository $repo) use ($projectId) {
+                    return $repo->createQueryBuilder('p')
+                        ->where('p.project = :projectId')
+                        ->setParameter('projectId', $projectId)
+                        ->orderBy('p.description', 'ASC');
                 }
             ])
             ->add('quantity', IntegerType::class, [
