@@ -26,6 +26,8 @@ class OrderItemTemplateForm extends AbstractType
     {
         $resolver->setDefaults([
             'price_choices' => [],
+            'csrf_protection' => false,
+            'method' => 'GET',
         ]);
     }
 }
