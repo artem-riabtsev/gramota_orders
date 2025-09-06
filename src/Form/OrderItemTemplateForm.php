@@ -18,7 +18,11 @@ class OrderItemTemplateForm extends AbstractType
                 'label' => 'Шаблон',
                 'choice_label' => 'description',
                 'placeholder' => 'Выберите шаблон',
-                'choice_value' => 'id'
+                'choice_value' => 'id',
+                'attr' => [
+                    'style' => 'display: none;'
+                ],
+                'label' => false
             ]);
     }
 

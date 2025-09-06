@@ -25,4 +25,17 @@ class PriceRepository extends ServiceEntityRepository
 
         return $qb->getQuery()->getResult();
     }
+
+    public function findPrices(?string $query = null): array
+    {
+        $qb = $this->createQueryBuilder('c')
+            ->orderBy('c.description', 'ASC');
+
+        if ($query && $query !== '') {
+            $qb->where('c.description LIKE :q')
+                ->setParameter('q', '%' . $query . '%');
+        }
+
+        return $qb->getQuery()->getResult();
+    }
 }

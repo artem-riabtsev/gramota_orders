@@ -12,7 +12,7 @@
         {{ form_row(form.price) }}
         {{ form_row(form.product) }}
         <button class="btn btn-success mt-2">Создать</button>
-        <a href="{{ path('app_price_index') }}" class="btn btn-secondary ms-1 mt-2">
+        <a href="{{ app.request.headers.get('referer') ?: path('app_order_index') }}" class="btn btn-secondary ms-1 mt-2">
             Назад
         </a>
         {{ form_end(form) }}

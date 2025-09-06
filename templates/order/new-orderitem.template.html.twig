@@ -3,19 +3,94 @@
 {% block title %}Выбор шаблона позиции заказа{% endblock %}
 
 {% block content %}
-<h1>Выбор шаблона позиции заказа</h1>
+<div class="container mt-4">
+    <h4>Выберите шаблон</h4>
 
-<div class="card">
-    <div class="card-body">
-        {{ form_start(form, {
+    <form method="get" class="mb-3" style="display: flex; gap: 20px">
+        <input type="text"
+               name="q"
+               class="form-control"
+               placeholder="Поиск по ФИО или email"
+               value="{{ searchQuery }}">
+        {% if searchQuery %}
+            <a href="{{ path('app_order_template', {'id': order.id}) }}" class="btn btn-info">Очистить</a>
+        {% endif %}
+    </form>
+
+    <div id="price-list" class="list-group mb-3" style="max-height: 300px; overflow-y: auto;">
+        {% for price in prices %}
+            <button type="button"
+                    class="list-group-item list-group-item-action price-select"
+                    data-id="{{ price.id }}">
+                {{ price.description }}
+            </button>
+        {% else %}
+            <div class="list-group-item text-muted">Ничего не найдено</div>
+        {% endfor %}
+    </div>
+
+    {{ form_start(form, {
             'action': path('app_orderItem_new'),
             'method': 'GET',
-            'name': ''
+            'name': '',
+            'attr': {'id': 'template-form'}
         }) }}
-            {{ form_widget(form.price, {'attr': {'name': 'price'}}) }}
-            <input type="hidden" name="order" value="{{ order.id }}">
-            <button type="submit" class="btn btn-primary mt-3">Далее</button>
-        {{ form_end(form) }}
-    </div>
+        {{ form_widget(form.price, {'attr': {'name': 'price'}}) }}
+        <input type="hidden" name="order" value="{{ order.id }}">
+    {{ form_end(form) }}
+
+    <button type="button" class="btn btn-success mt-3 mb-2" id="select-btn" style="display: none;">
+        Выбрать
+    </button>
+
+    <a href="{{ path('app_price_new') }}" class="btn btn-primary">Создать новый элемент прайса</a>
 </div>
+
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    const priceList = document.getElementById('price-list');
+    const orderForm = document.getElementById('template-form');
+    const selectBtn = document.getElementById('select-btn');
+    
+    const priceField = orderForm.querySelector('select');
+    let selectedId = null;
+    
+    priceList.querySelectorAll('.price-select').forEach(button => {
+        button.addEventListener('click', function() {
+            const clickedId = this.getAttribute('data-id');
+            
+            priceList.querySelectorAll('.price-select').forEach(b => {
+                b.classList.remove('active');
+                b.style.backgroundColor = '';
+            });
+            
+            this.classList.add('active');
+            this.style.backgroundColor = '#e0e0e0';
+            
+            selectedId = clickedId;
+            priceField.value = selectedId;
+            
+            selectBtn.style.display = 'block';
+        });
+        
+        button.addEventListener('dblclick', function() {
+            const clickedId = this.getAttribute('data-id');
+            priceField.value = clickedId;
+            orderForm.submit();
+        });
+    });
+    
+    selectBtn.addEventListener('click', function() {
+        if (selectedId) {
+            orderForm.submit();
+        }
+    });
+});
+</script>
+<style>
+.price-select.active {
+    background-color: #e0e0e0;
+    color: #000 !important;
+}
+</style>
 {% endblock %}

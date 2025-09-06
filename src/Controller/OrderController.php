@@ -14,6 +14,7 @@ use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\HttpFoundation\Response;
 use Symfony\Component\Routing\Attribute\Route;
 use App\Repository\CustomerRepository;
+use App\Repository\PriceRepository;
 
 final class OrderController extends AbstractController
 {
@@ -95,13 +96,16 @@ final class OrderController extends AbstractController
     }
 
     #[Route('/order/{id}/new-orderitem', name: 'app_order_template')]
-    public function selectTemplate(Order $order): Response
+    public function selectTemplate(Order $order, Request $request, PriceRepository $priceRepository): Response
     {
         $form = $this->createForm(OrderItemTemplateForm::class);
 
+        $searchQuery = $request->query->get('q') ?? '';
         return $this->render('order/new-orderitem.template.html.twig', [
             'form' => $form->createView(),
             'order' => $order,
+            'searchQuery' => $searchQuery,
+            'prices' => $priceRepository->findPrices($searchQuery),
         ]);
     }
 }
