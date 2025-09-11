@@ -22,7 +22,7 @@ class OrderItem
 
     #[ORM\ManyToOne(targetEntity: Product::class, inversedBy: 'orderItems')]
     #[ORM\JoinColumn(nullable: false)]
-    private Product $product;
+    private ?Product $product = null;
 
     #[ORM\Column]
     private ?int $quantity = 1;

@@ -6,6 +6,8 @@ use App\Form\OrderItemForm;
 use App\Repository\OrderRepository;
 use App\Repository\PriceRepository;
 use App\Entity\OrderItem;
+use App\Entity\Product;
+use App\Entity\Project;
 use Doctrine\ORM\EntityManagerInterface;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
 use Symfony\Component\HttpFoundation\Request;
@@ -18,18 +20,23 @@ final class OrderItemController extends AbstractController
     #[Route('/new', name: 'app_orderItem_new', methods: ['GET', 'POST'])]
     public function new(Request $request, OrderRepository $orderRepository, PriceRepository $priceRepository, EntityManagerInterface $entityManager): Response
     {
+        $queryParams = $request->query->all();
+        $orderId = $queryParams['order'] ?? null;
+        $priceId = $queryParams['order_item_template_form']['price'] ?? null;
 
-        ['order_item_template_form' => ['price' => $priceId], 'order' => $orderId] = $request->query->all();
         $order = $orderRepository->find($orderId);
-        $price = $priceRepository->find($priceId);
-
         $orderItem = new OrderItem();
-        $orderItem
-            ->setOrder($order)
-            ->setDescription($price->getDescription())
-            ->setProduct($price->getProduct())
-            ->setPrice($price->getPrice())
-            ->setLineTotal($price->getPrice());
+        $orderItem->setOrder($order);
+
+        if ($priceId) {
+            $price = $priceRepository->find($priceId);
+
+            $orderItem
+                ->setDescription($price->getDescription())
+                ->setProduct($price->getProduct())
+                ->setPrice($price->getPrice())
+                ->setLineTotal($price->getPrice());
+        }
 
         $form = $this->createForm(OrderItemForm::class, $orderItem);
         $form->handleRequest($request);

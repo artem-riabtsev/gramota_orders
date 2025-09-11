@@ -18,7 +18,7 @@ class OrderItemForm extends AbstractType
 
     public function buildForm(FormBuilderInterface $builder, array $options): void
     {
-        $projectId = $options['data']->getProduct()->getProject()->getId();
+        $projectId = $options['data']?->getProduct()?->getProject()?->getId();
 
         $builder
             ->add('description', TextType::class, [
@@ -28,11 +28,15 @@ class OrderItemForm extends AbstractType
                 'label' => 'Продукт',
                 'class' => Product::class,
                 'choice_label' => 'description',
+                'placeholder' => $projectId ? false : 'Выберите продукт',
                 'query_builder' => function (ProductRepository $repo) use ($projectId) {
-                    return $repo->createQueryBuilder('p')
-                        ->where('p.project = :projectId')
-                        ->setParameter('projectId', $projectId)
+                    $qb = $repo->createQueryBuilder('p')
                         ->orderBy('p.description', 'ASC');
+                    if ($projectId) {
+                        $qb->where('p.project = :projectId')
+                            ->setParameter('projectId', $projectId);
+                    }
+                    return $qb;
                 }
             ])
             ->add('quantity', IntegerType::class, [
