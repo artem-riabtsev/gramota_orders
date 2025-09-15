@@ -2,23 +2,15 @@
     <div class="row g-3">
         <div class="col-12 col-md-8 d-flex gap-2">
             <div class="input-group flex-grow-1">
-                <input
-                    type="text"
-                    id="filterQuery"
-                    name="q"
-                    value="{{ query ?? '' }}"
-                    class="form-control border-end-0"
-                    placeholder="Отбор по номеру или заказчику"
-                >
+                <input type="text" id="filterQuery" name="q" value="{{ query ?? '' }}" class="form-control border-end-0" placeholder="Отбор по номеру или заказчику">
                 <button class="btn btn-secondary" type="submit" title="Поиск">
-                    <i class="bi bi-search text-white"></i>
+                    <i class="bi bi-search"></i>
                 </button>
             </div>
             {% if app.request.get('q') %}
-                <a href="{{ path('app_order_index') }}" 
-                class="btn btn-outline-secondary d-flex align-items-center">
-                    <i class="bi bi-x-lg"></i>
-                </a>
+            <a href="{{ path('app_order_index') }}" class="btn btn-outline-secondary">
+                <i class="bi bi-x-lg"></i>
+            </a>
             {% endif %}
         </div>
     </div>

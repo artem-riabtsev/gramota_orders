@@ -3,41 +3,36 @@
 {% block content %}
 <h1>Заказ {{ order.id }}</h1>
 
-<form method="post" action="{{ path('app_order_show', {'id': order.id}) }}" id="order-form">
-    <input type="hidden" name="deleted_items[]" id="deleted-items" value="">
 
-    <div class="card mb-4">
-        <div class="card-body">
-            <div class="row">
-                <div class="col-md-6 mb-3 d-flex align-items-center" style="gap: 12px;">
+
+<div class="card mb-4">
+    <div class="card-body">
+        <div class="row">
+            <div class="col mb-3 d-flex align-items-center">
+                <div>
                     <strong>Дата заказа:</strong>
                     <span id="order-date-display">{{ order.date|date('d.m.Y') }}</span>
-                    <a href="{{ path('app_order_edit', {'id': order.id}) }}" class="btn btn-sm btn-outline-primary d-inline-flex align-items-center justify-content-center border-0 shadow-none" style="width: 25px; height: 25px; padding: 0; background-color: #6c757d;" onmouseover="this.style.backgroundColor='#5a6268'" onmouseout="this.style.backgroundColor='#6c757d'">
-                        <i class="bi bi-pencil" style="font-size: 1rem; color: white;"></i>
-                    </a>
                 </div>
-            </div>
-
-            <div class="modal fade" id="dateModal" tabindex="-1" aria-hidden="true">
-                <div class="modal-dialog">
-                    <div class="modal-content" id="modal-content"></div>
-                </div>
-            </div>
-
-            <div class="d-flex" style="gap: 8px; ">
-                <div class="mb-4">Заказчик: {{ order.customer.name }} ({{ order.customer.email }}, {{ order.customer.phone }})</div>
-                <a href="{{ path('app_customer_edit', {'id': order.customer.id}) }}" class="btn btn-sm btn-outline-primary d-inline-flex align-items-center justify-content-center border-0 shadow-none" style="width: 25px; height: 25px; padding: 0; background-color: #6c757d;" onmouseover="this.style.backgroundColor='#5a6268'" onmouseout="this.style.backgroundColor='#6c757d'">
-                    <i class="bi bi-pencil" style="font-size: 1rem; color: white;"></i>
+                <a href="{{ path('app_order_edit', {'id': order.id}) }}" class="btn btn-sm btn-secondary ms-2" style="font-size: 1rem; padding: 0 .25rem;">
+                    <i class="bi bi-pencil"></i>
                 </a>
             </div>
-            <span class="{{ order.status.color }}">{{ order.status.label }}</span>
-            <div class="d-flex" style="gap: 50px;">
-                <div>Сумма заказа: <strong>{{ order.orderTotal.amount }}</strong></div>
-                <div>Сумма оплаты: {{ order.totalPaid.amount }}</div>
-            </div>
+        </div>
+
+        <div class="d-flex" style="gap: 8px; ">
+            <div class="mb-4">Заказчик: {{ order.customer.name }} ({{ order.customer.email }}, {{ order.customer.phone }})</div>
+            <a href="{{ path('app_customer_edit', {'id': order.customer.id}) }}" class="btn btn-sm btn-outline-primary d-inline-flex align-items-center justify-content-center border-0 shadow-none" style="width: 25px; height: 25px; padding: 0; background-color: #6c757d;" onmouseover="this.style.backgroundColor='#5a6268'" onmouseout="this.style.backgroundColor='#6c757d'">
+                <i class="bi bi-pencil" style="font-size: 1rem; color: white;"></i>
+            </a>
+        </div>
+        <span class="{{ order.status.color }}">{{ order.status.label }}</span>
+        <div class="d-flex" style="gap: 50px;">
+            <div>Сумма заказа: <strong>{{ order.orderTotal.amount }}</strong></div>
+            <div>Сумма оплаты: {{ order.totalPaid.amount }}</div>
         </div>
     </div>
-</form>
+</div>
+
 <table class="table table-hover table-bordered align-middle" id="orderItem-table">
     <thead>
         <tr>
