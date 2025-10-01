@@ -2,9 +2,12 @@
 
 {% block content %}
     <h1>Заказчик {{ customer.id }}</h1>
-
-    {% include 'modals/modal_delete.html.twig' %}
-
+    {% for message in app.flashes('error') %}
+    <div class="alert alert-danger alert-dismissible fade show" role="alert">
+        {{ message }}
+        <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Закрыть"></button>
+    </div>
+    {% endfor %}
     <table class="table table-hover table-bordered align-middle">
         <tbody>
             <tr><th>Id</th><td>{{ customer.id }}</td></tr>
@@ -40,26 +43,19 @@
             {% endif %}
             {% for order in group.orders %}
                 <tr>
-                    <td>{{ order.id }}</td>
+                    <td class="d-flex" style="gap: 20px;">
+                        {{ order.id }}
+                        <a href="{{ path('app_order_show', {'id': order.id}) }}" class="btn p-0">
+                            <i class="bi bi-pencil" style="font-size: 1rem; color: #6c757d;"></i>
+                        </a>
+                    </td>
                     <td>{{ order.date ? order.date|date('d.m.Y') : '' }}</td>
                     <td>{{ order.orderTotal }}</td>
                     <td>{{ order.totalPaid }}</td>
                     <td>
                         <div class="d-flex justify-content-center">
-                            <a href="{{ path('app_order_show', {'id': order.id}) }}" class="btn btn-sm btn-outline-warning me-2">Редактировать</a>
-                            <form method="post" action="{{ path('app_order_delete', {'id': order.id}) }}">
-                                <input type="hidden" name="_token" value="{{ csrf_token('delete' ~ order.id) }}">
-                                <button
-                                    type="button"
-                                    class="btn p-0 remove-item"
-                                    data-id="{{ order.id }}"
-                                    data-token="{{ csrf_token('delete' ~ order.id) }}"
-                                    data-url="{{ path('app_order_delete', {'id': order.id}) }}"
-                                    style="background: none; border: none; color: #dc3545; font-size: 1.5rem; line-height: 1;"
-                                >
-                                    <i class="bi bi-x"></i>
-                                </button>
-                            </form>
+                            {% include 'order/_delete.html.twig' %}
+                        </div>
                         </div>
                     </td>
                 </tr>

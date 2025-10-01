@@ -3,7 +3,6 @@
 namespace App\Controller;
 
 use App\Entity\Order;
-use App\Entity\Price;
 use App\Form\OrderForm;
 use App\Form\OrderNewForm;
 use App\Form\OrderItemTemplateForm;
@@ -49,7 +48,7 @@ final class OrderController extends AbstractController
 
         $searchQuery = $request->query->get('q') ?? '';
         return $this->render('order/new.html.twig', [
-            'customers' => $customerRepository->findByNameOrEmail($searchQuery),
+            'customers' => $customerRepository->findCustomers($searchQuery),
             'searchQuery' => $searchQuery,
             'form' => $form
         ]);
@@ -83,16 +82,18 @@ final class OrderController extends AbstractController
     #[Route('/order/{id}', name: 'app_order_delete', methods: ['POST'])]
     public function delete(Request $request, Order $order, EntityManagerInterface $entityManager): Response
     {
+        $redirectUrl = $request->query->get('redirect') ?? $this->generateUrl('app_order_index');
+
         if ($this->isCsrfTokenValid('delete' . $order->getId(), $request->getPayload()->getString('_token'))) {
             if ($order->hasPayments()) {
                 $this->addFlash('error', 'Нельзя удалить заказ, у которого есть платежи.');
-                return $this->redirectToRoute('app_order_index');
+                return $this->redirect($redirectUrl);
             }
             $entityManager->remove($order);
             $entityManager->flush();
         }
 
-        return $this->redirectToRoute('app_order_index', [], Response::HTTP_SEE_OTHER);
+        return $this->redirect($redirectUrl);
     }
 
     #[Route('/order/{id}/new-orderitem', name: 'app_order_template')]

@@ -21,18 +21,12 @@ final class CustomerController extends AbstractController
         Request $request,
         CustomerRepository $customerRepository
     ): Response {
-        $query = $request->query->get('q');
+        $query = $request->query->get('q') ?? '';
         $customer = new Customer;
         $hasorders = $customer->hasOrders();
 
-        if ($query) {
-            $customers = $customerRepository->findByNameOrEmail($query);
-        } else {
-            $customers = [];
-        }
-
         return $this->render('customer/index.html.twig', [
-            'customers' => $customers,
+            'customers' => $customerRepository->findCustomers($query),
             'query' => $query,
             'hasorders' => $hasorders,
         ]);
@@ -69,32 +63,18 @@ final class CustomerController extends AbstractController
         ]);
     }
 
-    #[Route('/select', name: 'app_customer_select')]
-    public function select(Request $request, CustomerRepository $customerRepository): Response
-    {
-        $query = $request->query->get('q');
-
-        if ($query) {
-            $customers = $customerRepository->findByNameOrEmail($query);
-        } else {
-            $customers = $customerRepository->findBy([], ['name' => 'ASC']);
-        }
-
-        return $this->render('customer/select.html.twig', [
-            'customers' => $customers,
-        ]);
-    }
-
     #[Route('/{id}', name: 'app_customer_show', methods: ['GET'], requirements: ['id' => '\d+'])]
     public function show(Customer $customer): Response
     {
-        $ordersGroups = [
-            ['name' => 'Пустые', 'orders' => $customer->getOrders()->filter(fn($order) => $order->getStatus() === OrderStatus::EMPTY), 'color' => 'text-secondary'],
-            ['name' => 'Неоплаченные', 'orders' => $customer->getOrders()->filter(fn($order) => $order->getStatus() === OrderStatus::UNPAID), 'color' => 'text-secondary'],
-            ['name' => 'Частично оплаченные', 'orders' => $customer->getOrders()->filter(fn($order) => $order->getStatus() === OrderStatus::PARTIALLY_PAID), 'color' => 'text-danger'],
-            ['name' => 'Переплаченные', 'orders' => $customer->getOrders()->filter(fn($order) => $order->getStatus() === OrderStatus::OVERPAID), 'color' => 'text-danger'],
-            ['name' => 'Оплаченные', 'orders' => $customer->getOrders()->filter(fn($order) => $order->getStatus() === OrderStatus::PAID), 'color' => 'text-success'],
-        ];
+        $ordersGroups = [];
+
+        foreach (OrderStatus::cases() as $status) {
+            $ordersGroups[] = [
+                'name' => $status->label(),
+                'orders' => $customer->getOrders()->filter(fn($order) => $order->getStatus() === $status),
+                'color' => $status->color(),
+            ];
+        }
 
         return $this->render('customer/show.html.twig', [
             'customer' => $customer,
@@ -110,7 +90,6 @@ final class CustomerController extends AbstractController
 
         if ($form->isSubmitted() && $form->isValid()) {
             $entityManager->flush();
-
             return $this->redirectToRoute('app_customer_index', [], Response::HTTP_SEE_OTHER);
         }
 
@@ -123,13 +102,12 @@ final class CustomerController extends AbstractController
     #[Route('/{id}', name: 'app_customer_delete', methods: ['POST'])]
     public function delete(Request $request, Customer $customer, EntityManagerInterface $entityManager): Response
     {
-        $q = $request->request->get('q');
+        $q = $request->query->get('q');
 
         if ($this->isCsrfTokenValid('delete' . $customer->getId(), $request->getPayload()->getString('_token'))) {
-
-            if ($customer->hasOrders() > 0) {
+            if ($customer->hasOrders()) {
                 $this->addFlash('error', 'Нельзя удалить заказчика, у которого есть заказы.');
-                return $this->redirectToRoute('app_customer_index');
+                return $this->redirectToRoute('app_customer_index', ['q' => $q], Response::HTTP_SEE_OTHER);
             }
 
             $entityManager->remove($customer);
