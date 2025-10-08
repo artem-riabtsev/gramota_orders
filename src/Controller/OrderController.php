@@ -106,7 +106,7 @@ final class OrderController extends AbstractController
             'form' => $form->createView(),
             'order' => $order,
             'searchQuery' => $searchQuery,
-            'prices' => $priceRepository->findPrices($searchQuery),
+            'prices' => $priceRepository->listPrices($searchQuery),
         ]);
     }
 }

@@ -13,7 +13,7 @@ class PriceRepository extends ServiceEntityRepository
         parent::__construct($registry, Price::class);
     }
 
-    public function findByDescriptionOrderByDescription(?string $query): array
+    public function findPrice(?string $query): array
     {
         $qb = $this->createQueryBuilder('p');
 
@@ -26,7 +26,7 @@ class PriceRepository extends ServiceEntityRepository
         return $qb->getQuery()->getResult();
     }
 
-    public function findPrices(?string $query = null): array
+    public function listPrices(?string $query = null): array
     {
         $qb = $this->createQueryBuilder('c')
             ->orderBy('c.description', 'ASC');

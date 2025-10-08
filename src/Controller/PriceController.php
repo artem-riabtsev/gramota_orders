@@ -19,7 +19,7 @@ final class PriceController extends AbstractController
     {
         $query = $request->query->get('q') ?? '';
         return $this->render('price/index.html.twig', [
-            'prices' => $priceRepository->findByDescriptionOrderByDescription($query),
+            'prices' => $priceRepository->findPrice($query),
             'query' => $query,
         ]);
     }
