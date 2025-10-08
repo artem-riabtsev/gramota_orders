@@ -16,7 +16,7 @@ class ProductRepository extends ServiceEntityRepository
         parent::__construct($registry, Product::class);
     }
 
-    public function findByNameOrderByDateByDescription(string $query): array
+    public function findProduct(string $query): array
     {
         $qb = $this->createQueryBuilder('c');
 

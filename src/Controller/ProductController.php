@@ -3,7 +3,6 @@
 namespace App\Controller;
 
 use App\Entity\Product;
-use App\Entity\OrderItem;
 use App\Form\ProductForm;
 use App\Repository\ProductRepository;
 use Doctrine\ORM\EntityManagerInterface;
@@ -24,7 +23,7 @@ final class ProductController extends AbstractController
 
         $query = $request->query->get('q') ?? '';
         return $this->render('product/index.html.twig', [
-            'products' => $productRepository->findByNameOrderByDateByDescription($query),
+            'products' => $productRepository->findProduct($query),
             'query' => $query,
         ]);
     }

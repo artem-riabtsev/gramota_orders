@@ -22,15 +22,15 @@ class ProductForm extends AbstractType
                 'html5' => true,
                 'widget' => 'single_text',
             ])
-            ->add('basic', CheckboxType::class, [
-                'label' => 'Является базовым значением',
-                'required' => false,
-            ])
             ->add('project', EntityType::class, [
                 'class' => Project::class,
                 'choice_label' => 'name',
                 'label' => 'Проект',
                 'placeholder' => 'Выберете проект',
+            ])
+            ->add('basic', CheckboxType::class, [
+                'label' => 'Является базовым значением',
+                'required' => false,
             ])
         ;
     }
