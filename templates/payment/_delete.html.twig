@@ -1,0 +1,8 @@
+<form method="post" action="{{ path('app_payment_delete', {'id': payment.id}) }}" onsubmit="return confirm('Вы уверены, что хотите удалить этот платеж?');">
+    <input type="hidden" name="_token" value="{{ csrf_token('delete' ~ payment.id) }}">
+    <button type="submit" class="btn p-0" 
+            style="background: none; border: none; color: #dc3545; font-size: 1.5rem; line-height: 1;"
+        >
+        <i class="bi bi-x"></i>
+    </button>
+</form>

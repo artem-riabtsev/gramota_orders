@@ -4,6 +4,7 @@ namespace App\Controller;
 
 use App\Entity\Payment;
 use App\Form\PaymentForm;
+use App\Form\PaymentNewForm;
 use App\Repository\PaymentRepository;
 use App\Repository\OrderRepository;
 use Doctrine\ORM\EntityManagerInterface;
@@ -11,29 +12,12 @@ use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
 use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\HttpFoundation\Response;
 use Symfony\Component\Routing\Attribute\Route;
-use App\Config\OrderStatus;
 use \DateTime;
 use DateTimeImmutable;
 
 #[Route('/payment')]
 final class PaymentController extends AbstractController
 {
-
-    #[Route('/order/select', name: 'app_order_select')]
-    public function select(Request $request, OrderRepository $orderRepository): Response
-    {
-        $query = $request->query->get('q');
-
-        if ($query) {
-            $orders = $orderRepository->findById($query);
-        } else {
-            $orders = $orderRepository->findBy([], ['id' => 'ASC']);
-        }
-
-        return $this->render('order/select.html.twig', [
-            'orders' => $orders,
-        ]);
-    }
 
     #[Route(name: 'app_payment_index', methods: ['GET'])]
     public function index(Request $request, PaymentRepository $paymentRepository): Response
@@ -42,6 +26,7 @@ final class PaymentController extends AbstractController
         $from = $request->query->get('from');
         $to = $request->query->get('to');
 
+        // Вернуть диапазон дат
         if ($from && $to) {
             $payments = $paymentRepository->findByDateRange(new \DateTime($from), new \DateTime($to));
         } elseif ($query) {
@@ -50,38 +35,32 @@ final class PaymentController extends AbstractController
             $payments = $paymentRepository->findLastMonthOrders();
         }
 
-        // $totalAmount = array_reduce($payments, fn($carry, $p) => $carry + $p->getAmount(), 0);
-
         return $this->render('payment/index.html.twig', [
             'payments' => $payments,
             'query' => $query,
-            // 'totalAmount' => $totalAmount,
         ]);
     }
 
     #[Route('/new', name: 'app_payment_new', methods: ['GET', 'POST'])]
-    public function new(
-        Request $request,
-        EntityManagerInterface $entityManager,
-        PaymentRepository $paymentRepository,
-        OrderRepository $orderRepository
-    ): Response {
+    public function select(Request $request, EntityManagerInterface $entityManager, OrderRepository $orderRepository): Response
+    {
         $payment = new Payment();
+        $form = $this->createForm(PaymentNewForm::class, $payment);
+        $form->handleRequest($request);
 
-        $orderId = $request->query->get('order');
-        if ($orderId) {
-            $order = $orderRepository->find($orderId);
-            if ($order) {
-                $payment->setOrder($order);
-            }
+        if ($form->isSubmitted() && $form->isValid()) {
+            $entityManager->persist($payment);
+            $entityManager->flush();
+
+            return $this->redirectToRoute('app_payment_edit', ['id' => $payment->getId()]);
         }
 
-        $payment->setDate(new DateTimeImmutable());
-
-        $entityManager->persist($payment);
-        $entityManager->flush();
-
-        return $this->redirectToRoute('app_payment_edit', ['id' => $payment->getId()], Response::HTTP_SEE_OTHER);
+        $searchQuery = $request->query->get('q') ?? '';
+        return $this->render('payment/new.html.twig', [
+            'orders' => $orderRepository->findOrders($searchQuery),
+            'searchQuery' => $searchQuery,
+            'form' => $form
+        ]);
     }
 
     #[Route('/{id}/edit', name: 'app_payment_edit', methods: ['GET', 'POST'])]
@@ -91,15 +70,7 @@ final class PaymentController extends AbstractController
         $form->handleRequest($request);
 
         if ($form->isSubmitted() && $form->isValid()) {
-            // $entityManager->flush();
-            // $paymentRepository->updateOrderPaymentAmount($id, $payment->getAmount());
-            $paymentRepository->recalculateOrderPaymentAmount($payment->getOrder());
-
             $order = $payment->getOrder();
-
-            $totalPaid = $order->getTotalPaid();
-            $orderTotal = $order->getOrderTotal();
-            // $order->recalcStatus($totalPaid, $orderTotal);
             $entityManager->persist($order);
             $entityManager->flush();
 
@@ -117,12 +88,8 @@ final class PaymentController extends AbstractController
     {
         if ($this->isCsrfTokenValid('delete' . $payment->getId(), $request->getPayload()->getString('_token'))) {
             $order = $payment->getOrder();
-            $entityManager->remove($payment);
-            $entityManager->flush();
-            $paymentRepository->recalculateOrderPaymentAmount($payment->getOrder());
-            $totalPaid = $order->getTotalPaid();
-            $orderTotal = $order->getOrderTotal();
-            // $order->recalcStatus($totalPaid, $orderTotal);
+
+            $order->removePayment($payment);
 
             $entityManager->persist($order);
             $entityManager->flush();

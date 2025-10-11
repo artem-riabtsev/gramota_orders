@@ -28,6 +28,11 @@ class Payment
     #[ORM\Column(type: Types::BIGINT)]
     private ?string $amount = '0';
 
+    public function __construct()
+    {
+        $this->date = new \DateTimeImmutable();
+    }
+
     public function getId(): ?int
     {
         return $this->id;
