@@ -39,9 +39,14 @@ docker compose up --wait
 # 4. Выполните миграции Doctrine
 docker compose exec php bin/console doctrine:migrations:migrate
 
-# 5. Подпишите сертификаты (WSL2, при первом запуске) 
+# 5. Сборка фронтенд-ассетов (React & Webpack)
+# Установите JS-зависимости и скомпилируйте файлы
+docker compose exec php npm install
+docker compose exec php npm run dev
+
+# 6. Подпишите сертификаты (WSL2, при первом запуске) 
 docker cp $(docker compose ps -q frankenphp):/data/caddy/pki/authorities/local/root.crt /mnt/c/Users/Public/root.crt
 powershell.exe -Command 'Start-Process certutil.exe -ArgumentList "-addstore", "ROOT", "C:\Users\Public\root.crt" -Verb RunAs'
 
-# 6. Откройте приложение
+# 7. Откройте приложение
 https://localhost
