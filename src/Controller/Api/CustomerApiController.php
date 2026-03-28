@@ -33,4 +33,27 @@ class CustomerApiController extends AbstractController
 
         return $this->json($data);
     }
+
+    #[Route('/list', name: 'api_customer_list', methods: ['GET'])]
+    public function list(Request $request, CustomerRepository $customerRepository): JsonResponse
+    {
+        $query = $request->query->get('q', '');
+
+        if (empty($query)) {
+            $customers = $customerRepository->findAll();
+        } else {
+            $customers = $customerRepository->findCustomers($query);
+        }
+
+        $data = array_map(function ($customer) {
+            return [
+                'id' => $customer->getId(),
+                'name' => $customer->getName(),
+                'email' => $customer->getEmail(),
+                'phone' => $customer->getPhone()
+            ];
+        }, $customers);
+
+        return $this->json($data);
+    }
 }

@@ -1,57 +1,4 @@
-{# {% extends 'base.html.twig' %}
-
-{% block title %}Продукты{% endblock %}
-
-{% block content %}
-<h1>Продукты</h1>
-{% for message in app.flashes('error') %}
-    <div class="alert alert-danger alert-dismissible fade show" role="alert">
-        {{ message }}
-        <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Закрыть"></button>
-    </div>
-{% endfor %}
-<div class="mb-4 d-flex flex-column flex-md-row justify-content-between gap-3">
-    {% include 'product/_filter.html.twig' %}
-    <div class="flex-shrink-0">
-        <a href="{{ path('app_product_new') }}" class="btn btn-primary">
-            Добавить продукт
-        </a>
-    </div>
-</div>
-<table class="table table-hover align-middle">
-    <thead>
-        <tr>
-            <th>Id</th>
-            <th>Наименование</th>
-            <th>Проект</th>
-            <th>Дата</th>
-            <th></th>
-        </tr>
-    </thead>
-    <tbody>
-        {% for product in products %}
-        <tr>
-            <td>{{ product.id }}</td>
-            <td>
-                <span class="me-2">{{ product.description }}</span>
-                <a href="{{ path('app_product_edit', {'id': product.id}) }}" class="btn p-0 mb-1">
-                    <i class="bi bi-pencil" style="font-size: 1rem; color: #6c757d;"></i>
-                </a>
-            </td>
-            <td>{{ product.project.name }}</td>
-            <td>{{ product.date|date('d.m.Y') }}</td>
-            <td>
-                <div class="d-flex justify-content-center">
-                    {% include 'product/_delete.html.twig' %}
-                </div>
-            </td>
-        </tr>
-        {% endfor %}
-    </tbody>
-</table>
-{% endblock %} #}
-
-
+{# templates/product/index_react.html.twig #}
 {% extends 'base.html.twig' %}
 
 {% block title %}Продукты — Gramota CRM{% endblock %}
@@ -60,84 +7,36 @@
 
 {% block top_actions %}
     <a href="{{ path('app_product_new') }}" class="btn btn-primary shadow-sm fw-semibold">
-        <i class="bi bi-box-seam me-1"></i> Добавить продукт
+        <i class="bi bi-plus-lg me-1"></i> Новый продукт
     </a>
 {% endblock %}
 
 {% block content %}
-{# 1. Вывод сообщений об ошибках (flashes) #}
-{% for message in app.flashes('error') %}
-    <div class="alert alert-danger alert-dismissible fade show shadow-sm mb-4" role="alert">
-        <i class="bi bi-exclamation-triangle me-2"></i>
-        {{ message }}
-        <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Закрыть"></button>
-    </div>
-{% endfor %}
-
-{# 2. Блок фильтров (подтягиваем твой include) #}
-<div class="mb-4">
-    {% include 'product/_filter.html.twig' %}
-</div>
-
-{# 3. Таблица в карточке #}
-<div class="card shadow-sm border-0 rounded-3">
-    <div class="card-body p-0">
-        <div class="table-responsive">
-            <table class="table table-hover align-middle mb-0">
-                <thead class="table-light">
-                    <tr>
-                        <th class="ps-4 py-3 text-secondary small fw-semibold">ID</th>
-                        <th class="py-3 text-secondary small fw-semibold">Наименование / Описание</th>
-                        <th class="py-3 text-secondary small fw-semibold">Проект</th>
-                        <th class="py-3 text-secondary small fw-semibold">Дата</th>
-                        <th class="text-end pe-4 py-3 text-secondary small fw-semibold">Действия</th>
-                    </tr>
-                </thead>
-                <tbody>
-                {% for product in products %}
-                    <tr>
-                        <td class="ps-4 text-muted small">#{{ product.id }}</td>
-                        <td>
-                            <div class="d-flex align-items-center">
-                                <span class="fw-bold text-dark me-2">{{ product.description }}</span>
-                                <a href="{{ path('app_product_edit', {'id': product.id}) }}" class="text-secondary opacity-50 hover-opacity-100">
-                                    <i class="bi bi-pencil" style="font-size: 0.85rem;"></i>
-                                </a>
-                            </div>
-                        </td>
-                        <td>
-                            <span class="badge bg-light text-dark border fw-medium px-2 py-1">
-                                <i class="bi bi-folder2-open me-1 text-primary"></i>
-                                {{ product.project.name|default('—') }}
-                            </span>
-                        </td>
-                        <td>
-                            <div class="text-muted small">
-                                <i class="bi bi-calendar3 me-1"></i>
-                                {{ product.date ? product.date|date('d.m.Y') : '—' }}
-                            </div>
-                        </td>
-                        <td class="text-end pe-4">
-                            <div class="d-flex justify-content-end gap-2">
-                                <a href="{{ path('app_product_edit', {'id': product.id}) }}" class="btn btn-sm btn-light text-secondary border-0" title="Редактировать">
-                                    <i class="bi bi-pencil"></i>
-                                </a>
-                                <div class="d-flex justify-content-end align-items-center gap-2">
-                                    {% include 'product/_delete.html.twig' %}
-                                </div>
-                            </div>
-                        </td>
-                    </tr>
-                {% else %}
-                    <tr>
-                        <td colspan="5" class="text-center py-5 text-muted">Продукты не найдены</td>
-                    </tr>
-                {% endfor %}
-                </tbody>
-            </table>
-        </div>
-    </div>
-</div>
+    <div id="products-search-root"></div>
 {% endblock %}
 
+{% block stylesheets %}
+    {{ parent() }}
+    {{ encore_entry_link_tags('app') }}
+{% endblock %}
 
+{% block javascripts %}
+    {{ parent() }}
+    {{ encore_entry_script_tags('app') }}
+    
+    <script>
+        document.addEventListener('DOMContentLoaded', function() {
+            const root = document.getElementById('products-search-root');
+            if (window.LiveSearchTable && window.ProductsTable) {
+                const reactRoot = window.ReactDOM.createRoot(root);
+                reactRoot.render(window.React.createElement(window.LiveSearchTable, {
+                    apiUrl: '/api/product/list',
+                    placeholder: 'Поиск по наименованию продукта...',
+                    showCreateButton: false,
+                    TableComponent: window.ProductsTable,
+                    emptyMessage: 'Продукты не найдены'
+                }));
+            }
+        });
+    </script>
+{% endblock %}

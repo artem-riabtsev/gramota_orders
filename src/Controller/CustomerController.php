@@ -17,19 +17,9 @@ final class CustomerController extends AbstractController
 {
 
     #[Route(name: 'app_customer_index', methods: ['GET'])]
-    public function index(
-        Request $request,
-        CustomerRepository $customerRepository
-    ): Response {
-        $query = $request->query->get('q') ?? '';
-        $customer = new Customer;
-        $hasorders = $customer->hasOrders();
-
-        return $this->render('customer/index.html.twig', [
-            'customers' => $customerRepository->findCustomers($query),
-            'query' => $query,
-            'hasorders' => $hasorders,
-        ]);
+    public function index(): Response
+    {
+        return $this->render('customer/index.html.twig');
     }
 
     #[Route('/new', name: 'app_customer_new')]

@@ -17,13 +17,9 @@ use App\Repository\PriceRepository;
 final class OrderController extends AbstractController
 {
     #[Route(['/order', '/'], name: 'app_order_index', methods: ['GET'])]
-    public function index(Request $request, OrderRepository $orderRepository): Response
+    public function index(): Response
     {
-        $query = $request->query->get('q') ?? '';
-        return $this->render('order/index.html.twig', [
-            'orders' => $orderRepository->findOrders($query),
-            'query' => $query,
-        ]);
+        return $this->render('order/index.html.twig');
     }
 
     #[Route('/order/new', name: 'app_order_new', methods: ['GET'])]
