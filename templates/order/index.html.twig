@@ -1,63 +1,87 @@
 {% extends 'base.html.twig' %}
 
+{% block title %}Заказы — Gramota CRM{% endblock %}
+
+{% block title_h2 %}Заказы{% endblock %}
+
+{% block top_actions %}
+    <a href="{{ path('app_order_new') }}" class="btn btn-primary shadow-sm fw-semibold">
+        <i class="bi bi-plus-lg me-1"></i> Новый заказ
+    </a>
+{% endblock %}
+
 {% block content %}
-<h1>Заказы</h1>
-{% for message in app.flashes('error') %}
-    <div class="alert alert-danger alert-dismissible fade show" role="alert">
-        {{ message }}
-        <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Закрыть"></button>
-    </div>
-{% endfor %}
-<div class="mb-4 d-flex flex-column flex-md-row justify-content-between gap-3">
+
+<div class="mb-4">
     {% include 'order/_filter.html.twig' %}
-    <div class="flex-shrink-0">
-        <a href="{{ path('app_order_new') }}" class="btn btn-primary">
-            Создать новый заказ
-        </a>
+</div>
+
+<div class="card shadow-sm border-0 rounded-3">
+    <div class="card-body p-0">
+        <div class="table-responsive">
+            <table class="table table-hover align-middle mb-0">
+                <thead class="table-light">
+                    <tr>
+                        <th class="ps-4 py-3 text-secondary small fw-semibold">ID</th>
+                        <th class="py-3 text-secondary small fw-semibold">Дата</th>
+                        <th class="py-3 text-secondary small fw-semibold">Заказчик</th>
+                        <th class="py-3 text-secondary small fw-semibold">Сумма заказа</th>
+                        <th class="py-3 text-secondary small fw-semibold">Оплачено</th>
+                        <th class="py-3 text-secondary small fw-semibold">Статус</th>
+                        <th class="text-end pe-4 py-3 text-secondary small fw-semibold">Действия</th>
+                    </tr>
+                </thead>
+                <tbody>
+                {% for order in orders %}
+                    <tr>
+                        <td class="ps-4">
+                            <a href="{{ path('app_order_show', {'id': order.id}) }}" class="fw-bold text-decoration-none">
+                                #{{ order.id }}
+                            </a>
+                        </td>
+                        
+                        <td class="text-muted">{{ order.date ? order.date|date('d.m.Y') : '—' }}</td>
+                        
+                        <td>
+                            <a href="{{ path('app_customer_show', {'id': order.customer.id}) }}" class="text-dark fw-medium text-decoration-none">
+                                {{ order.customer.name }}
+                            </a>
+                        </td>
+                        
+                        <td class="fw-bold">
+                            {% if order.orderTotal and order.orderTotal.amount %}
+                                {{ (order.orderTotal.amount.toFloat())|number_format(2, '.', ' ') }} ₽
+                            {% else %}
+                                0.00 ₽
+                            {% endif %}
+                        </td>
+
+                        <td class="text-muted">
+                            {% if order.totalPaid and order.totalPaid.amount %}
+                                {{ (order.totalPaid.amount.toFloat())|number_format(2, '.', ' ') }} ₽
+                            {% else %}
+                                0.00 ₽
+                            {% endif %}
+                        </td>
+                        <td>
+                            <span class="badge {{ order.status.color }} bg-opacity-10 px-2 py-1 rounded-pill" style="color: var(--bs-{{ order.status.color|replace({'text-': ''}) }}); background-color: rgba(var(--bs-{{ order.status.color|replace({'text-': ''}) }}-rgb), 0.1);">
+                                {{ order.status.label }}
+                            </span>
+                        </td>
+                        <td class="text-end pe-4">
+                            <div class="d-flex justify-content-end gap-2">
+                                {% include 'order/_delete.html.twig' %}
+                            </div>
+                        </td>
+                    </tr>
+                {% else %}
+                    <tr>
+                        <td colspan="7" class="text-center py-5 text-muted">Заказы не найдены</td>
+                    </tr>
+                {% endfor %}
+                </tbody>
+            </table>
+        </div>
     </div>
 </div>
-<table class="table table-hover align-middle">
-    <thead>
-        <tr>
-            <th>Номер заказа</th>
-            <th>Дата заказа</th>
-            <th>Сумма заказа</th>
-            <th>Сумма оплаты</th>
-            <th>Заказчик</th>
-            <th>Статус</th>
-            <th></th>
-        </tr>
-    </thead>
-    <tbody>
-        {% for order in orders %}
-        <tr>
-            <td>
-                <a href="{{ path('app_order_show', {'id': order.id}) }}" class="text-muted" style="text-decoration: underline; text-decoration-thickness: 1px;">
-                    {{ order.id }}
-                </a>
-            </td>
-            <td>{{ order.date ? order.date|date('d.m.Y') : '' }}</td>
-            <td>{{ order.orderTotal.amount }}</td>
-            <td>{{ order.totalPaid.amount }}</td>
-            <td>
-                <a href="{{ path('app_customer_show', {'id': order.customer.id}) }}" class="text-muted" style="text-decoration: underline; text-decoration-thickness: 1px;">
-                    {{ order.customer.name }}
-                </a>
-            </td>
-            <td>
-                <span class="{{ order.status.color }}">{{ order.status.label }}</span>
-            </td>
-            <td>
-                <div class="d-flex justify-content-center">
-                    {% include 'order/_delete.html.twig' %}
-                </div>
-            </td>
-        </tr>
-        {% else %}
-        <tr>
-            <td colspan="7">Заказы ненайдены</td>
-        </tr>
-        {% endfor %}
-    </tbody>
-</table>
 {% endblock %}
