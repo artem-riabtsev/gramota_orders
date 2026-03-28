@@ -73,7 +73,7 @@
             <div class="{% if not app.user %}login-container{% else %}container-fluid{% endif %}">
                 {% if app.user %}
                 <header class="d-flex justify-content-between align-items-center mb-4">
-                    <h2 class="fw-bold mb-0">{% block title_h2 %}Панель управления{% endblock %}</h2>
+                    <h2 class="fw-bold mb-0">{% block title_h2 %}{% endblock %}</h2>
                     <div class="actions">
                         {% block top_actions %}{% endblock %}
                     </div>

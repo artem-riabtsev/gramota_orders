@@ -1,71 +1,27 @@
 {% extends 'base.html.twig' %}
 
+{% block title %}Новый заказ{% endblock %}
+
+{% block stylesheets %}
+    {{ parent() }}
+    {{ encore_entry_link_tags('app') }}
+{% endblock %}
+
 {% block content %}
-<div class="container mt-4">
-    <h4>Выберите заказчика</h4>
+    <div id="order-new-root"></div>
+{% endblock %}
 
-    <form method="get" class="mb-3" style="flex-grow-1 me-md-3">
-        <div class="col-12 col-md-8 d-flex gap-2">
-            <div class="input-group w-50">
-                <input type="text"
-                    name="q"
-                    class="form-control"
-                    placeholder="Поиск по ФИО или email"
-                    value="{{ searchQuery }}">
-                <button class="btn btn-secondary" type="submit" title="Поиск">
-                    <i class="bi bi-search text-white"></i>
-                </button>
-            </div>
-            {% if searchQuery %}
-                <a href="{{ path('app_order_new') }}" 
-                class="btn btn-outline-secondary d-flex align-items-center">
-                    <i class="bi bi-x-lg"></i>
-                </a>
-            {% endif %}
-        </div>
-    </form>
-
-    <div id="customer-list" class="list-group mb-3" style="max-height: 300px; overflow-y: auto;">
-        {% for customer in customers %}
-            <button type="button"
-                    class="list-group-item list-group-item-action customer-select"
-                    data-id="{{ customer.id }}">
-                {{ customer.name }} ({{ customer.email }})
-            </button>
-        {% else %}
-            <div class="list-group-item text-muted">Ничего не найдено</div>
-        {% endfor %}
-    </div>
-
-    {{ form_start(form, {'attr': {'id': 'order-form'}}) }}
-        {{ form_widget(form.customer, {'attr': {'style': 'display: none;'}}) }}
-    {{ form_end(form) }}
-
-    <a href="{{ path('app_customer_new', {'from': 'order'}) }}" class="btn btn-primary">Создать нового заказчика</a>
-</div>
-
-<script>
-document.addEventListener('DOMContentLoaded', function() {
-    const customerList = document.getElementById('customer-list');
-    const orderForm = document.getElementById('order-form');
-    const customerField = orderForm.querySelector('select');
+{% block javascripts %}
+    {{ parent() }}
+    {{ encore_entry_script_tags('app') }}
     
-    customerList.querySelectorAll('.customer-select').forEach(button => {
-        button.addEventListener('click', function() {
-            const clickedId = this.getAttribute('data-id');
-            customerField.value = clickedId;
-            orderForm.submit();
+    <script>
+        document.addEventListener('DOMContentLoaded', function() {
+            const root = document.getElementById('order-new-root');
+            if (window.OrderNew) {
+                const reactRoot = window.ReactDOM.createRoot(root);
+                reactRoot.render(window.React.createElement(window.OrderNew));
+            }
         });
-    });
-});
-</script>
-<style>
-.customer-select {
-    cursor: pointer;
-    transition: background-color 0.2s ease;
-}
-.customer-select:hover {
-    background-color: #f8f9fa;
-}
-</style>
+    </script>
 {% endblock %}

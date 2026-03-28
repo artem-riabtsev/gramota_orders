@@ -32,7 +32,7 @@ final class CustomerController extends AbstractController
         ]);
     }
 
-    #[Route('/customer/new', name: 'app_customer_new')]
+    #[Route('/new', name: 'app_customer_new')]
     public function new(Request $request, EntityManagerInterface $em): Response
     {
         $from = $request->query->get('from');
