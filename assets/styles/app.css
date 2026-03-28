@@ -1,3 +1,89 @@
-body {
-    background-color: lightgray;
+:root {
+    --sidebar-bg: #1e293b;
+    --sidebar-active: rgba(255, 255, 255, 0.1);
+    --primary-indigo: #4f46e5;
+    --body-bg: #f4f7f6;
+}
+
+body { 
+    font-family: 'Inter', sans-serif; 
+    background-color: var(--body-bg);
+    color: #2d3436;
+    margin: 0;
+}
+
+.sidebar {
+    min-width: 250px;
+    max-width: 250px;
+    min-height: 100vh;
+    background: var(--sidebar-bg);
+    color: white;
+    transition: all 0.3s;
+    position: sticky;
+    top: 0;
+    z-index: 1000;
+}
+
+.sidebar .nav-link {
+    color: rgba(255, 255, 255, 0.7);
+    padding: 0.8rem 1.5rem;
+    border-radius: 8px;
+    margin: 0.2rem 0.8rem;
+    display: flex;
+    align-items: center;
+    transition: all 0.2s;
+}
+
+.sidebar .nav-link:hover, .sidebar .nav-link.active {
+    color: white;
+    background: var(--sidebar-active);
+}
+
+.sidebar .nav-link i {
+    margin-right: 10px;
+    font-size: 1.1rem;
+}
+
+.main-content {
+    width: 100%;
+    padding: 2rem;
+    min-height: 100vh;
+}
+
+.main-content.vh-100 {
+    padding: 0 !important;
+    overflow: hidden; 
+}
+
+.login-container {
+    width: 100%;
+    max-width: 420px;
+    padding: 1.5rem;
+}
+
+/* КАРТОЧКИ И КНОПКИ */
+.card {
+    border: none;
+    box-shadow: 0 0.125rem 0.25rem rgba(0, 0, 0, 0.075);
+    border-radius: 12px;
+    transition: transform 0.25s ease, box-shadow 0.25s ease !important;
+}
+
+.card:hover {
+    transform: translateY(-5px) !important;
+    box-shadow: 0 1rem 3rem rgba(0, 0, 0, 0.1) !important;
+}
+
+.btn-primary {
+    background-color: var(--primary-indigo);
+    border: none;
+    padding: 0.6rem 1.2rem;
+    border-radius: 8px;
+    transition: all 0.2s ease-in-out !important;
+}
+
+.btn-primary:hover {
+    background-color: #4338ca;
+    transform: translateY(-1px);
+    filter: brightness(1.1);
 }
