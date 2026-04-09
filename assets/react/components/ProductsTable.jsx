@@ -45,14 +45,29 @@ export default function ProductsTable({ items, emptyMessage }) {
                                             <a href={`/product/${product.id}/edit`} className="btn btn-sm btn-light text-secondary border-0" title="Редактировать">
                                                 <i className="bi bi-pencil"></i>
                                             </a>
-                                            <form method="post" action={`/product/${product.id}`} onSubmit={(e) => {
-                                                if (!confirm('Вы уверены?')) e.preventDefault();
-                                            }} className="d-inline">
-                                                <input type="hidden" name="_token" value={document.querySelector('meta[name="csrf-token"]')?.getAttribute('content') || ''} />
-                                                <button type="submit" className="btn btn-sm btn-light text-danger border-0" title="Удалить">
-                                                    <i className="bi bi-trash3"></i>
-                                                </button>
-                                            </form>
+                                            <button 
+                                                onClick={async () => {
+                                                    if (!confirm('Вы уверены?')) return;
+                                                    try {
+                                                        const response = await fetch(`/api/product/${product.id}/delete`, {
+                                                            method: 'DELETE',
+                                                            headers: { 'Content-Type': 'application/json' }
+                                                        });
+                                                        const data = await response.json();
+                                                        if (data.success) {
+                                                            window.location.reload();
+                                                        } else {
+                                                            alert(data.error || 'Ошибка удаления');
+                                                        }
+                                                    } catch (err) {
+                                                        alert('Ошибка соединения');
+                                                    }
+                                                }}
+                                                className="btn btn-sm btn-light text-danger border-0"
+                                                title="Удалить"
+                                            >
+                                                <i className="bi bi-trash3"></i>
+                                            </button>
                                         </div>
                                     </td>
                                 </tr>

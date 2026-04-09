@@ -2,8 +2,10 @@
 
 namespace App\Controller\Api;
 
+use App\Entity\Payment;
 use App\Repository\PaymentRepository;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
+use Doctrine\ORM\EntityManagerInterface;
 use Symfony\Component\HttpFoundation\JsonResponse;
 use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\Routing\Attribute\Route;
@@ -11,6 +13,11 @@ use Symfony\Component\Routing\Attribute\Route;
 #[Route('/api/payment')]
 class PaymentApiController extends AbstractController
 {
+
+    public function __construct(
+        private EntityManagerInterface $em
+    ) {}
+
     #[Route('/list', name: 'api_payment_list', methods: ['GET'])]
     public function list(Request $request, PaymentRepository $paymentRepository): JsonResponse
     {
@@ -43,5 +50,14 @@ class PaymentApiController extends AbstractController
             'page' => $page,
             'limit' => $limit
         ]);
+    }
+
+    #[Route('/{id}/delete', name: 'api_payment_delete', methods: ['DELETE'])]
+    public function delete(Payment $payment): JsonResponse
+    {
+        $order = $payment->getOrder();
+        $order->removePayment($payment);
+        $this->em->flush();
+        return $this->json(['success' => true]);
     }
 }
