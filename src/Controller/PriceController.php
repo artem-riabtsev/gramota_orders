@@ -56,15 +56,4 @@ final class PriceController extends AbstractController
             'form' => $form,
         ]);
     }
-
-    #[Route('/{id}', name: 'app_price_delete', methods: ['POST'])]
-    public function delete(Request $request, Price $price, EntityManagerInterface $entityManager): Response
-    {
-        if ($this->isCsrfTokenValid('delete' . $price->getId(), $request->getPayload()->getString('_token'))) {
-            $entityManager->remove($price);
-            $entityManager->flush();
-        }
-
-        return $this->redirectToRoute('app_price_index', [], Response::HTTP_SEE_OTHER);
-    }
 }

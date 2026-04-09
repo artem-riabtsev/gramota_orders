@@ -52,12 +52,6 @@
                     <td>{{ order.date ? order.date|date('d.m.Y') : '' }}</td>
                     <td>{{ order.orderTotal }}</td>
                     <td>{{ order.totalPaid }}</td>
-                    <td>
-                        <div class="d-flex justify-content-center">
-                            {% include 'order/_delete.html.twig' %}
-                        </div>
-                        </div>
-                    </td>
                 </tr>
             {% endfor %}
         {% endfor %}  

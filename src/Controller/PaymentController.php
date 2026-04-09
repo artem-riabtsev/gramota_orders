@@ -66,19 +66,4 @@ final class PaymentController extends AbstractController
             'form' => $form,
         ]);
     }
-
-    #[Route('/{id}', name: 'app_payment_delete', methods: ['POST'])]
-    public function delete(Request $request, Payment $payment, EntityManagerInterface $entityManager, PaymentRepository $paymentRepository): Response
-    {
-        if ($this->isCsrfTokenValid('delete' . $payment->getId(), $request->getPayload()->getString('_token'))) {
-            $order = $payment->getOrder();
-
-            $order->removePayment($payment);
-
-            $entityManager->persist($order);
-            $entityManager->flush();
-        }
-
-        return $this->redirectToRoute('app_payment_index', [], Response::HTTP_SEE_OTHER);
-    }
 }
