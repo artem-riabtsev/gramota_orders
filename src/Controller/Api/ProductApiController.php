@@ -15,11 +15,16 @@ class ProductApiController extends AbstractController
     public function list(Request $request, ProductRepository $productRepository): JsonResponse
     {
         $query = $request->query->get('q', '');
+        $page = (int)$request->query->get('page', 1);
+        $limit = (int)$request->query->get('limit', 10);
+        $offset = ($page - 1) * $limit;
 
         if (empty($query)) {
-            $products = $productRepository->findBy([], ['date' => 'DESC']);
+            $products = $productRepository->findBy([], ['date' => 'DESC'], $limit, $offset);
+            $total = $productRepository->count([]);
         } else {
-            $products = $productRepository->findProduct($query);
+            $products = $productRepository->findProductWithPagination($query, $limit, $offset);
+            $total = $productRepository->countProductBySearch($query);
         }
 
         $data = array_map(function ($product) {
@@ -32,6 +37,11 @@ class ProductApiController extends AbstractController
             ];
         }, $products);
 
-        return $this->json($data);
+        return $this->json([
+            'data' => $data,
+            'total' => $total,
+            'page' => $page,
+            'limit' => $limit
+        ]);
     }
 }

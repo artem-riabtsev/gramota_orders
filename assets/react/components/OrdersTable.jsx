@@ -3,12 +3,12 @@ import React from 'react';
 export default function OrdersTable({ items, emptyMessage }) {
     const getStatusClass = (statusValue) => {
         switch(statusValue) {
-            case 0: return 'status-empty';
-            case 1: return 'status-unpaid';
-            case 2: return 'status-partial';
-            case 3: return 'status-overpaid';
-            case 4: return 'status-paid';
-            default: return 'status-empty';
+            case 0: return 'status-badge status-empty';
+            case 1: return 'status-badge status-unpaid';
+            case 2: return 'status-badge status-partial';
+            case 3: return 'status-badge status-overpaid';
+            case 4: return 'status-badge status-paid';
+            default: return 'status-badge status-empty';
         }
     };
 
@@ -16,7 +16,7 @@ export default function OrdersTable({ items, emptyMessage }) {
         switch(statusValue) {
             case 0: return 'Пустой';
             case 1: return 'Не оплачен';
-            case 2: return 'Частично оплачен';
+            case 2: return 'Частично';
             case 3: return 'Переплата';
             case 4: return 'Оплачен';
             default: return 'Пустой';
@@ -44,40 +44,37 @@ export default function OrdersTable({ items, emptyMessage }) {
                                 <th className="ps-4 py-3 text-secondary small fw-semibold">Номер</th>
                                 <th className="py-3 text-secondary small fw-semibold">Дата</th>
                                 <th className="py-3 text-secondary small fw-semibold">Клиент</th>
-                                <th className="py-3 text-secondary small fw-semibold text-end">Сумма</th>
-                                <th className="py-3 text-secondary small fw-semibold text-end">Оплачено</th>
-                                <th className="py-3 text-secondary small fw-semibold">Статус</th>
-                                <th className="pe-4 py-3 text-secondary small fw-semibold text-end"></th>
+                                <th className="py-3 text-secondary small fw-semibold text-end" style={{minWidth: '90px'}}>Сумма</th>
+                                <th className="py-3 text-secondary small fw-semibold text-end" style={{minWidth: '90px'}}>Оплачено</th>
+                                <th className="py-3 text-secondary small fw-semibold" style={{minWidth: '100px'}}>Статус</th>
+                                <th className="pe-4 py-3 text-secondary small fw-semibold text-end" style={{minWidth: '70px'}}></th>
                             </tr>
                         </thead>
                         <tbody>
                             {items.map(order => (
-                                <tr key={order.id} className="order-row">
+                                <tr key={order.id}>
                                     <td className="ps-4">
-                                        <a href={`/order/${order.id}`} className="order-link">
-                                            #{order.id}
+                                        <a href={`/order/${order.id}`} className="fw-semibold text-dark text-decoration-none">
+                                            {order.id}
                                         </a>
                                     </td>
                                     <td>{order.date}</td>
                                     <td>
-                                        <a href={`/customer/${order.customer.id}`} className="customer-link">
+                                        <a href={`/customer/${order.customer.id}`} className="text-dark text-decoration-none">
                                             {order.customer.name}
                                         </a>
                                     </td>
-                                    <td className="text-end fw-semibold">{order.orderTotal} ₽</td>
-                                    <td className="text-end text-muted">{order.totalPaid} ₽</td>
+                                    <td className="text-end fw-semibold" style={{whiteSpace: 'nowrap'}}>{order.orderTotal} ₽</td>
+                                    <td className="text-end text-muted" style={{whiteSpace: 'nowrap'}}>{order.totalPaid} ₽</td>
                                     <td>
-                                        <span className={`status-badge ${getStatusClass(order.status.value)}`}>
+                                        <span className={getStatusClass(order.status.value)} style={{whiteSpace: 'nowrap'}}>
                                             {getStatusLabel(order.status.value)}
                                         </span>
                                     </td>
                                     <td className="pe-4 text-end">
-                                        <div className="d-flex justify-content-end gap-2">
+                                        <div className="d-flex justify-content-end gap-2" style={{whiteSpace: 'nowrap'}}>
                                             <a href={`/order/${order.id}`} className="btn btn-sm btn-light text-primary border-0" title="Просмотр">
                                                 <i className="bi bi-eye"></i>
-                                            </a>
-                                            <a href={`/order/${order.id}/edit`} className="btn btn-sm btn-light text-secondary border-0" title="Редактировать">
-                                                <i className="bi bi-pencil"></i>
                                             </a>
                                             <form method="post" action={`/order/${order.id}`} onSubmit={(e) => {
                                                 if (!confirm('Вы уверены?')) e.preventDefault();

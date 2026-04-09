@@ -1,55 +1,41 @@
 {% extends 'base.html.twig' %}
 
-{% block title %}Платежи{% endblock %}
+{% block title %}Платежи — Gramota CRM{% endblock %}
+
+{% block title_h2 %}Платежи{% endblock %}
+
+{% block top_actions %}
+    <a href="{{ path('app_payment_new') }}" class="btn btn-primary shadow-sm fw-semibold">
+        <i class="bi bi-plus-lg me-1"></i> Добавить платеж
+    </a>
+{% endblock %}
 
 {% block content %}
-<h1>Платежи</h1>
+    <div id="payments-search-root"></div>
+{% endblock %}
 
-<div class="mb-4 d-flex flex-column flex-md-row justify-content-between gap-3">
-    {% include 'payment/_filter.html.twig' %}
-    <div class="flex-shrink-0">
-        <a href="{{ path('app_payment_new') }}" class="btn btn-primary">
-            Добавить платеж
-        </a>
-    </div>
-</div>
+{% block stylesheets %}
+    {{ parent() }}
+    {{ encore_entry_link_tags('app') }}
+{% endblock %}
 
-<table class="table table-hover align-middle">
-    <thead>
-        <tr>
-            <th>Id</th>
-            <th>Номер заказа</th>
-            <th>Дата</th>
-            <th>Сумма платежа</th>
-            <th></th>
-        </tr>
-    </thead>
-    <tbody>
-    {% for payment in payments %}
-        <tr>
-            <td>{{ payment.id }}</td>
-            <td>
-                <a href="{{ path('app_order_show', {'id': payment.order.id}) }}" 
-                    class="text-muted me-2" style="text-decoration: underline; text-decoration-thickness: 1px;">
-                    {{ payment.order.id }}
-                </a>
-                <a href="{{ path('app_payment_edit', {'id': payment.id}) }}" class="btn p-0 mb-1">
-                    <i class="bi bi-pencil" style="font-size: 1rem; color: #6c757d;"></i>
-                </a>
-            </td>
-            <td>{{ payment.date ? payment.date|date('d.m.Y') : '' }}</td>
-            <td>{{ payment.amount.amount }}</td>
-            <td>
-                <div class="d-flex justify-content-center">
-                    {% include 'payment/_delete.html.twig' %}
-                </div>
-            </td>
-        </tr>
-        {% else %}
-        <tr>
-            <td colspan="5">Платежи не найдены</td>
-        </tr>
-        {% endfor %}
-    </tbody>
-</table>
+{% block javascripts %}
+    {{ parent() }}
+    {{ encore_entry_script_tags('app') }}
+    
+    <script>
+        document.addEventListener('DOMContentLoaded', function() {
+            const root = document.getElementById('payments-search-root');
+            if (window.LiveSearchTable && window.PaymentsTable) {
+                const reactRoot = window.ReactDOM.createRoot(root);
+                reactRoot.render(window.React.createElement(window.LiveSearchTable, {
+                    apiUrl: '/api/payment/list',
+                    placeholder: 'Поиск по номеру заказа...',
+                    showCreateButton: false,
+                    TableComponent: window.PaymentsTable,
+                    emptyMessage: 'Платежи не найдены'
+                }));
+            }
+        });
+    </script>
 {% endblock %}

@@ -14,14 +14,10 @@ use Symfony\Component\Routing\Attribute\Route;
 #[Route('/price')]
 final class PriceController extends AbstractController
 {
-    #[Route(name: 'app_price_index', methods: ['GET'])]
-    public function index(Request $request, PriceRepository $priceRepository): Response
+    #[Route(name: 'app_price_index')]
+    public function indexReact(): Response
     {
-        $query = $request->query->get('q') ?? '';
-        return $this->render('price/index.html.twig', [
-            'prices' => $priceRepository->findPrice($query),
-            'query' => $query,
-        ]);
+        return $this->render('price/index.html.twig');
     }
 
     #[Route('/new', name: 'app_price_new', methods: ['GET', 'POST'])]

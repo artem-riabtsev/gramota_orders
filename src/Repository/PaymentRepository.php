@@ -17,6 +17,34 @@ class PaymentRepository extends ServiceEntityRepository
         parent::__construct($registry, Payment::class);
     }
 
+    public function findPaymentsWithPagination(?string $query, int $limit, int $offset): array
+    {
+        $qb = $this->createQueryBuilder('p')
+            ->orderBy('p.date', 'DESC')
+            ->setMaxResults($limit)
+            ->setFirstResult($offset);
+
+        if ($query) {
+            $qb->where('IDENTITY(p.order) LIKE :q')
+                ->setParameter('q', '%' . $query . '%');
+        }
+
+        return $qb->getQuery()->getResult();
+    }
+
+    public function countPaymentsBySearch(?string $query): int
+    {
+        $qb = $this->createQueryBuilder('p')
+            ->select('COUNT(p.id)');
+
+        if ($query) {
+            $qb->where('IDENTITY(p.order) LIKE :q')
+                ->setParameter('q', '%' . $query . '%');
+        }
+
+        return (int)$qb->getQuery()->getSingleScalarResult();
+    }
+
     public function findByOrderId(?string $query): array
     {
         $qb = $this->createQueryBuilder('c');

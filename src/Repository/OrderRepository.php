@@ -17,6 +17,40 @@ class OrderRepository extends ServiceEntityRepository
         parent::__construct($registry, Order::class);
     }
 
+    public function findOrdersWithPagination(?string $query, int $limit, int $offset): array
+    {
+        $qb = $this->createQueryBuilder('o')
+            ->leftJoin('o.customer', 'customer')
+            ->orderBy('o.date', 'DESC')
+            ->setMaxResults($limit)
+            ->setFirstResult($offset);
+
+        if (!empty($query)) {
+            $qb->where('customer.name LIKE :q')
+                ->orWhere('o.id = :id')
+                ->setParameter('q', '%' . $query . '%')
+                ->setParameter('id', $query);
+        }
+
+        return $qb->getQuery()->getResult();
+    }
+
+    public function countOrdersBySearch(?string $query): int
+    {
+        $qb = $this->createQueryBuilder('o')
+            ->select('COUNT(o.id)')
+            ->leftJoin('o.customer', 'customer');
+
+        if (!empty($query)) {
+            $qb->where('customer.name LIKE :q')
+                ->orWhere('o.id = :id')
+                ->setParameter('q', '%' . $query . '%')
+                ->setParameter('id', $query);
+        }
+
+        return (int)$qb->getQuery()->getSingleScalarResult();
+    }
+
     public function findOrders(?string $query): array
     {
         $qb = $this

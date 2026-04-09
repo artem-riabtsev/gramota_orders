@@ -13,6 +13,34 @@ class PriceRepository extends ServiceEntityRepository
         parent::__construct($registry, Price::class);
     }
 
+    public function findPriceWithPagination(?string $query, int $limit, int $offset): array
+    {
+        $qb = $this->createQueryBuilder('p')
+            ->orderBy('p.description', 'ASC')
+            ->setMaxResults($limit)
+            ->setFirstResult($offset);
+
+        if ($query) {
+            $qb->where('LOWER(p.description) LIKE :q')
+                ->setParameter('q', '%' . strtolower($query) . '%');
+        }
+
+        return $qb->getQuery()->getResult();
+    }
+
+    public function countPriceBySearch(?string $query): int
+    {
+        $qb = $this->createQueryBuilder('p')
+            ->select('COUNT(p.id)');
+
+        if ($query) {
+            $qb->where('LOWER(p.description) LIKE :q')
+                ->setParameter('q', '%' . strtolower($query) . '%');
+        }
+
+        return (int)$qb->getQuery()->getSingleScalarResult();
+    }
+
     public function findPrice(?string $query): array
     {
         $qb = $this->createQueryBuilder('p');

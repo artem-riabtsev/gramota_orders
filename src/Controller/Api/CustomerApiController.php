@@ -38,11 +38,15 @@ class CustomerApiController extends AbstractController
     public function list(Request $request, CustomerRepository $customerRepository): JsonResponse
     {
         $query = $request->query->get('q', '');
+        $page = (int)$request->query->get('page', 1);
+        $limit = (int)$request->query->get('limit', 20);
 
         if (empty($query)) {
-            $customers = $customerRepository->findAll();
+            $customers = $customerRepository->findBy([], ['name' => 'ASC'], $limit, ($page - 1) * $limit);
+            $total = $customerRepository->count([]);
         } else {
-            $customers = $customerRepository->findCustomers($query);
+            $customers = $customerRepository->findCustomersWithPagination($query, $limit, ($page - 1) * $limit);
+            $total = $customerRepository->countCustomersBySearch($query);
         }
 
         $data = array_map(function ($customer) {
@@ -54,6 +58,11 @@ class CustomerApiController extends AbstractController
             ];
         }, $customers);
 
-        return $this->json($data);
+        return $this->json([
+            'data' => $data,
+            'total' => $total,
+            'page' => $page,
+            'limit' => $limit
+        ]);
     }
 }

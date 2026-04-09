@@ -1,11 +1,11 @@
 import React from 'react';
 
-export default function CustomersTable({ items, emptyMessage }) {
+export default function PaymentsTable({ items, emptyMessage }) {
     if (!items || items.length === 0) {
         return (
             <div className="card shadow-sm border-0 rounded-3">
                 <div className="card-body p-5 text-center text-muted">
-                    <i className="bi bi-people fs-1 d-block mb-3"></i>
+                    <i className="bi bi-credit-card fs-1 d-block mb-3"></i>
                     <p className="mb-0">{emptyMessage}</p>
                 </div>
             </div>
@@ -20,50 +20,37 @@ export default function CustomersTable({ items, emptyMessage }) {
                         <thead className="table-light">
                             <tr>
                                 <th className="ps-4 py-3 text-secondary small fw-semibold">ID</th>
-                                <th className="py-3 text-secondary small fw-semibold">ФИО</th>
-                                <th className="py-3 text-secondary small fw-semibold">Email</th>
-                                <th className="py-3 text-secondary small fw-semibold">Телефон</th>
+                                <th className="py-3 text-secondary small fw-semibold">Заказ</th>
+                                <th className="py-3 text-secondary small fw-semibold">Клиент</th>
+                                <th className="py-3 text-secondary small fw-semibold">Дата</th>
+                                <th className="py-3 text-secondary small fw-semibold text-end">Сумма</th>
                                 <th className="pe-4 py-3 text-secondary small fw-semibold text-end">Действия</th>
                             </tr>
                         </thead>
                         <tbody>
-                            {items.map(customer => (
-                                <tr key={customer.id}>
+                            {items.map(payment => (
+                                <tr key={payment.id}>
                                     <td className="ps-4">
-                                        <span className="text-muted small">#{customer.id}</span>
+                                        <span className="text-muted small">#{payment.id}</span>
                                     </td>
                                     <td>
-                                        <a href={`/customer/${customer.id}`} className="fw-semibold text-dark text-decoration-none">
-                                            {customer.name}
+                                        <a href={`/order/${payment.orderId}`} className="fw-medium text-decoration-none">
+                                            Заказ #{payment.orderId}
                                         </a>
                                     </td>
                                     <td>
-                                        {customer.email ? (
-                                            <a href={`mailto:${customer.email}`} className="text-muted text-decoration-none small">
-                                                {customer.email}
-                                            </a>
-                                        ) : (
-                                            <span className="text-muted small">—</span>
-                                        )}
+                                        <span className="text-muted small">{payment.orderCustomer}</span>
                                     </td>
-                                    <td>
-                                        {customer.phone ? (
-                                            <a href={`tel:${customer.phone}`} className="text-muted text-decoration-none small">
-                                                {customer.phone}
-                                            </a>
-                                        ) : (
-                                            <span className="text-muted small">—</span>
-                                        )}
+                                    <td>{payment.date}</td>
+                                    <td className="text-end">
+                                        <span className="fw-semibold text-success">{payment.amount} ₽</span>
                                     </td>
                                     <td className="pe-4 text-end">
                                         <div className="d-flex justify-content-end gap-2">
-                                            <a href={`/customer/${customer.id}`} className="btn btn-sm btn-light text-primary border-0" title="Просмотр">
-                                                <i className="bi bi-eye"></i>
-                                            </a>
-                                            <a href={`/customer/${customer.id}/edit`} className="btn btn-sm btn-light text-secondary border-0" title="Редактировать">
+                                            <a href={`/payment/${payment.id}/edit`} className="btn btn-sm btn-light text-secondary border-0" title="Редактировать">
                                                 <i className="bi bi-pencil"></i>
                                             </a>
-                                            <form method="post" action={`/customer/${customer.id}`} onSubmit={(e) => {
+                                            <form method="post" action={`/payment/${payment.id}`} onSubmit={(e) => {
                                                 if (!confirm('Вы уверены?')) e.preventDefault();
                                             }} className="d-inline">
                                                 <input type="hidden" name="_token" value={document.querySelector('meta[name="csrf-token"]')?.getAttribute('content') || ''} />

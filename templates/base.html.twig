@@ -3,6 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1">
+    <meta name="csrf-token" content="{{ csrf_token('authenticate') }}">
     <title>{% block title %}Gramota CRM{% endblock %}</title>
     
     <link rel="preconnect" href="https://fonts.googleapis.com">
@@ -18,9 +19,9 @@
     {% endblock %}
 </head>
 <body>
-    <div class="d-flex">
+    <div class="app-wrapper">
         {% if app.user %}
-        <nav class="sidebar d-flex flex-column flex-shrink-0 shadow">
+        <nav class="sidebar">
             <div class="p-4">
                 <h4 class="text-white fw-bold mb-0">Gramota <span class="text-info">Orders</span></h4>
             </div>
@@ -69,11 +70,11 @@
         </nav>
         {% endif %}
 
-        <main class="main-content flex-grow-1 {% if not app.user %}d-flex align-items-center justify-content-center vh-100{% endif %}">
+        <main class="main-content">
             <div class="{% if not app.user %}login-container{% else %}container-fluid{% endif %}">
                 {% if app.user %}
                 <header class="d-flex justify-content-between align-items-center mb-4">
-                    <h2 class="fw-bold mb-0">{% block title_h2 %}{% endblock %}</h2>
+                    <h2 class="fw-bold mb-0">{% block title_h2 %}Панель управления{% endblock %}</h2>
                     <div class="actions">
                         {% block top_actions %}{% endblock %}
                     </div>
