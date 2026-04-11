@@ -1,4 +1,3 @@
-// assets/app.js
 import './bootstrap.js';
 import './styles/app.css';
 
@@ -11,7 +10,7 @@ import ProductsTable from './react/components/ProductsTable';
 import PricesTable from './react/components/PricesTable';
 import PaymentsTable from './react/components/PaymentsTable';
 import OrderNew from './react/components/OrderNew';
-import AddItemModal from './react/components/AddItemModal';
+import AddItemModal from './react/components/AddItemModal/index';
 import EditItemModal from './react/components/EditItemModal';
 import OrderShow from './react/components/OrderShow';
 import PaymentNew from './react/components/PaymentNew';

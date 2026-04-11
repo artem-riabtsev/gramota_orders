@@ -303,9 +303,18 @@ export default function OrderShow({ orderId }) {
             </div>
 
             <div className="mt-3">
-                <a href="/order" className="btn btn-secondary btn-sm">
-                    <i className="bi bi-arrow-left me-1"></i> Назад к заказам
-                </a>
+                <button 
+                    onClick={() => {
+                        if (window.history.length > 1) {
+                            window.history.back();
+                        } else {
+                            window.location.href = '/order';
+                        }
+                    }}
+                    className="btn btn-secondary btn-sm"
+                >
+                    <i className="bi bi-arrow-left me-1"></i> Назад
+                </button>
             </div>
 
             <AddItemModal
