@@ -14,6 +14,7 @@ import OrderNew from './react/components/OrderNew';
 import AddItemModal from './react/components/AddItemModal';
 import EditItemModal from './react/components/EditItemModal';
 import OrderShow from './react/components/OrderShow';
+import PaymentNew from './react/components/PaymentNew';
 
 window.React = React;
 window.ReactDOM = { createRoot };
@@ -27,3 +28,4 @@ window.OrderNew = OrderNew;
 window.AddItemModal = AddItemModal;
 window.EditItemModal = EditItemModal;
 window.OrderShow = OrderShow;
+window.PaymentNew = PaymentNew;

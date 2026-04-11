@@ -7,7 +7,11 @@
             {{ form_start(form) }}
             {{ form_widget(form) }}
             <button class="btn btn-success">Создать</button>
-            <a href="{{ app.request.headers.get('referer') ?: path('app_order_index') }}" class="btn btn-secondary">
+            <a  
+                href="javascript:history.back()" 
+                onclick="if (history.length <= 1) { window.location.href='{{ path('app_customer_index') }}'; return false; }" 
+                class="btn btn-secondary"
+            >
                 Назад
             </a>
             {{ form_end(form) }}

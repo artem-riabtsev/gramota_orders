@@ -4,6 +4,7 @@ namespace App\Controller\Api;
 
 use App\Entity\Payment;
 use App\Repository\PaymentRepository;
+use App\Repository\OrderRepository;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
 use Doctrine\ORM\EntityManagerInterface;
 use Symfony\Component\HttpFoundation\JsonResponse;
@@ -49,6 +50,33 @@ class PaymentApiController extends AbstractController
             'total' => $total,
             'page' => $page,
             'limit' => $limit
+        ]);
+    }
+
+    #[Route('/create', name: 'api_payment_create', methods: ['POST'])]
+    public function create(Request $request, OrderRepository $orderRepository): JsonResponse
+    {
+        $data = json_decode($request->getContent(), true);
+
+        if (!$data || !isset($data['orderId'])) {
+            return $this->json(['success' => false, 'error' => 'Не выбран заказ'], 400);
+        }
+
+        $order = $orderRepository->find($data['orderId']);
+        if (!$order) {
+            return $this->json(['success' => false, 'error' => 'Заказ не найден'], 404);
+        }
+
+        $payment = new Payment();
+        $payment->setOrder($order);
+        $payment->setAmount(\Brick\Money\Money::of(0, 'RUB'));
+
+        $this->em->persist($payment);
+        $this->em->flush();
+
+        return $this->json([
+            'success' => true,
+            'paymentId' => $payment->getId()
         ]);
     }
 

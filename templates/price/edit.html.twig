@@ -10,7 +10,11 @@
         {{ form_start(form) }}
         {{ form_widget(form) }}
         <button class="btn btn-success mt-2">Сохранить</button>
-        <a href="{{ path('app_price_index') }}" class="btn btn-secondary ms-1 mt-2">
+        <a  
+            href="javascript:history.back()" 
+            onclick="if (history.length <= 1) { window.location.href='{{ path('app_price_index') }}'; return false; }" 
+            class="btn btn-secondary ms-1 mt-2"
+        >
             Назад
         </a>
         {{ form_end(form) }}

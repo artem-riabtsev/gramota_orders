@@ -27,9 +27,9 @@ class OrderRepository extends ServiceEntityRepository
 
         if (!empty($query)) {
             $qb->where('customer.name LIKE :q')
-                ->orWhere('o.id = :id')
+                ->orWhere('o.id LIKE :id')
                 ->setParameter('q', '%' . $query . '%')
-                ->setParameter('id', $query);
+                ->setParameter('id', '%' . $query . '%');
         }
 
         return $qb->getQuery()->getResult();
@@ -51,49 +51,49 @@ class OrderRepository extends ServiceEntityRepository
         return (int)$qb->getQuery()->getSingleScalarResult();
     }
 
-    public function findOrders(?string $query): array
-    {
-        $qb = $this
-            ->createQueryBuilder('c')
-            ->leftJoin('c.customer', 'customer');
+    // public function findOrders(?string $query): array
+    // {
+    //     $qb = $this
+    //         ->createQueryBuilder('c')
+    //         ->leftJoin('c.customer', 'customer');
 
-        if (!empty($query)) {
-            $qb->where('customer.name LIKE :q')
-                ->orWhere('c.id = :id')
-                ->setParameter('q', '%' . $query . '%')
-                ->setParameter('id', $query);
-        } else {
-            $oneMonthAgo = new \DateTime('-1 month');
-            $qb->where('c.date >= :oneMonthAgo')
-                ->setParameter('oneMonthAgo', $oneMonthAgo);
-        }
+    //     if (!empty($query)) {
+    //         $qb->where('customer.name LIKE :q')
+    //             ->orWhere('c.id = :id')
+    //             ->setParameter('q', '%' . $query . '%')
+    //             ->setParameter('id', $query);
+    //     } else {
+    //         $oneMonthAgo = new \DateTime('-1 month');
+    //         $qb->where('c.date >= :oneMonthAgo')
+    //             ->setParameter('oneMonthAgo', $oneMonthAgo);
+    //     }
 
-        return $qb
-            ->orderBy('c.date', 'DESC')
-            ->getQuery()
-            ->getResult();
-    }
+    //     return $qb
+    //         ->orderBy('c.date', 'DESC')
+    //         ->getQuery()
+    //         ->getResult();
+    // }
 
-    public function findById(?string $query): array
-    {
-        return $this->createQueryBuilder('o')
-            ->where('CAST(o.id AS CHAR) LIKE :q')
-            ->setParameter('q', '%' . $query . '%')
-            ->orderBy('o.id', 'ASC')
-            ->getQuery()
-            ->getResult();
-    }
+    // public function findById(?string $query): array
+    // {
+    //     return $this->createQueryBuilder('o')
+    //         ->where('CAST(o.id AS CHAR) LIKE :q')
+    //         ->setParameter('q', '%' . $query . '%')
+    //         ->orderBy('o.id', 'ASC')
+    //         ->getQuery()
+    //         ->getResult();
+    // }
 
-    public function findLastMonthOrders(): array
-    {
-        $oneMonthAgo = new \DateTime('-1 month');
+    // public function findLastMonthOrders(): array
+    // {
+    //     $oneMonthAgo = new \DateTime('-1 month');
 
-        return $this->createQueryBuilder('o')
-            ->leftJoin('o.customer', 'c')
-            ->where('o.date >= :oneMonthAgo')
-            ->setParameter('oneMonthAgo', $oneMonthAgo)
-            ->orderBy('o.date', 'DESC')
-            ->getQuery()
-            ->getResult();
-    }
+    //     return $this->createQueryBuilder('o')
+    //         ->leftJoin('o.customer', 'c')
+    //         ->where('o.date >= :oneMonthAgo')
+    //         ->setParameter('oneMonthAgo', $oneMonthAgo)
+    //         ->orderBy('o.date', 'DESC')
+    //         ->getQuery()
+    //         ->getResult();
+    // }
 }

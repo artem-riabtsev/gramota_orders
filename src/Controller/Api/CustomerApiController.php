@@ -22,12 +22,14 @@ class CustomerApiController extends AbstractController
     public function search(Request $request, CustomerRepository $customerRepository): JsonResponse
     {
         $query = $request->query->get('q', '');
+        $page = (int)$request->query->get('page', 1);
+        $limit = (int)$request->query->get('limit', 20);
 
         if (strlen($query) < 2) {
             return $this->json([]);
         }
 
-        $customers = $customerRepository->findCustomers($query);
+        $customers = $customerRepository->findCustomersWithPagination($query, $limit, ($page - 1) * $limit);
 
         $data = array_map(function ($customer) {
             return [

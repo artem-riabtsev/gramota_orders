@@ -25,26 +25,10 @@ final class PaymentController extends AbstractController
         return $this->render('payment/index.html.twig');
     }
 
-    #[Route('/new', name: 'app_payment_new', methods: ['GET', 'POST'])]
-    public function select(Request $request, EntityManagerInterface $entityManager, OrderRepository $orderRepository): Response
+    #[Route('/new', name: 'app_payment_new', methods: ['GET'])]
+    public function newReact(): Response
     {
-        $payment = new Payment();
-        $form = $this->createForm(PaymentNewForm::class, $payment);
-        $form->handleRequest($request);
-
-        if ($form->isSubmitted() && $form->isValid()) {
-            $entityManager->persist($payment);
-            $entityManager->flush();
-
-            return $this->redirectToRoute('app_payment_edit', ['id' => $payment->getId()]);
-        }
-
-        $searchQuery = $request->query->get('q') ?? '';
-        return $this->render('payment/new.html.twig', [
-            'orders' => $orderRepository->findOrders($searchQuery),
-            'searchQuery' => $searchQuery,
-            'form' => $form
-        ]);
+        return $this->render('payment/new.html.twig');
     }
 
     #[Route('/{id}/edit', name: 'app_payment_edit', methods: ['GET', 'POST'])]

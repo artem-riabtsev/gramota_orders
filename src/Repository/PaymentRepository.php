@@ -45,39 +45,39 @@ class PaymentRepository extends ServiceEntityRepository
         return (int)$qb->getQuery()->getSingleScalarResult();
     }
 
-    public function findByOrderId(?string $query): array
-    {
-        $qb = $this->createQueryBuilder('c');
+    // public function findByOrderId(?string $query): array
+    // {
+    //     $qb = $this->createQueryBuilder('c');
 
-        if ($query) {
-            $qb->where('IDENTITY(c.order) LIKE :q')
-                ->setParameter('q', '%' . $query . '%');
-        }
+    //     if ($query) {
+    //         $qb->where('IDENTITY(c.order) LIKE :q')
+    //             ->setParameter('q', '%' . $query . '%');
+    //     }
 
-        return $qb->getQuery()->getResult();
-    }
+    //     return $qb->getQuery()->getResult();
+    // }
 
-    public function findLastMonthOrders(): array
-    {
-        $oneMonthAgo = new \DateTime('-1 month');
+    // public function findLastMonthOrders(): array
+    // {
+    //     $oneMonthAgo = new \DateTime('-1 month');
 
-        return $this->createQueryBuilder('o')
-            ->where('o.date >= :oneMonthAgo')
-            ->setParameter('oneMonthAgo', $oneMonthAgo)
-            ->orderBy('o.date', 'DESC')
-            ->setMaxResults(50)
-            ->getQuery()
-            ->getResult();
-    }
+    //     return $this->createQueryBuilder('o')
+    //         ->where('o.date >= :oneMonthAgo')
+    //         ->setParameter('oneMonthAgo', $oneMonthAgo)
+    //         ->orderBy('o.date', 'DESC')
+    //         ->setMaxResults(50)
+    //         ->getQuery()
+    //         ->getResult();
+    // }
 
-    public function findByDateRange(\DateTime $from, \DateTime $to): array
-    {
-        return $this->createQueryBuilder('p')
-            ->andWhere('p.date BETWEEN :from AND :to')
-            ->setParameter('from', $from->format('Y-m-d 00:00:00'))
-            ->setParameter('to', $to->format('Y-m-d 23:59:59'))
-            ->orderBy('p.date', 'DESC')
-            ->getQuery()
-            ->getResult();
-    }
+    // public function findByDateRange(\DateTime $from, \DateTime $to): array
+    // {
+    //     return $this->createQueryBuilder('p')
+    //         ->andWhere('p.date BETWEEN :from AND :to')
+    //         ->setParameter('from', $from->format('Y-m-d 00:00:00'))
+    //         ->setParameter('to', $to->format('Y-m-d 23:59:59'))
+    //         ->orderBy('p.date', 'DESC')
+    //         ->getQuery()
+    //         ->getResult();
+    // }
 }

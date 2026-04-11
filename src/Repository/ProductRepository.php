@@ -39,18 +39,18 @@ class ProductRepository extends ServiceEntityRepository
             ->getSingleScalarResult();
     }
 
-    public function findProduct(string $query): array
-    {
-        $qb = $this->createQueryBuilder('c');
+    // public function findProduct(string $query): array
+    // {
+    //     $qb = $this->createQueryBuilder('c');
 
-        if (!empty($query)) {
-            $qb->where('c.description LIKE :q')
-                ->setParameter('q', "%$query%");
-        }
+    //     if (!empty($query)) {
+    //         $qb->where('c.description LIKE :q')
+    //             ->setParameter('q', "%$query%");
+    //     }
 
-        $qb->orderBy('c.date', 'DESC')
-            ->addOrderBy('c.description', 'ASC');
+    //     $qb->orderBy('c.date', 'DESC')
+    //         ->addOrderBy('c.description', 'ASC');
 
-        return $qb->getQuery()->getResult();
-    }
+    //     return $qb->getQuery()->getResult();
+    // }
 }
