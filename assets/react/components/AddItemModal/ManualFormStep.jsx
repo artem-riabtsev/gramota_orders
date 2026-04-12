@@ -1,10 +1,14 @@
-import React from 'react';
+import React, { useEffect } from 'react';
 import { useForm } from 'react-hook-form';
 
 export default function ManualFormStep({ selectedPrice, formData, setFormData, products, loadingProducts, showProductDropdown, setShowProductDropdown, onSubmit, onBack, onClose, isSubmitting }) {
-    const { register, handleSubmit, watch, setValue, formState: { errors } } = useForm({
+    const { register, handleSubmit, watch, setValue, reset, formState: { errors } } = useForm({
         defaultValues: formData
     });
+
+    useEffect(() => {
+        reset(formData);
+    }, [formData, reset]);
 
     const watchQuantity = watch('quantity');
     const watchPrice = watch('price');

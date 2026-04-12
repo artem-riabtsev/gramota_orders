@@ -2,7 +2,7 @@
 
 namespace App\Controller\Api;
 
-use App\Entity\Order;
+use App\Entity\Product;
 use App\Entity\OrderItem;
 use App\Repository\OrderRepository;
 use App\Repository\PriceRepository;
@@ -112,6 +112,13 @@ class OrderItemApiController extends AbstractController
             $orderItem->setDescription($data['description']);
         }
 
+        if (isset($data['productId'])) {
+            $product = $this->em->getRepository(Product::class)->find($data['productId']);
+            if ($product) {
+                $orderItem->setProduct($product);
+            }
+        }
+
         // Пересчитываем сумму
         $lineTotal = $orderItem->getPrice()->multipliedBy($orderItem->getQuantity());
         $orderItem->setLineTotal($lineTotal);
@@ -139,43 +146,4 @@ class OrderItemApiController extends AbstractController
 
         return $this->json(['success' => true]);
     }
-
-    // #[Route('/{id}', name: 'api_order_get', methods: ['GET'])]
-    // public function getOrder(Order $order): JsonResponse
-    // {
-    //     $items = array_map(function (OrderItem $item) {
-    //         return [
-    //             'id' => $item->getId(),
-    //             'description' => $item->getDescription(),
-    //             'product' => [
-    //                 'id' => $item->getProduct()->getId(),
-    //                 'description' => $item->getProduct()->getDescription()
-    //             ],
-    //             'quantity' => $item->getQuantity(),
-    //             'price' => $item->getPrice()->getAmount(),
-    //             'lineTotal' => $item->getLineTotal()->getAmount()
-    //         ];
-    //     }, $order->getOrderItems());
-
-    //     $data = [
-    //         'id' => $order->getId(),
-    //         'date' => $order->getDate()->format('d.m.Y'),
-    //         'customer' => [
-    //             'id' => $order->getCustomer()->getId(),
-    //             'name' => $order->getCustomer()->getName(),
-    //             'email' => $order->getCustomer()->getEmail(),
-    //             'phone' => $order->getCustomer()->getPhone()
-    //         ],
-    //         'orderTotal' => $order->getOrderTotal()->getAmount(),
-    //         'totalPaid' => $order->getTotalPaid()->getAmount(),
-    //         'status' => [
-    //             'value' => $order->getStatus()->value,
-    //             'label' => $order->getStatus()->label(),
-    //             'color' => $order->getStatus()->color()
-    //         ],
-    //         'items' => $items
-    //     ];
-
-    //     return $this->json($data);
-    // }
 }

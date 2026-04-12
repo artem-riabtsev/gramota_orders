@@ -16,7 +16,7 @@ export default function OrdersTable({ items, emptyMessage }) {
         switch(statusValue) {
             case 0: return 'Пустой';
             case 1: return 'Не оплачен';
-            case 2: return 'Частично';
+            case 2: return 'Частично оплачен';
             case 3: return 'Переплата';
             case 4: return 'Оплачен';
             default: return 'Пустой';
