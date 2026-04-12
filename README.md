@@ -30,23 +30,11 @@
 git clone https://github.com/yourusername/gramota-orders.git
 cd gramota-orders
 
-# 2. Постройте контейнеры
-docker compose build --pull --no-cache
+# 2. Запустить проект
+make setup
 
-# 3. Запустите проект
-docker compose up --wait
-
-# 4. Выполните миграции Doctrine
-docker compose exec php bin/console doctrine:migrations:migrate
-
-# 5. Сборка фронтенд-ассетов (React & Webpack)
-# Установите JS-зависимости и скомпилируйте файлы
-docker compose exec php npm install
-docker compose exec php npm run dev
-
-# 6. Подпишите сертификаты (WSL2, при первом запуске) 
-docker cp $(docker compose ps -q frankenphp):/data/caddy/pki/authorities/local/root.crt /mnt/c/Users/Public/root.crt
-powershell.exe -Command 'Start-Process certutil.exe -ArgumentList "-addstore", "ROOT", "C:\Users\Public\root.crt" -Verb RunAs'
-
-# 7. Откройте приложение
+# 3. Откройте приложение
 https://localhost
+
+# Пересобрать фронт (dev)
+docker compose exec php bash -c "cd /app && npm run build"
