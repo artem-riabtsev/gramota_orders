@@ -4,7 +4,6 @@ namespace App\Controller;
 
 use App\Entity\Customer;
 use App\Form\CustomerForm;
-use App\Repository\CustomerRepository;
 use Doctrine\ORM\EntityManagerInterface;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
 use Symfony\Component\HttpFoundation\Request;
@@ -17,19 +16,9 @@ final class CustomerController extends AbstractController
 {
 
     #[Route(name: 'app_customer_index', methods: ['GET'])]
-    public function index(
-        Request $request,
-        CustomerRepository $customerRepository
-    ): Response {
-        $query = $request->query->get('q') ?? '';
-        $customer = new Customer;
-        $hasorders = $customer->hasOrders();
-
-        return $this->render('customer/index.html.twig', [
-            'customers' => $customerRepository->findCustomers($query),
-            'query' => $query,
-            'hasorders' => $hasorders,
-        ]);
+    public function index(): Response
+    {
+        return $this->render('customer/index.html.twig');
     }
 
     #[Route('/new', name: 'app_customer_new')]
@@ -49,6 +38,7 @@ final class CustomerController extends AbstractController
             $em->flush();
 
             $from = $request->getSession()->get('from');
+            $request->getSession()->remove('from');
             if ($from === 'order') {
                 return $this->redirectToRoute('app_order_new', [
                     'customer' => $customer->getId()
@@ -97,23 +87,5 @@ final class CustomerController extends AbstractController
             'customer' => $customer,
             'form' => $form,
         ]);
-    }
-
-    #[Route('/{id}', name: 'app_customer_delete', methods: ['POST'])]
-    public function delete(Request $request, Customer $customer, EntityManagerInterface $entityManager): Response
-    {
-        $q = $request->query->get('q');
-
-        if ($this->isCsrfTokenValid('delete' . $customer->getId(), $request->getPayload()->getString('_token'))) {
-            if ($customer->hasOrders()) {
-                $this->addFlash('error', 'Нельзя удалить заказчика, у которого есть заказы.');
-                return $this->redirectToRoute('app_customer_index', ['q' => $q], Response::HTTP_SEE_OTHER);
-            }
-
-            $entityManager->remove($customer);
-            $entityManager->flush();
-        }
-
-        return $this->redirectToRoute('app_customer_index', ['q' => $q], Response::HTTP_SEE_OTHER);
     }
 }

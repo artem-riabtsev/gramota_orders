@@ -1,63 +1,79 @@
 {% extends 'base.html.twig' %}
 
+{% block title %}Заказы — Gramota CRM{% endblock %}
+
+{% block title_h2 %}Заказы{% endblock %}
+
+{% block top_actions %}
+    <a href="{{ path('app_order_new') }}" class="btn btn-primary shadow-sm fw-semibold">
+        <i class="bi bi-plus-lg me-1"></i> Новый заказ
+    </a>
+{% endblock %}
+
 {% block content %}
-<h1>Заказы</h1>
-{% for message in app.flashes('error') %}
-    <div class="alert alert-danger alert-dismissible fade show" role="alert">
-        {{ message }}
-        <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Закрыть"></button>
-    </div>
-{% endfor %}
-<div class="mb-4 d-flex flex-column flex-md-row justify-content-between gap-3">
-    {% include 'order/_filter.html.twig' %}
-    <div class="flex-shrink-0">
-        <a href="{{ path('app_order_new') }}" class="btn btn-primary">
-            Создать новый заказ
-        </a>
-    </div>
-</div>
-<table class="table table-hover align-middle">
-    <thead>
-        <tr>
-            <th>Номер заказа</th>
-            <th>Дата заказа</th>
-            <th>Сумма заказа</th>
-            <th>Сумма оплаты</th>
-            <th>Заказчик</th>
-            <th>Статус</th>
-            <th></th>
-        </tr>
-    </thead>
-    <tbody>
-        {% for order in orders %}
-        <tr>
-            <td>
-                <a href="{{ path('app_order_show', {'id': order.id}) }}" class="text-muted" style="text-decoration: underline; text-decoration-thickness: 1px;">
-                    {{ order.id }}
-                </a>
-            </td>
-            <td>{{ order.date ? order.date|date('d.m.Y') : '' }}</td>
-            <td>{{ order.orderTotal.amount }}</td>
-            <td>{{ order.totalPaid.amount }}</td>
-            <td>
-                <a href="{{ path('app_customer_show', {'id': order.customer.id}) }}" class="text-muted" style="text-decoration: underline; text-decoration-thickness: 1px;">
-                    {{ order.customer.name }}
-                </a>
-            </td>
-            <td>
-                <span class="{{ order.status.color }}">{{ order.status.label }}</span>
-            </td>
-            <td>
-                <div class="d-flex justify-content-center">
-                    {% include 'order/_delete.html.twig' %}
-                </div>
-            </td>
-        </tr>
-        {% else %}
-        <tr>
-            <td colspan="7">Заказы ненайдены</td>
-        </tr>
-        {% endfor %}
-    </tbody>
-</table>
+    <div id="orders-search-root"></div>
+{% endblock %}
+
+{% block stylesheets %}
+    {{ parent() }}
+    {{ encore_entry_link_tags('app') }}
+    <style>
+        .status-badge {
+            display: inline-block;
+            padding: 0.25rem 0.75rem;
+            font-size: 0.75rem;
+            font-weight: 500;
+            border-radius: 20px;
+        }
+        .status-empty { background: #e9ecef; color: #6c757d; }
+        .status-unpaid { background: #fff3cd; color: #856404; }
+        .status-partial { background: #fff3cd; color: #d39e00; }
+        .status-paid { background: #d1e7dd; color: #0f5132; }
+        .status-overpaid { background: #f8d7da; color: #842029; }
+        
+        .order-row {
+            transition: background-color 0.15s ease;
+        }
+        .order-row:hover {
+            background-color: #f8f9fa;
+        }
+        .order-link {
+            font-weight: 600;
+            color: #1e293b;
+            text-decoration: none;
+        }
+        .order-link:hover {
+            color: #4f46e5;
+            text-decoration: underline;
+        }
+        .customer-link {
+            color: #4b5563;
+            text-decoration: none;
+        }
+        .customer-link:hover {
+            color: #4f46e5;
+            text-decoration: underline;
+        }
+    </style>
+{% endblock %}
+
+{% block javascripts %}
+    {{ parent() }}
+    {{ encore_entry_script_tags('app') }}
+    
+    <script>
+        document.addEventListener('DOMContentLoaded', function() {
+            const root = document.getElementById('orders-search-root');
+            if (window.LiveSearchTable && window.OrdersTable) {
+                const reactRoot = window.ReactDOM.createRoot(root);
+                reactRoot.render(window.React.createElement(window.LiveSearchTable, {
+                    apiUrl: '/api/order/list',
+                    placeholder: 'Поиск по номеру заказа или имени клиента...',
+                    showCreateButton: false,
+                    TableComponent: window.OrdersTable,
+                    emptyMessage: 'Заказы не найдены'
+                }));
+            }
+        });
+    </script>
 {% endblock %}

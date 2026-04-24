@@ -72,7 +72,7 @@ class User implements UserInterface, PasswordAuthenticatedUserInterface
      */
     public function getUserIdentifier(): string
     {
-        return (string) $this->username;
+        return (string) $this->email;
     }
 
     /**
@@ -124,10 +124,10 @@ class User implements UserInterface, PasswordAuthenticatedUserInterface
     #[ORM\Column(type: 'boolean', options: ['default' => false])]
     private bool $isApproved = false;
 
-    public function getIsApproved(): bool {
+    public function getIsApproved(): bool
+    {
 
         return $this->isApproved;
-
     }
 
     public function setIsApproved(bool $approved): self
@@ -136,7 +136,7 @@ class User implements UserInterface, PasswordAuthenticatedUserInterface
         return $this;
     }
 
-        public function getSurname(): ?string
+    public function getSurname(): ?string
     {
         return $this->surname;
     }
@@ -195,5 +195,4 @@ class User implements UserInterface, PasswordAuthenticatedUserInterface
 
         return $this;
     }
-
 }

@@ -1,52 +1,41 @@
 {% extends 'base.html.twig' %}
 
-{% block title %}Продукты{% endblock %}
+{% block title %}Продукты — Gramota CRM{% endblock %}
+
+{% block title_h2 %}Продукты{% endblock %}
+
+{% block top_actions %}
+    <a href="{{ path('app_product_new') }}" class="btn btn-primary shadow-sm fw-semibold">
+        <i class="bi bi-plus-lg me-1"></i> Новый продукт
+    </a>
+{% endblock %}
 
 {% block content %}
-<h1>Продукты</h1>
-{% for message in app.flashes('error') %}
-    <div class="alert alert-danger alert-dismissible fade show" role="alert">
-        {{ message }}
-        <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Закрыть"></button>
-    </div>
-{% endfor %}
-<div class="mb-4 d-flex flex-column flex-md-row justify-content-between gap-3">
-    {% include 'product/_filter.html.twig' %}
-    <div class="flex-shrink-0">
-        <a href="{{ path('app_product_new') }}" class="btn btn-primary">
-            Добавить продукт
-        </a>
-    </div>
-</div>
-<table class="table table-hover align-middle">
-    <thead>
-        <tr>
-            <th>Id</th>
-            <th>Наименование</th>
-            <th>Проект</th>
-            <th>Дата</th>
-            <th></th>
-        </tr>
-    </thead>
-    <tbody>
-        {% for product in products %}
-        <tr>
-            <td>{{ product.id }}</td>
-            <td>
-                <span class="me-2">{{ product.description }}</span>
-                <a href="{{ path('app_product_edit', {'id': product.id}) }}" class="btn p-0 mb-1">
-                    <i class="bi bi-pencil" style="font-size: 1rem; color: #6c757d;"></i>
-                </a>
-            </td>
-            <td>{{ product.project.name }}</td>
-            <td>{{ product.date|date('d.m.Y') }}</td>
-            <td>
-                <div class="d-flex justify-content-center">
-                    {% include 'product/_delete.html.twig' %}
-                </div>
-            </td>
-        </tr>
-        {% endfor %}
-    </tbody>
-</table>
+    <div id="products-search-root"></div>
+{% endblock %}
+
+{% block stylesheets %}
+    {{ parent() }}
+    {{ encore_entry_link_tags('app') }}
+{% endblock %}
+
+{% block javascripts %}
+    {{ parent() }}
+    {{ encore_entry_script_tags('app') }}
+    
+    <script>
+        document.addEventListener('DOMContentLoaded', function() {
+            const root = document.getElementById('products-search-root');
+            if (window.LiveSearchTable && window.ProductsTable) {
+                const reactRoot = window.ReactDOM.createRoot(root);
+                reactRoot.render(window.React.createElement(window.LiveSearchTable, {
+                    apiUrl: '/api/product/list',
+                    placeholder: 'Поиск по наименованию продукта...',
+                    showCreateButton: false,
+                    TableComponent: window.ProductsTable,
+                    emptyMessage: 'Продукты не найдены'
+                }));
+            }
+        });
+    </script>
 {% endblock %}

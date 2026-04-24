@@ -13,29 +13,57 @@ class PriceRepository extends ServiceEntityRepository
         parent::__construct($registry, Price::class);
     }
 
-    public function findPrice(?string $query): array
+    public function findPriceWithPagination(?string $query, int $limit, int $offset): array
     {
-        $qb = $this->createQueryBuilder('p');
+        $qb = $this->createQueryBuilder('p')
+            ->orderBy('p.description', 'ASC')
+            ->setMaxResults($limit)
+            ->setFirstResult($offset);
 
         if ($query) {
             $qb->where('LOWER(p.description) LIKE :q')
                 ->setParameter('q', '%' . strtolower($query) . '%');
         }
-        $qb->orderBy('p.description', 'ASC');
 
         return $qb->getQuery()->getResult();
     }
 
-    public function listPrices(?string $query = null): array
+    public function countPriceBySearch(?string $query): int
     {
-        $qb = $this->createQueryBuilder('c')
-            ->orderBy('c.description', 'ASC');
+        $qb = $this->createQueryBuilder('p')
+            ->select('COUNT(p.id)');
 
-        if ($query && $query !== '') {
-            $qb->where('c.description LIKE :q')
-                ->setParameter('q', '%' . $query . '%');
+        if ($query) {
+            $qb->where('LOWER(p.description) LIKE :q')
+                ->setParameter('q', '%' . strtolower($query) . '%');
         }
 
-        return $qb->getQuery()->getResult();
+        return (int)$qb->getQuery()->getSingleScalarResult();
     }
+
+    // public function findPrice(?string $query): array
+    // {
+    //     $qb = $this->createQueryBuilder('p');
+
+    //     if ($query) {
+    //         $qb->where('LOWER(p.description) LIKE :q')
+    //             ->setParameter('q', '%' . strtolower($query) . '%');
+    //     }
+    //     $qb->orderBy('p.description', 'ASC');
+
+    //     return $qb->getQuery()->getResult();
+    // }
+
+    // public function listPrices(?string $query = null): array
+    // {
+    //     $qb = $this->createQueryBuilder('c')
+    //         ->orderBy('c.description', 'ASC');
+
+    //     if ($query && $query !== '') {
+    //         $qb->where('c.description LIKE :q')
+    //             ->setParameter('q', '%' . $query . '%');
+    //     }
+
+    //     return $qb->getQuery()->getResult();
+    // }
 }

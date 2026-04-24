@@ -1,50 +1,41 @@
 {% extends 'base.html.twig' %}
 
-{% block title %}Прайс-лист{% endblock %}
+{% block title %}Прайс-лист — Gramota CRM{% endblock %}
+
+{% block title_h2 %}Прайс-лист{% endblock %}
+
+{% block top_actions %}
+    <a href="{{ path('app_price_new') }}" class="btn btn-primary shadow-sm fw-semibold">
+        <i class="bi bi-plus-lg me-1"></i> Добавить позицию
+    </a>
+{% endblock %}
 
 {% block content %}
-<h1>Прайс-лист</h1>
+    <div id="prices-search-root"></div>
+{% endblock %}
 
-<div class="mb-4 d-flex flex-column flex-md-row justify-content-between gap-3">
-    {% include 'price/_filter.html.twig' %}
-    <div class="flex-shrink-0">
-        <a href="{{ path('app_price_new') }}" class="btn btn-primary">
-            Добавить позицию
-        </a>
-    </div>
-</div>
+{% block stylesheets %}
+    {{ parent() }}
+    {{ encore_entry_link_tags('app') }}
+{% endblock %}
 
-<table class="table table-hover align-middle">
-    <thead>
-        <tr>
-            <th>Id</th>
-            <th>Наименование</th>
-            <th>Цена</th>
-            <th></th>
-        </tr>
-    </thead>
-    <tbody>
-        {% for price in prices %}
-        <tr>
-            <td>{{ price.id }}</td>
-            <td>
-                <span class="me-2">{{ price.description }}</span>
-                <a href="{{ path('app_price_edit', {'id': price.id}) }}" class="btn p-0 mb-1">
-                    <i class="bi bi-pencil" style="font-size: 1rem; color: #6c757d;"></i>
-                </a>
-            </td>
-            <td>{{ price.price.amount }}</td>
-            <td>
-                <div class="d-flex justify-content-center">
-                    {% include 'price/_delete.html.twig' %}
-                </div>
-            </td>
-        </tr>
-        {% else %}
-        <tr>
-            <td colspan="4">Записи не найдены</td>
-        </tr>
-        {% endfor %}
-    </tbody>
-</table>
+{% block javascripts %}
+    {{ parent() }}
+    {{ encore_entry_script_tags('app') }}
+    
+    <script>
+        document.addEventListener('DOMContentLoaded', function() {
+            const root = document.getElementById('prices-search-root');
+            if (window.LiveSearchTable && window.PricesTable) {
+                const reactRoot = window.ReactDOM.createRoot(root);
+                reactRoot.render(window.React.createElement(window.LiveSearchTable, {
+                    apiUrl: '/api/price/list',
+                    placeholder: 'Поиск по наименованию...',
+                    showCreateButton: false,
+                    TableComponent: window.PricesTable,
+                    emptyMessage: 'Позиции не найдены'
+                }));
+            }
+        });
+    </script>
 {% endblock %}

@@ -19,48 +19,16 @@ use DateTimeImmutable;
 final class PaymentController extends AbstractController
 {
 
-    #[Route(name: 'app_payment_index', methods: ['GET'])]
-    public function index(Request $request, PaymentRepository $paymentRepository): Response
+    #[Route(name: 'app_payment_index')]
+    public function indexReact(): Response
     {
-        $query = $request->query->get('q');
-        $from = $request->query->get('from');
-        $to = $request->query->get('to');
-
-        // Вернуть диапазон дат
-        if ($from && $to) {
-            $payments = $paymentRepository->findByDateRange(new \DateTime($from), new \DateTime($to));
-        } elseif ($query) {
-            $payments = $paymentRepository->findByOrderId($query);
-        } else {
-            $payments = $paymentRepository->findLastMonthOrders();
-        }
-
-        return $this->render('payment/index.html.twig', [
-            'payments' => $payments,
-            'query' => $query,
-        ]);
+        return $this->render('payment/index.html.twig');
     }
 
-    #[Route('/new', name: 'app_payment_new', methods: ['GET', 'POST'])]
-    public function select(Request $request, EntityManagerInterface $entityManager, OrderRepository $orderRepository): Response
+    #[Route('/new', name: 'app_payment_new', methods: ['GET'])]
+    public function newReact(): Response
     {
-        $payment = new Payment();
-        $form = $this->createForm(PaymentNewForm::class, $payment);
-        $form->handleRequest($request);
-
-        if ($form->isSubmitted() && $form->isValid()) {
-            $entityManager->persist($payment);
-            $entityManager->flush();
-
-            return $this->redirectToRoute('app_payment_edit', ['id' => $payment->getId()]);
-        }
-
-        $searchQuery = $request->query->get('q') ?? '';
-        return $this->render('payment/new.html.twig', [
-            'orders' => $orderRepository->findOrders($searchQuery),
-            'searchQuery' => $searchQuery,
-            'form' => $form
-        ]);
+        return $this->render('payment/new.html.twig');
     }
 
     #[Route('/{id}/edit', name: 'app_payment_edit', methods: ['GET', 'POST'])]
@@ -81,20 +49,5 @@ final class PaymentController extends AbstractController
             'payment' => $payment,
             'form' => $form,
         ]);
-    }
-
-    #[Route('/{id}', name: 'app_payment_delete', methods: ['POST'])]
-    public function delete(Request $request, Payment $payment, EntityManagerInterface $entityManager, PaymentRepository $paymentRepository): Response
-    {
-        if ($this->isCsrfTokenValid('delete' . $payment->getId(), $request->getPayload()->getString('_token'))) {
-            $order = $payment->getOrder();
-
-            $order->removePayment($payment);
-
-            $entityManager->persist($order);
-            $entityManager->flush();
-        }
-
-        return $this->redirectToRoute('app_payment_index', [], Response::HTTP_SEE_OTHER);
     }
 }

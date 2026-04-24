@@ -1,66 +1,126 @@
 {% extends 'base.html.twig' %}
 
+{% block title %}Клиент #{{ customer.id }} — Gramota CRM{% endblock %}
+
+{% block title_h2 %}Клиент #{{ customer.id }}{% endblock %}
+
 {% block content %}
-    <h1>Заказчик {{ customer.id }}</h1>
     {% for message in app.flashes('error') %}
-    <div class="alert alert-danger alert-dismissible fade show" role="alert">
-        {{ message }}
-        <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Закрыть"></button>
-    </div>
+        <div class="alert alert-danger alert-dismissible fade show shadow-sm" role="alert">
+            {{ message }}
+            <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+        </div>
     {% endfor %}
-    <table class="table table-hover  align-middle">
-        <tbody>
-            <tr><th>Id</th><td>{{ customer.id }}</td></tr>
-            <tr><th>ФИО</th><td>{{ customer.name }}</td></tr>
-            <tr><th>Email</th><td>{{ customer.email }}</td></tr>
-            <tr><th>Phone</th><td>{{ customer.phone }}</td></tr>
-        </tbody>
-    </table>
 
-    <div class="mb-2">
-        <a href="{{ path('app_customer_edit', {'id': customer.id}) }}" class="btn btn-primary">Редактировать</a>
-        <a href="{{ app.request.headers.get('referer') ?: path('app_order_index') }}" class="btn btn-secondary">
-            Назад
-        </a>
+    <!-- Карточка клиента -->
+    <div class="card shadow-sm border-0 rounded-3 mb-4">
+        <div class="card-body">
+            <div class="row">
+                <div class="col-md-8">
+                    <div class="d-flex align-items-center gap-4 flex-wrap">
+                        <div>
+                            <span class="text-muted small">ID</span>
+                            <div class="fw-bold fs-5">{{ customer.id }}</div>
+                        </div>
+                        <div>
+                            <span class="text-muted small">ФИО</span>
+                            <div class="fw-semibold">{{ customer.name }}</div>
+                        </div>
+                        <div>
+                            <span class="text-muted small">Email</span>
+                            <div>
+                                {% if customer.email %}
+                                    <a href="mailto:{{ customer.email }}" class="text-decoration-none">{{ customer.email }}</a>
+                                {% else %}
+                                    <span class="text-muted">—</span>
+                                {% endif %}
+                            </div>
+                        </div>
+                        <div>
+                            <span class="text-muted small">Телефон</span>
+                            <div>
+                                {% if customer.phone %}
+                                    <a href="tel:{{ customer.phone }}" class="text-decoration-none">{{ customer.phone }}</a>
+                                {% else %}
+                                    <span class="text-muted">—</span>
+                                {% endif %}
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                <div class="col-md-4 d-flex justify-content-md-end align-items-center">
+                    <div class="d-flex gap-2">
+                        <a href="{{ path('app_customer_edit', {'id': customer.id}) }}" class="btn btn-outline-secondary btn-sm" style="border-radius: 8px;">
+                            <i class="bi bi-pencil me-1"></i> Редактировать
+                        </a>
+                        <a  
+                            href="javascript:history.back()" 
+                            onclick="if (history.length <= 1) { window.location.href='{{ path('app_customer_index') }}'; return false; }" 
+                            class="btn btn-secondary btn-sm"
+                            style="border-radius: 8px;"
+                        >
+                            <i class="bi bi-arrow-left me-1"></i> Назад
+                        </a>
+                    </div>
+                </div>
+            </div>
+        </div>
     </div>
 
-    <h2>Заказы</h2>
-
-    <table class="table table-hover  align-middle">
-        <thead>
-            <tr>
-                <th>Номер заказа</th>
-                <th>Дата заказа</th>
-                <th>Сумма заказа</th>
-                <th>Сумма оплаты</th>
-                <th></th>
-            </tr>
-        </thead>
-        <tbody>
-        {% for group in ordersGroups %}
-            {% if group.orders|length > 0 %}
-                <tr><td colspan="7"><span class="{{ group.color }}">{{ group.name }}</span></td></tr>
-            {% endif %}
-            {% for order in group.orders %}
-                <tr>
-                    <td class="d-flex" style="gap: 20px;">
-                        {{ order.id }}
-                        <a href="{{ path('app_order_show', {'id': order.id}) }}" class="btn p-0">
-                            <i class="bi bi-pencil" style="font-size: 1rem; color: #6c757d;"></i>
-                        </a>
-                    </td>
-                    <td>{{ order.date ? order.date|date('d.m.Y') : '' }}</td>
-                    <td>{{ order.orderTotal }}</td>
-                    <td>{{ order.totalPaid }}</td>
-                    <td>
-                        <div class="d-flex justify-content-center">
-                            {% include 'order/_delete.html.twig' %}
-                        </div>
-                        </div>
-                    </td>
-                </tr>
-            {% endfor %}
-        {% endfor %}  
-        </tbody>
-    </table>
+    <!-- Заказы клиента -->
+    <div class="card shadow-sm border-0 rounded-3">
+        <div class="card-header bg-white">
+            <h5 class="mb-0 fw-semibold">Заказы клиента</h5>
+        </div>
+        <div class="card-body p-0">
+            <div class="table-responsive">
+                <table class="table table-hover align-middle mb-0">
+                    <thead class="table-light">
+                        <tr>
+                            <th class="ps-4 py-3 text-secondary small fw-semibold">Номер заказа</th>
+                            <th class="py-3 text-secondary small fw-semibold">Дата</th>
+                            <th class="py-3 text-secondary small fw-semibold text-end">Сумма заказа</th>
+                            <th class="py-3 text-secondary small fw-semibold text-end">Сумма оплаты</th>
+                            <th class="pe-4 py-3 text-secondary small fw-semibold">Статус</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for group in ordersGroups %}
+                            {% for order in group.orders %}
+                                <tr>
+                                    <td class="ps-4">
+                                        <a href="{{ path('app_order_show', {'id': order.id}) }}" class="fw-semibold text-dark text-decoration-none">
+                                            #{{ order.id }}
+                                        </a>
+                                    </td>
+                                    <td>{{ order.date ? order.date|date('d.m.Y') : '' }}</td>
+                                    <td class="text-end fw-semibold">{{ order.orderTotal }} ₽</td>
+                                    <td class="text-end text-muted">{{ order.totalPaid }} ₽</td>
+                                    <td>
+                                        <span class="status-badge 
+                                            {% if group.name == 'Пустой' %}status-empty
+                                            {% elseif group.name == 'Не оплачен' %}status-unpaid
+                                            {% elseif group.name == 'Частично оплачен' %}status-partial
+                                            {% elseif group.name == 'Оплачен' %}status-paid
+                                            {% elseif group.name == 'Переплата' %}status-overpaid
+                                            {% endif %}">
+                                            {{ group.name }}
+                                        </span>
+                                    </td>
+                                </tr>
+                            {% endfor %}
+                        {% endfor %}
+                        {% if ordersGroups|filter(g => g.orders|length > 0)|length == 0 %}
+                            <tr>
+                                <td colspan="5" class="text-center py-5 text-muted">
+                                    <i class="bi bi-cart fs-1 d-block mb-2"></i>
+                                    У клиента нет заказов
+                                </td>
+                            </tr>
+                        {% endif %}
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </div>
 {% endblock %}

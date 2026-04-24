@@ -3,12 +3,11 @@
 namespace App\Entity;
 
 use App\AppBundle\Validator\Constraints as AppAssert;
-use App\Repository\OrderItemRepository;
 use Doctrine\DBAL\Types\Types;
 use Doctrine\ORM\Mapping as ORM;
 use Brick\Money\Money;
 
-#[ORM\Entity(repositoryClass: OrderItemRepository::class)]
+#[ORM\Entity()]
 class OrderItem
 {
     #[ORM\Id]

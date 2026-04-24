@@ -1,8 +1,0 @@
-{% extends 'base.html.twig' %}
-
-{% block title %}Новая позиция заказа{% endblock %}
-
-{% block content %}
-<h1>Новая позиция заказа {{ orderItem.order.id }}</h1>
-{% include "order_item/_form.html.twig" %}
-{% endblock %}

@@ -20,7 +20,9 @@
         "symfony/http-foundation": "6.4.*",
         "symfony/runtime": "6.4.*",
         "symfony/security-bundle": "6.4.*",
+        "symfony/ux-react": "^2.33",
         "symfony/validator": "6.4.*",
+        "symfony/webpack-encore-bundle": "^2.4",
         "symfony/yaml": "6.4.*"
     },
     "config": {
@@ -56,10 +58,14 @@
             "assets:install %PUBLIC_DIR%": "symfony-cmd"
         },
         "post-install-cmd": [
-            "@auto-scripts"
+            "@auto-scripts",
+            "npm install",
+            "npm run build"
         ],
         "post-update-cmd": [
-            "@auto-scripts"
+            "@auto-scripts",
+            "npm install",
+            "npm run build"
         ]
     },
     "conflict": {

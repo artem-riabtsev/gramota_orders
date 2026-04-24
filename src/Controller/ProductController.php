@@ -14,18 +14,10 @@ use Symfony\Component\Routing\Attribute\Route;
 #[Route('/product')]
 final class ProductController extends AbstractController
 {
-
     #[Route(name: 'app_product_index', methods: ['GET'])]
-    public function index(
-        Request $request,
-        ProductRepository $productRepository
-    ): Response {
-
-        $query = $request->query->get('q') ?? '';
-        return $this->render('product/index.html.twig', [
-            'products' => $productRepository->findProduct($query),
-            'query' => $query,
-        ]);
+    public function index(): Response
+    {
+        return $this->render('product/index.html.twig');
     }
 
     #[Route('/new', name: 'app_product_new', methods: ['GET', 'POST'])]
@@ -63,23 +55,5 @@ final class ProductController extends AbstractController
             'product' => $product,
             'form' => $form,
         ]);
-    }
-
-    #[Route('/{id}', name: 'app_product_delete', methods: ['POST'])]
-    public function delete(Request $request, Product $product, EntityManagerInterface $entityManager): Response
-    {
-
-        if ($this->isCsrfTokenValid('delete' . $product->getId(), $request->request->get('_token'))) {
-            if (($product->hasOrderItems())) {
-                $this->addFlash('error', 'Данный продукт указан в заказе!');
-            } elseif ($product->hasPrices()) {
-                $this->addFlash('error', 'Данный продукт указан в прайсе!');
-            } else {
-                $entityManager->remove($product);
-                $entityManager->flush();
-            }
-        }
-
-        return $this->redirectToRoute('app_product_index', [], Response::HTTP_SEE_OTHER);
     }
 }
