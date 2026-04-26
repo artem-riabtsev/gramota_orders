@@ -1,0 +1,18 @@
+#!/usr/bin/env php
+<?php
+
+if (!ini_get('date.timezone')) {
+    ini_set('date.timezone', 'UTC');
+}
+
+$_SERVER['PHP_CLI_SERVER_WORKERS'] = 1;
+
+require __DIR__ . '/../vendor/autoload.php';
+
+use Symfony\Component\Console\Application;
+use PHPUnit\TextUI\Command;
+
+$application = new Application('phpunit', '9.5');
+$application->add(new Command());
+
+$application->run();
