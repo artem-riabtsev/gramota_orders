@@ -28,12 +28,25 @@
             const root = document.getElementById('payments-search-root');
             if (window.LiveSearchTable && window.PaymentsTable) {
                 const reactRoot = window.ReactDOM.createRoot(root);
+                
+                const getPaymentHeaders = () => ['ID', 'Заказ', 'Клиент', 'Дата', 'Сумма'];
+                const getPaymentRows = (data) => data.map(item => [
+                    item.id,
+                    `Заказ #${item.orderId}`,
+                    item.orderCustomer,
+                    item.date,
+                    `${item.amount} ₽`
+                ]);
+                
                 reactRoot.render(window.React.createElement(window.LiveSearchTable, {
                     apiUrl: '/api/payment/list',
                     placeholder: 'Поиск по номеру заказа...',
                     showCreateButton: false,
+                    showExportButton: true,
                     TableComponent: window.PaymentsTable,
-                    emptyMessage: 'Платежи не найдены'
+                    emptyMessage: 'Платежи не найдены',
+                    getExportHeaders: getPaymentHeaders,
+                    getExportRows: getPaymentRows
                 }));
             }
         });

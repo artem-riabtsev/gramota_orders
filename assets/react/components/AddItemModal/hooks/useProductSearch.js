@@ -1,6 +1,6 @@
 import { useState, useEffect, useCallback } from 'react';
 
-export function useProductSearch() {
+export function useProductSearch(onlyBasic = false) {
     const [search, setSearch] = useState('');
     const [products, setProducts] = useState([]);
     const [loading, setLoading] = useState(false);
@@ -8,9 +8,18 @@ export function useProductSearch() {
 
     const loadProducts = useCallback(async (query = '') => {
         setLoading(true);
-        const url = query && query.length >= 2 
-            ? `/api/product/search?q=${encodeURIComponent(query)}&limit=50`
-            : '/api/product/search?limit=50';
+        
+        let url = '/api/product/search?limit=50';
+        if (onlyBasic) {
+            url = '/api/product/search?basic=1&limit=50';
+        }
+        
+        if (query && query.length >= 2) {
+            url = `/api/product/search?q=${encodeURIComponent(query)}&limit=50`;
+            if (onlyBasic) {
+                url += '&basic=1';
+            }
+        }
         
         try {
             const res = await fetch(url);
@@ -22,7 +31,7 @@ export function useProductSearch() {
         } finally {
             setLoading(false);
         }
-    }, []);
+    }, [onlyBasic]);
 
     useEffect(() => {
         const timer = setTimeout(() => {

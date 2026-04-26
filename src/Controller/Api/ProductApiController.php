@@ -56,24 +56,29 @@ class ProductApiController extends AbstractController
     public function search(Request $request, ProductRepository $productRepository): JsonResponse
     {
         $query = $request->query->get('q', '');
+        $basic = $request->query->get('basic'); // '1' или '0'
 
-        if (strlen($query) < 2) {
-            $products = $productRepository->findBy([], ['description' => 'ASC'], 20);
-        } else {
-            $products = $productRepository->createQueryBuilder('p')
-                ->where('p.description LIKE :q')
-                ->setParameter('q', '%' . $query . '%')
-                ->orderBy('p.description', 'ASC')
-                ->setMaxResults(20)
-                ->getQuery()
-                ->getResult();
+        $qb = $productRepository->createQueryBuilder('p')
+            ->orderBy('p.description', 'ASC')
+            ->setMaxResults(50);
+
+        if ($basic === '1') {
+            $qb->andWhere('p.basic = 1');
         }
+
+        if (strlen($query) >= 2) {
+            $qb->andWhere('p.description LIKE :q')
+                ->setParameter('q', '%' . $query . '%');
+        }
+
+        $products = $qb->getQuery()->getResult();
 
         $data = array_map(function ($product) {
             return [
                 'id' => $product->getId(),
                 'description' => $product->getDescription(),
-                'project' => $product->getProject()->getName()
+                'project' => $product->getProject()->getName(),
+                'basic' => $product->getBasic()
             ];
         }, $products);
 
@@ -92,5 +97,39 @@ class ProductApiController extends AbstractController
         $this->em->remove($product);
         $this->em->flush();
         return $this->json(['success' => true]);
+    }
+
+    #[Route('/by-project', name: 'api_product_by_project', methods: ['GET'])]
+    public function getByProject(Request $request, ProductRepository $productRepository): JsonResponse
+    {
+        $projectId = $request->query->get('projectId');
+        $query = $request->query->get('q', '');
+
+        if (!$projectId) {
+            return $this->json([]);
+        }
+
+        $qb = $productRepository->createQueryBuilder('p')
+            ->where('p.project = :projectId')
+            ->setParameter('projectId', $projectId)
+            ->orderBy('p.description', 'ASC');
+
+        if (!empty($query)) {
+            $qb->andWhere('p.description LIKE :q')
+                ->setParameter('q', '%' . $query . '%');
+        }
+
+        $products = $qb->setMaxResults(50)->getQuery()->getResult();
+
+        $data = array_map(function ($product) {
+            return [
+                'id' => $product->getId(),
+                'description' => $product->getDescription(),
+                'basic' => $product->getBasic(),
+                'date' => $product->getDate()->format('d.m.Y')
+            ];
+        }, $products);
+
+        return $this->json($data);
     }
 }

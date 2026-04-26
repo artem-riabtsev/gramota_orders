@@ -8,7 +8,12 @@ export default function LiveSearchTable({
     showCreateButton = false,
     createButtonUrl = '',
     createButtonText = 'Создать',
-    itemsPerPage = 10
+    showExportButton = false,
+    getExportHeaders = null,
+    getExportRows = null,
+    itemsPerPage = 10,
+    filters = null,
+    onFiltersChange = null
 }) {
     const [query, setQuery] = useState('');
     const [items, setItems] = useState([]);
@@ -18,19 +23,40 @@ export default function LiveSearchTable({
     const [totalItems, setTotalItems] = useState(0);
     const [isLoadingMore, setIsLoadingMore] = useState(false);
     
+    const [filterValues, setFilterValues] = useState(filters || {});
+    
     const observerRef = useRef(null);
     const lastItemRef = useRef(null);
     const isFirstLoad = useRef(true);
     const activeRequestRef = useRef(null);
     const currentQueryRef = useRef('');
     const currentPageRef = useRef(1);
+    const currentFiltersRef = useRef({});
+
+    const buildUrl = useCallback((searchQuery = '', currentPage = 1, reset = true) => {
+        const params = new URLSearchParams();
+        params.set('page', reset ? 1 : currentPage);
+        params.set('limit', itemsPerPage);
+        
+        if (searchQuery) {
+            params.set('q', searchQuery);
+        }
+        
+        Object.keys(filterValues).forEach(key => {
+            const value = filterValues[key];
+            if (value !== null && value !== '' && value !== undefined) {
+                params.set(key, value);
+            }
+        });
+        
+        return `${apiUrl}?${params.toString()}`;
+    }, [apiUrl, itemsPerPage, filterValues]);
 
     const loadData = useCallback(async (searchQuery = '', reset = true, isLoadMore = false) => {
         if (activeRequestRef.current) {
             activeRequestRef.current.abort();
         }
         
-        // Не загружаем если уже загружаем
         if (loading && !isLoadMore) return;
         if (isLoadingMore) return;
         
@@ -46,10 +72,7 @@ export default function LiveSearchTable({
             const controller = new AbortController();
             activeRequestRef.current = controller;
             
-            const url = searchQuery 
-                ? `${apiUrl}?q=${encodeURIComponent(searchQuery)}&page=${currentPage}&limit=${itemsPerPage}`
-                : `${apiUrl}?page=${currentPage}&limit=${itemsPerPage}`;
-            
+            const url = buildUrl(searchQuery, currentPage, reset);
             const response = await fetch(url, { signal: controller.signal });
             const result = await response.json();
             
@@ -66,6 +89,7 @@ export default function LiveSearchTable({
             setHasMore(result.data.length === itemsPerPage);
             setTotalItems(result.total || 0);
             currentQueryRef.current = searchQuery;
+            currentFiltersRef.current = filterValues;
         } catch (err) {
             if (err.name !== 'AbortError') {
                 console.error('Search error:', err);
@@ -77,17 +101,21 @@ export default function LiveSearchTable({
                 activeRequestRef.current = null;
             }
         }
-    }, [apiUrl, page, itemsPerPage, loading, isLoadingMore]);
+    }, [apiUrl, page, itemsPerPage, loading, isLoadingMore, filterValues, buildUrl]);
 
-    // Начальная загрузка - только один раз
+    useEffect(() => {
+        if (!isFirstLoad.current) {
+            loadData(query, true);
+        }
+    }, [filterValues]);
+
     useEffect(() => {
         if (isFirstLoad.current) {
             isFirstLoad.current = false;
             loadData('', true);
         }
-    }, []); // Пустой массив зависимостей
+    }, []);
 
-    // Поиск с debounce
     useEffect(() => {
         if (isFirstLoad.current) return;
         
@@ -100,11 +128,9 @@ export default function LiveSearchTable({
         return () => clearTimeout(timer);
     }, [query, loadData]);
 
-    // Бесконечная прокрутка - отдельный эффект
     useEffect(() => {
         if (!lastItemRef.current || isLoadingMore || !hasMore || loading) return;
         
-        // Отключаем предыдущий observer
         if (observerRef.current) {
             observerRef.current.disconnect();
         }
@@ -133,10 +159,100 @@ export default function LiveSearchTable({
         setQuery('');
         loadData('', true);
     };
+    
+    const handleFilterChange = (key, value) => {
+        const newFilters = { ...filterValues, [key]: value };
+        setFilterValues(newFilters);
+        if (onFiltersChange) {
+            onFiltersChange(newFilters);
+        }
+    };
+    
+    const handleResetFilters = () => {
+        setFilterValues({});
+        if (onFiltersChange) {
+            onFiltersChange({});
+        }
+    };
+
+    const renderFilters = () => {
+        if (!filters) return null;
+        
+        return (
+            <div className="mb-4 p-3 bg-light rounded-3">
+                <div className="row g-3 align-items-end">
+                    {Object.keys(filters).includes('dateFrom') && (
+                        <>
+                            <div className="col-md-3">
+                                <label className="form-label small fw-semibold">Дата от</label>
+                                <input
+                                    type="date"
+                                    className="form-control"
+                                    value={filterValues.dateFrom || ''}
+                                    onChange={(e) => handleFilterChange('dateFrom', e.target.value)}
+                                />
+                            </div>
+                            <div className="col-md-3">
+                                <label className="form-label small fw-semibold">Дата до</label>
+                                <input
+                                    type="date"
+                                    className="form-control"
+                                    value={filterValues.dateTo || ''}
+                                    onChange={(e) => handleFilterChange('dateTo', e.target.value)}
+                                />
+                            </div>
+                        </>
+                    )}
+                    
+                    {Object.keys(filters).includes('status') && (
+                        <div className="col-md-2">
+                            <label className="form-label small fw-semibold">Статус заказа</label>
+                            <select
+                                className="form-select"
+                                value={filterValues.status ?? ''}
+                                onChange={(e) => handleFilterChange('status', e.target.value)}
+                            >
+                                <option value="">Все</option>
+                                <option value="1">Не оплачен</option>
+                                <option value="2">Частично оплачен</option>
+                                <option value="3">Переплата</option>
+                                <option value="4">Оплачен</option>
+                            </select>
+                        </div>
+                    )}
+                    
+                    {Object.keys(filters).includes('basic') && (
+                        <div className="col-md-2">
+                            <label className="form-label small fw-semibold">Продукты</label>
+                            <select
+                                className="form-select"
+                                value={filterValues.basic ?? ''}
+                                onChange={(e) => handleFilterChange('basic', e.target.value)}
+                            >
+                                <option value="">Все</option>
+                                <option value="1">Только базовые</option>
+                            </select>
+                        </div>
+                    )}
+                    
+                    <div className="col-md-2">
+                        <button
+                            type="button"
+                            className="btn btn-outline-secondary w-100"
+                            onClick={handleResetFilters}
+                        >
+                            <i className="bi bi-eraser me-1"></i> Сбросить
+                        </button>
+                    </div>
+                </div>
+            </div>
+        );
+    };
 
     return (
         <div>
-            {/* Красивая строка поиска */}
+            {renderFilters()}
+
             <div className="mb-4">
                 <div className="d-flex flex-column flex-md-row justify-content-between gap-3">
                     <div className="flex-grow-1" style={{ maxWidth: '500px' }}>
@@ -178,10 +294,20 @@ export default function LiveSearchTable({
                             </a>
                         </div>
                     )}
+                    {showExportButton && (
+                        <div className="flex-shrink-0 ms-2">
+                            <ExportButton 
+                                apiUrl={apiUrl} 
+                                filters={filterValues} 
+                                searchQuery={query}
+                                getHeaders={getExportHeaders}
+                                getRows={getExportRows}
+                            />
+                        </div>
+                    )}
                 </div>
             </div>
 
-            {/* Информация о количестве */}
             {items.length > 0 && totalItems > 0 && (
                 <div className="d-flex justify-content-between align-items-center mb-3">
                     <div className="text-muted small">

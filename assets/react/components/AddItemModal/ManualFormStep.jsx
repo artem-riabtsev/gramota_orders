@@ -43,14 +43,16 @@ export default function ManualFormStep({ selectedPrice, formData, setFormData, p
                                 {formData.productId ? (
                                     <div className="d-flex justify-content-between align-items-center p-2 bg-light rounded-3">
                                         <span>{formData.productName}</span>
-                                        <button type="button" className="btn btn-sm btn-outline-secondary" onClick={() => {
-                                            setValue('productId', '');
-                                            setValue('productName', '');
-                                            setFormData(prev => ({ ...prev, productId: '', productName: '' }));
-                                            setShowProductDropdown(true);
-                                        }}>
-                                            <i className="bi bi-pencil"></i> Изменить
-                                        </button>
+                                        {!selectedPrice && (
+                                            <button type="button" className="btn btn-sm btn-outline-secondary" onClick={() => {
+                                                setValue('productId', '');
+                                                setValue('productName', '');
+                                                setFormData(prev => ({ ...prev, productId: '', productName: '' }));
+                                                setShowProductDropdown(true);
+                                            }}>
+                                                <i className="bi bi-pencil"></i> Изменить
+                                            </button>
+                                        )}
                                     </div>
                                 ) : (
                                     <div className="position-relative">
