@@ -46,7 +46,11 @@
                     TableComponent: window.PaymentsTable,
                     emptyMessage: 'Платежи не найдены',
                     getExportHeaders: getPaymentHeaders,
-                    getExportRows: getPaymentRows
+                    getExportRows: getPaymentRows,
+                    filters: {
+                        dateFrom: true,
+                        dateTo: true
+                    }
                 }));
             }
         });

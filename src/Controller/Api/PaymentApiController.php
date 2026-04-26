@@ -27,13 +27,51 @@ class PaymentApiController extends AbstractController
         $limit = (int)$request->query->get('limit', 10);
         $offset = ($page - 1) * $limit;
 
-        if (empty($query)) {
-            $payments = $paymentRepository->findBy([], ['date' => 'DESC'], $limit, $offset);
-            $total = $paymentRepository->count([]);
-        } else {
-            $payments = $paymentRepository->findPaymentsWithPagination($query, $limit, $offset);
-            $total = $paymentRepository->countPaymentsBySearch($query);
+        // Фильтры по датам
+        $dateFrom = $request->query->get('dateFrom');
+        $dateTo = $request->query->get('dateTo');
+
+        $qb = $paymentRepository->createQueryBuilder('p')
+            ->orderBy('p.date', 'DESC')
+            ->setMaxResults($limit)
+            ->setFirstResult($offset);
+
+        // Поиск по номеру заказа
+        if (!empty($query)) {
+            $qb->andWhere('IDENTITY(p.order) LIKE :q')
+                ->setParameter('q', '%' . $query . '%');
         }
+
+        // Фильтр по датам
+        if ($dateFrom && preg_match('/^\d{4}-\d{2}-\d{2}$/', $dateFrom)) {
+            $qb->andWhere('p.date >= :dateFrom')
+                ->setParameter('dateFrom', new \DateTimeImmutable($dateFrom));
+        }
+        if ($dateTo && preg_match('/^\d{4}-\d{2}-\d{2}$/', $dateTo)) {
+            $qb->andWhere('p.date <= :dateTo')
+                ->setParameter('dateTo', new \DateTimeImmutable($dateTo . ' 23:59:59'));
+        }
+
+        $payments = $qb->getQuery()->getResult();
+
+        // Подсчёт общего количества
+        $countQb = $paymentRepository->createQueryBuilder('p')
+            ->select('COUNT(p.id)');
+
+        if (!empty($query)) {
+            $countQb->andWhere('IDENTITY(p.order) LIKE :q')
+                ->setParameter('q', '%' . $query . '%');
+        }
+        if ($dateFrom && preg_match('/^\d{4}-\d{2}-\d{2}$/', $dateFrom)) {
+            $countQb->andWhere('p.date >= :dateFrom')
+                ->setParameter('dateFrom', new \DateTimeImmutable($dateFrom));
+        }
+        if ($dateTo && preg_match('/^\d{4}-\d{2}-\d{2}$/', $dateTo)) {
+            $countQb->andWhere('p.date <= :dateTo')
+                ->setParameter('dateTo', new \DateTimeImmutable($dateTo . ' 23:59:59'));
+        }
+
+        $total = (int)$countQb->getQuery()->getSingleScalarResult();
 
         $data = array_map(function ($payment) {
             return [
