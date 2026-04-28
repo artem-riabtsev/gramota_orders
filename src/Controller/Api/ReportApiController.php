@@ -22,9 +22,11 @@ class ReportApiController extends AbstractController
         $dateFrom = $request->query->get('dateFrom');
         $dateTo = $request->query->get('dateTo');
         $status = $request->query->get('status');
+        $basic = $request->query->get('basic');
 
         $qb = $orderItemRepository->createQueryBuilder('oi')
             ->leftJoin('oi.order', 'o')
+            ->leftJoin('o.customer', 'c')
             ->leftJoin('oi.product', 'p')
             ->addSelect('CASE
                 WHEN o.status = 3 THEN 1
@@ -59,6 +61,10 @@ class ReportApiController extends AbstractController
         if ($status !== null && $status !== '' && ctype_digit((string)$status)) {
             $qb->andWhere('o.status = :status')
                 ->setParameter('status', (int)$status);
+        }
+
+        if ($basic === '1') {
+            $qb->andWhere('p.basic = 1');
         }
 
         $items = $qb->getQuery()->getResult();
@@ -99,6 +105,7 @@ class ReportApiController extends AbstractController
                     'label' => $item->getOrder()->getStatus()->label(),
                     'color' => $item->getOrder()->getStatus()->color()
                 ],
+                'customerName' => $item->getOrder()->getCustomer()->getName(),
                 'product' => $item->getProduct() ? [
                     'id' => $item->getProduct()->getId(),
                     'description' => $item->getProduct()->getDescription(),

@@ -35,13 +35,14 @@ export default function ExportButton({ apiUrl, filters, searchQuery, getHeaders,
                 rows = getRows(result.data);
             } else {
                 // Стандартный вариант для отчета по позициям
-                headers = ['Описание', 'Продукт', 'Сумма', 'Номер заказа', 'Дата заказа', 'Статус'];
+                headers = ['Описание', 'Продукт', 'Сумма', 'Номер заказа', 'Дата заказа', 'Клиент', 'Статус'];
                 rows = result.data.map(item => [
                     item.description,
                     item.product?.description || '',
                     item.lineTotal,
                     item.orderId,
                     item.orderDate,
+                    item.customerName || '',
                     item.orderStatus.label
                 ]);
             }

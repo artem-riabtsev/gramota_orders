@@ -1,4 +1,3 @@
-// assets/react/components/AssignProductModal.jsx
 import React, { useState, useEffect } from 'react';
 
 export default function AssignProductModal({ show, onClose, onAssign, item }) {

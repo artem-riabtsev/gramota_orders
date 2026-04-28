@@ -95,6 +95,7 @@ export default function ReportOrderItemsTable({ items, emptyMessage, onItemsUpda
                                     <th className="py-3 text-secondary small fw-semibold text-end">Сумма</th>
                                     <th className="py-3 text-secondary small fw-semibold">Заказ</th>
                                     <th className="py-3 text-secondary small fw-semibold">Дата заказа</th>
+                                    <th className="py-3 text-secondary small fw-semibold">Клиент</th>
                                     <th className="py-3 text-secondary small fw-semibold">Статус заказа</th>
                                     <th className="pe-4 py-3 text-secondary small fw-semibold text-end">Продукт</th>
                                 </tr>
@@ -112,6 +113,7 @@ export default function ReportOrderItemsTable({ items, emptyMessage, onItemsUpda
                                             </a>
                                         </td>
                                         <td>{item.orderDate}</td>
+                                        <td>{item.customerName}</td>
                                         <td>
                                             <span className={getStatusClass(item.orderStatus.value)}>
                                                 {getStatusLabel(item.orderStatus.value)}
