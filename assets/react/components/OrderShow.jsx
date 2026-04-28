@@ -131,7 +131,11 @@ export default function OrderShow({ orderId }) {
                         {/* Левая часть: номер и статус */}
                         <div className="col-auto">
                             <span className={`badge ${getStatusClass(order.status.value)}`}>
-                                {getStatusLabel(order.status.value)}
+                                {order.status.value === 2 ? (
+                                    <>Частич.<br />оплачен</>
+                                ) : (
+                                    getStatusLabel(order.status.value)
+                                )}
                             </span>
                         </div>
                         
@@ -216,6 +220,28 @@ export default function OrderShow({ orderId }) {
                                 </a>
                             </div>
                         </div>
+
+                        <div className="col-auto">
+                            <button 
+                                className={`btn btn-sm ${order.items?.length === 0 ? 'btn-secondary' : 'btn-outline-danger'}`}
+                                onClick={async () => {
+                                    const response = await fetch(`/api/order/${orderId}/payment-document`);
+                                    const blob = await response.blob();
+                                    const url = window.URL.createObjectURL(blob);
+                                    const a = document.createElement('a');
+                                    a.href = url;
+                                    a.download = `payment_document_${orderId}.pdf`;
+                                    document.body.appendChild(a);
+                                    a.click();
+                                    document.body.removeChild(a);
+                                    window.URL.revokeObjectURL(url);
+                                }}
+                                disabled={order.items?.length === 0}
+                                title="Скачать платёжный документ"
+                            >
+                                <i className="bi bi-file-pdf me-1"></i> Платёжный документ
+                            </button>
+                        </div>
                         
                         {/* Суммы - выровнены вправо */}
                         <div className="col text-end">
@@ -256,8 +282,8 @@ export default function OrderShow({ orderId }) {
                                     <th className="ps-4 py-2 small">Наименование</th>
                                     <th className="py-2 small">Продукт</th>
                                     <th className="py-2 small" style={{width: '80px'}}>Кол-во</th>
-                                    <th className="py-2 small" style={{width: '100px'}}>Цена</th>
-                                    <th className="py-2 small" style={{width: '100px'}}>Сумма</th>
+                                    <th className="py-2 small" style={{width: '80px'}}>Цена</th>
+                                    <th className="py-2 small" style={{width: '80px'}}>Сумма</th>
                                     <th className="pe-4 py-2" style={{width: '70px'}}></th>
                                 </tr>
                             </thead>

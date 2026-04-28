@@ -9,8 +9,11 @@ use App\Repository\OrderRepository;
 use Doctrine\ORM\EntityManagerInterface;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
 use Symfony\Component\HttpFoundation\JsonResponse;
+use Symfony\Component\HttpFoundation\Response;
 use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\Routing\Attribute\Route;
+use Dompdf\Dompdf;
+use Dompdf\Options;
 
 #[Route('/api/order')]
 class OrderApiController extends AbstractController
@@ -184,5 +187,30 @@ class OrderApiController extends AbstractController
         $this->em->remove($order);
         $this->em->flush();
         return $this->json(['success' => true]);
+    }
+
+    #[Route('/{id}/payment-document', name: 'api_order_payment_document', methods: ['GET'])]
+    public function paymentDocument(Order $order): Response
+    {
+        // Настройка Dompdf
+        $options = new Options();
+        $options->set('defaultFont', 'DejaVu Sans');
+        $options->set('isHtml5ParserEnabled', true);
+        $dompdf = new Dompdf($options);
+
+        $html = $this->renderView('order/payment_document.html.twig', [
+            'order' => $order
+        ]);
+
+        // Генерируем PDF
+        $dompdf->loadHtml($html);
+        $dompdf->setPaper('A4', 'portrait');
+        $dompdf->render();
+
+        // Возвращаем файл для скачивания
+        return new Response($dompdf->output(), 200, [
+            'Content-Type' => 'application/pdf',
+            'Content-Disposition' => 'attachment; filename="payment_document_' . $order->getId() . '.pdf"'
+        ]);
     }
 }
