@@ -52,6 +52,11 @@
                         <i class="bi bi-credit-card"></i> <span>Платежи</span>
                     </a>
                 </li>
+                <li>
+                    <a href="{{ path('app_report_order_items') }}" class="nav-link {{ app.request.attributes.get('_route') starts with 'app_report' ? 'active' : '' }}">
+                        <i class="bi bi-receipt"></i> <span>Распределение по выпускам</span>
+                    </a>
+                </li>
             </ul>
 
             <hr class="mx-3 opacity-10">

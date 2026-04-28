@@ -13,7 +13,7 @@ export default function AddItemModal({ show, onClose, onAdd, orderId }) {
     const [submitting, setSubmitting] = useState(false);
 
     const { searchQuery, setSearchQuery, prices, loading: priceLoading, reset: resetPrice } = usePriceSearch();
-    const { search: productSearch, setSearch: setProductSearch, products, loading: productLoading, showDropdown, setShowDropdown, reset: resetProduct } = useProductSearch();
+    const { search: productSearch, setSearch: setProductSearch, products, loading: productLoading, showDropdown, setShowDropdown, reset: resetProduct } = useProductSearch(!selectedPrice);
 
     const handleSelectPrice = (price) => {
         setSelectedPrice(price);

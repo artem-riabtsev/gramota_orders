@@ -1,0 +1,42 @@
+{% extends 'base.html.twig' %}
+
+{% block title %}Распределение по выпускам — Gramota CRM{% endblock %}
+
+{% block title_h2 %}Распределение по выпускам{% endblock %}
+
+{% block content %}
+    <div id="report-order-items-root"></div>
+{% endblock %}
+
+{% block stylesheets %}
+    {{ parent() }}
+    {{ encore_entry_link_tags('app') }}
+{% endblock %}
+
+{% block javascripts %}
+    {{ parent() }}
+    {{ encore_entry_script_tags('app') }}
+    
+    <script>
+        document.addEventListener('DOMContentLoaded', function() {
+            const root = document.getElementById('report-order-items-root');
+            if (window.LiveSearchTable && window.ReportOrderItemsTable) {
+                const reactRoot = window.ReactDOM.createRoot(root);
+                reactRoot.render(window.React.createElement(window.LiveSearchTable, {
+                    apiUrl: '/api/report/order-items',
+                    placeholder: 'Поиск по наименованию продукта...',
+                    showCreateButton: false,
+                    showExportButton: true,
+                    TableComponent: window.ReportOrderItemsTable,
+                    emptyMessage: 'Позиции не найдены',
+                    filters: {
+                        dateFrom: true,
+                        dateTo: true,
+                        status: true,
+                        basic: true
+                    }
+                }));
+            }
+        });
+    </script>
+{% endblock %}
