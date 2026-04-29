@@ -6,11 +6,14 @@ require 'recipe/symfony.php';
 
 // Config
 
-set('repository', 'git@github.com:artem-riabtsev/gramota_orders.git');
+set('repository', 'https://github.com/artem-riabtsev/gramota_orders.git');
 set('branch', 'main');
 set('http_user', 'j97027527');
 set('writable_mode', 'chown');
 set('bin/php', '/opt/alt/php83/usr/bin/php'); // Путь до интерпритатора PHP
+set('env', [
+    'PATH' => '/opt/alt/alt-nodejs20/root/usr/bin:' . getenv('PATH'),
+]);
 
 add('shared_files', []);
 add('shared_dirs', []);
