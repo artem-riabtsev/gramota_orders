@@ -9,6 +9,8 @@ use App\Entity\Customer;
 use App\Entity\OrderItem;
 use Doctrine\Common\Collections\ArrayCollection;
 use Doctrine\Common\Collections\Collection;
+use Brick\Money\Money;
+use App\Config\OrderStatus;
 
 #[ORM\Entity(repositoryClass: OrderRepository::class)]
 #[ORM\Table(name: '`order`')]
@@ -19,78 +21,112 @@ class Order
     #[ORM\Column]
     private ?int $id = null;
 
-    #[ORM\Column(name: 'date', type: Types::DATE_MUTABLE)]
-    private ?\DateTime $date = null;
+    #[ORM\Column]
+    private ?\DateTimeImmutable $date = null;
 
     #[ORM\ManyToOne(targetEntity: Customer::class, inversedBy: "orders")]
-    #[ORM\JoinColumn(name: 'customer_id', referencedColumnName: 'id')]
-    private Customer|null $customer = null;
+    #[ORM\JoinColumn(nullable: false)]
+    private Customer $customer;
 
-    #[ORM\Column(name: 'order_total', type: Types::DECIMAL, precision: 10, scale: 2)]
-    private ?string $orderTotal = '0.00';
+    #[ORM\Column(type: Types::BIGINT)]
+    private ?string $orderTotal = '0';
 
-    #[ORM\Column(name: 'total_paid', type: Types::DECIMAL, precision: 10, scale: 2, nullable: true)]
-    private ?string $totalPaid = '0.00';
+    #[ORM\Column(type: Types::BIGINT)]
+    private ?string $totalPaid = '0';
 
-    #[ORM\Column(name: 'status', type: 'integer', options: ['default' => 0])]
-    private int $status = 1;
+    #[ORM\Column(enumType: OrderStatus::class)]
+    private OrderStatus $status = OrderStatus::EMPTY;
 
     #[ORM\OneToMany(mappedBy: 'order', targetEntity: OrderItem::class, cascade: ['persist', 'remove'], orphanRemoval: true)]
     private Collection $orderItems;
 
-    #[ORM\OneToMany(mappedBy: 'order', targetEntity: Payment::class)]
+    #[ORM\OneToMany(mappedBy: 'order', targetEntity: Payment::class, cascade: ['persist'], orphanRemoval: true)]
     private Collection $payments;
+
+    public function __construct()
+    {
+        $this->date = new \DateTimeImmutable();
+        $this->orderItems = new ArrayCollection();
+        $this->payments = new ArrayCollection();
+    }
 
     public function getId(): ?int
     {
         return $this->id;
     }
 
-    public function getDate(): ?\DateTime
+    public function getDate(): ?\DateTimeImmutable
     {
         return $this->date;
     }
 
-    public function setDate(\DateTime $date): static
+    public function setDate(\DateTimeImmutable $date): static
     {
         $this->date = $date;
 
         return $this;
     }
 
-    public function getOrderTotal(): ?string
+    public function getOrderTotal(): Money
     {
-        return $this->orderTotal;
+        return Money::ofMinor($this->orderTotal, 'RUB');
     }
 
-    public function setOrderTotal(string $orderTotal): static
+    public function culculateOrderTotal(): static
     {
-        $this->orderTotal = $orderTotal;
-
+        $summa = Money::of(0, 'RUB');
+        foreach ($this->orderItems as $orderItem) {
+            $summa = $summa->plus($orderItem->getLineTotal());
+        }
+        $this->orderTotal = (string)$summa->getMinorAmount();
+        $this->setStatus();
         return $this;
     }
 
-    public function getTotalPaid(): ?string
+    public function getTotalPaid(): Money
     {
-        return $this->totalPaid;
+        return Money::ofMinor($this->totalPaid, 'RUB');
     }
 
-    public function setTotalPaid(?string $totalPaid): static
+    public function culculateTotalPaid(): static
     {
-        $this->totalPaid = $totalPaid;
-
+        $summa = Money::of(0, 'RUB');
+        foreach ($this->payments as $payment) {
+            $summa = $summa->plus($payment->getAmount());
+        }
+        $this->totalPaid = (string)$summa->getMinorAmount();
+        $this->setStatus();
         return $this;
     }
 
-    public function getStatus(): int
+    public function getStatus(): OrderStatus
     {
         return $this->status;
     }
 
-    public function setStatus(int $status): self
+    private function setStatus(): void
     {
-        $this->status = $status;
-        return $this;
+        switch (true) {
+            case (!$this->hasOrderItems() && $this->totalPaid == 0):
+                $this->status = OrderStatus::EMPTY; // Пустой
+                break;
+
+            case ($this->orderTotal > $this->totalPaid && $this->totalPaid == 0):
+                $this->status = OrderStatus::UNPAID; // Не оплачен
+                break;
+
+            case ($this->orderTotal > $this->totalPaid && $this->totalPaid > 0):
+                $this->status = OrderStatus::PARTIALLY_PAID; // Частично оплачен
+                break;
+
+            case ($this->orderTotal < $this->totalPaid):
+                $this->status = OrderStatus::OVERPAID; // Переплата
+                break;
+
+            case ($this->totalPaid == $this->orderTotal):
+                $this->status = OrderStatus::PAID; // Оплачен
+                break;
+        }
     }
 
     public function getCustomer(): ?Customer
@@ -98,69 +134,63 @@ class Order
         return $this->customer;
     }
 
-    public function setCustomer(?Customer $customer): static
+    public function setCustomer(Customer $customer): static
     {
         $this->customer = $customer;
 
         return $this;
     }
 
-    public function __construct()
+    public function getOrderItems(): array
     {
-        $this->date = new \DateTime();
-        $this->orderItems = new ArrayCollection();
-        $this->payments = new ArrayCollection();
+        return $this->orderItems->toArray();
     }
 
-    public function getOrderItem(): Collection
+    public function addOrderItem(OrderItem $orderItem): static
     {
-        return $this->orderItems;
-    }
-
-    public function addOrderItem(OrderItem $item): static
-    {
-        if (!$this->orderItems->contains($item)) {
-            $this->orderItems[] = $item;
-            $item->setOrder($this);
+        if (!$this->orderItems->contains($orderItem)) {
+            $this->orderItems->add($orderItem);
+            $orderItem->setOrder($this);
+            $this->culculateOrderTotal();
         }
-
         return $this;
     }
 
-    public function removeOrderItem(OrderItem $item): static
+    public function removeOrderItem(OrderItem $orderItem): static
     {
-        if ($this->orderItems->removeElement($item)) {
-            if ($item->getOrder() === $this) {
-                $item->setOrder(null);
-            }
+        if ($this->orderItems->removeElement($orderItem)) {
+            $this->culculateOrderTotal();
         }
-
         return $this;
     }
 
-        public function getPayments(): Collection
+
+
+    public function hasOrderItems(): bool
     {
-        return $this->payments;
+        return !$this->orderItems->isEmpty();
     }
 
     public function addPayment(Payment $payment): static
     {
         if (!$this->payments->contains($payment)) {
-            $this->payments[] = $payment;
+            $this->payments->add($payment);
             $payment->setOrder($this);
+            $this->culculateTotalPaid();
         }
-
         return $this;
     }
 
     public function removePayment(Payment $payment): static
     {
         if ($this->payments->removeElement($payment)) {
-            if ($payment->getOrder() === $this) {
-                $payment->setOrder(null);
-            }
+            $this->culculateTotalPaid();
         }
-
         return $this;
+    }
+
+    public function hasPayments(): bool
+    {
+        return !$this->payments->isEmpty();
     }
 }

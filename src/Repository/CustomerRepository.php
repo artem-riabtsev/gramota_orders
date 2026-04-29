@@ -16,18 +16,46 @@ class CustomerRepository extends ServiceEntityRepository
         parent::__construct($registry, Customer::class);
     }
 
-    public function findByNameOrEmail(?string $query): array
+    public function findCustomersWithPagination(string $query, int $limit, int $offset): array
     {
-        $qb = $this->createQueryBuilder('c');
-
-        if ($query) {
-            $qb->where('LOWER(c.name) LIKE :q')
-            ->orWhere('LOWER(c.email) LIKE :q')
-            ->setParameter('q', '%' . strtolower($query) . '%')
-            ->orderBy('c.name', 'ASC');
-        }
-
-        return $qb->getQuery()->getResult();
+        return $this->createQueryBuilder('c')
+            ->where('c.name LIKE :q')
+            ->orWhere('c.email LIKE :q')
+            ->orWhere('c.phone LIKE :q')
+            ->setParameter('q', '%' . $query . '%')
+            ->orderBy('c.name', 'ASC')
+            ->setMaxResults($limit)
+            ->setFirstResult($offset)
+            ->getQuery()
+            ->getResult();
     }
 
+    public function countCustomersBySearch(string $query): int
+    {
+        return (int)$this->createQueryBuilder('c')
+            ->select('COUNT(c.id)')
+            ->where('c.name LIKE :q')
+            ->orWhere('c.email LIKE :q')
+            ->orWhere('c.phone LIKE :q')
+            ->setParameter('q', '%' . $query . '%')
+            ->getQuery()
+            ->getSingleScalarResult();
+    }
+
+    // public function findCustomers(?string $query = null): array
+    // {
+    //     if (empty($query)) {
+    //         return $this->findAll();
+    //     }
+
+    //     $qb = $this->createQueryBuilder('c')
+    //         ->orderBy('c.name', 'ASC');
+
+    //     $qb->where('c.name LIKE :q')
+    //         ->orWhere('c.email LIKE :q')
+    //         ->orWhere('c.phone LIKE :q')
+    //         ->setParameter('q', '%' . $query . '%');
+
+    //     return $qb->getQuery()->getResult();
+    // }
 }

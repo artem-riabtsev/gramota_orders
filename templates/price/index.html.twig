@@ -1,50 +1,41 @@
 {% extends 'base.html.twig' %}
 
-{% block title %}Прайс-лист{% endblock %}
+{% block title %}Прайс-лист — Gramota CRM{% endblock %}
 
-{% block content %}
+{% block title_h2 %}Прайс-лист{% endblock %}
 
-    <h1>Прайс-лист</h1>
-
-    {% include 'search/search_form.html.twig' %}
-    {% include 'modals/modal_delete.html.twig' %}
-
-    <table class="table table-hover table-bordered align-middle">
-        <thead>
-            <tr>
-                <th>Id</th>
-                <th>Описание</th>
-                <th>Цена</th>
-                <th>Действия</th>
-            </tr>
-        </thead>
-        <tbody>
-        {% for price in prices %}
-            <tr>
-                <td>{{ price.id }}</td>
-                <td>{{ price.description }}</td>
-                <td>{{ price.price }}</td>
-                <td>
-                    <div class="d-flex">
-                        <a href="{{ path('app_price_edit', {'id': price.id}) }}" class="btn btn-sm btn-outline-warning me-2">Редактировать</a>
-                        <button
-                            type="button"
-                            class="btn btn-sm btn-outline-danger remove-item"
-                            data-id="{{ price.id }}"
-                            data-token="{{ csrf_token('delete' ~ price.id) }}"
-                            data-url="{{ path('app_price_delete', {'id': price.id}) }}"
-                        >
-                            Удалить
-                        </button>
-                    </div>
-                </td>
-            </tr>
-        {% else %}
-            <tr>
-                <td colspan="4">Записи не найдены</td>
-            </tr>
-        {% endfor %}
-        </tbody>
-    </table>
+{% block top_actions %}
+    <a href="{{ path('app_price_new') }}" class="btn btn-primary shadow-sm fw-semibold">
+        <i class="bi bi-plus-lg me-1"></i> Добавить позицию
+    </a>
 {% endblock %}
 
+{% block content %}
+    <div id="prices-search-root"></div>
+{% endblock %}
+
+{% block stylesheets %}
+    {{ parent() }}
+    {{ encore_entry_link_tags('app') }}
+{% endblock %}
+
+{% block javascripts %}
+    {{ parent() }}
+    {{ encore_entry_script_tags('app') }}
+    
+    <script>
+        document.addEventListener('DOMContentLoaded', function() {
+            const root = document.getElementById('prices-search-root');
+            if (window.LiveSearchTable && window.PricesTable) {
+                const reactRoot = window.ReactDOM.createRoot(root);
+                reactRoot.render(window.React.createElement(window.LiveSearchTable, {
+                    apiUrl: '/api/price/list',
+                    placeholder: 'Поиск по наименованию...',
+                    showCreateButton: false,
+                    TableComponent: window.PricesTable,
+                    emptyMessage: 'Позиции не найдены'
+                }));
+            }
+        });
+    </script>
+{% endblock %}

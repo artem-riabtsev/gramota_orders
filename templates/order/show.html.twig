@@ -1,35 +1,31 @@
 {% extends 'base.html.twig' %}
 
+{% block title %}Заказ #{{ order.id }}{% endblock %}
+
+{% block title_h2 %}Заказ #{{ order.id }}{% endblock %}
+
 {% block content %}
-    <h1>Заказ {{ order.id }}</h1>
+    <div id="order-show-root" data-order-id="{{ order.id }}"></div>
+{% endblock %}
 
-    <table class="table table-hover table-bordered align-middle">
-        <tbody>
-            <tr>
-                <th>Номер заказа</th>
-                <td>{{ order.id }}</td>
-            </tr>
-            <tr>
-                <th>Дата заказа</th>
-                <td>{{ order.date ? order.date|date('Y-m-d') : '' }}</td>
-            </tr>
-            <tr>
-                <th>Сумма заказа</th>
-                <td>{{ order.orderTotal }}</td>
-            </tr>
-            <tr>
-                <th>Сумма оплаты</th>
-                <td>{{ order.totalPaid }}</td>
-            </tr>
-            <tr>
-                <th>Заказчик</th>
-                <td>{{ order.customer.name }} ({{ order.customer.email }})</td>
-            </tr>
-        </tbody>
-    </table>
+{% block stylesheets %}
+    {{ parent() }}
+    {{ encore_entry_link_tags('app') }}
+{% endblock %}
 
-    <a href="{{ path('app_order_edit', {'id': order.id}) }}" class="btn btn-primary">Редактировать</a>
-    <a href="{{ app.request.headers.get('referer') ?: path('app_order_index') }}" class="btn btn-secondary">
-        Назад
-    </a>
+{% block javascripts %}
+    {{ parent() }}
+    {{ encore_entry_script_tags('app') }}
+    
+    <script>
+        document.addEventListener('DOMContentLoaded', function() {
+            const root = document.getElementById('order-show-root');
+            const orderId = root.dataset.orderId;
+            
+            if (window.OrderShow) {
+                const reactRoot = window.ReactDOM.createRoot(root);
+                reactRoot.render(window.React.createElement(window.OrderShow, { orderId: orderId }));
+            }
+        });
+    </script>
 {% endblock %}

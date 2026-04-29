@@ -1,73 +1,79 @@
-{% extends 'base.html.twig' %} 
+{% extends 'base.html.twig' %}
+
+{% block title %}Заказы — Gramota CRM{% endblock %}
+
+{% block title_h2 %}Заказы{% endblock %}
+
+{% block top_actions %}
+    <a href="{{ path('app_order_new') }}" class="btn btn-primary shadow-sm fw-semibold">
+        <i class="bi bi-plus-lg me-1"></i> Новый заказ
+    </a>
+{% endblock %}
 
 {% block content %}
-<h1>Заказы</h1>
+    <div id="orders-search-root"></div>
+{% endblock %}
 
-{% include 'search/search_form.html.twig' %}
-{% include 'modals/modal_delete.html.twig' %}
+{% block stylesheets %}
+    {{ parent() }}
+    {{ encore_entry_link_tags('app') }}
+    <style>
+        .status-badge {
+            display: inline-block;
+            padding: 0.25rem 0.75rem;
+            font-size: 0.75rem;
+            font-weight: 500;
+            border-radius: 20px;
+        }
+        .status-empty { background: #e9ecef; color: #6c757d; }
+        .status-unpaid { background: #fff3cd; color: #856404; }
+        .status-partial { background: #fff3cd; color: #d39e00; }
+        .status-paid { background: #d1e7dd; color: #0f5132; }
+        .status-overpaid { background: #f8d7da; color: #842029; }
+        
+        .order-row {
+            transition: background-color 0.15s ease;
+        }
+        .order-row:hover {
+            background-color: #f8f9fa;
+        }
+        .order-link {
+            font-weight: 600;
+            color: #1e293b;
+            text-decoration: none;
+        }
+        .order-link:hover {
+            color: #4f46e5;
+            text-decoration: underline;
+        }
+        .customer-link {
+            color: #4b5563;
+            text-decoration: none;
+        }
+        .customer-link:hover {
+            color: #4f46e5;
+            text-decoration: underline;
+        }
+    </style>
+{% endblock %}
 
-<table class="table table-hover table-bordered align-middle">
-    <thead>
-        <tr>
-            <th>Номер заказа</th>
-            <th>Дата заказа</th>
-            <th>Сумма заказа</th>
-            <th>Сумма оплаты</th>
-            <th>Заказчик</th>
-            <th>Статус</th>
-            <th>Действия</th>
-        </tr>
-    </thead>
-    <tbody>
-    {% for order in orders %}
-        <tr>
-            <td>{{ order.id }}</td>
-            <td>{{ order.date ? order.date|date('d.m.Y') : '' }}</td>
-            <td>{{ order.orderTotal }}</td>
-            <td>{{ order.totalPaid }}</td>
-            <td>
-                <a href="{{ path('app_customer_show', {'id': order.customer.id}) }}"
-                class="text-muted"
-                style="text-decoration: underline; text-decoration-thickness: 1px;">
-                    {{ order.customer.name }}
-                </a>
-            </td>
-            <td>
-                {% if order.status == 1 %}
-                    <span class="text-secondary">Не оплачен</span>
-                {% elseif order.status == 2 %}
-                    <span class="text-danger">Частично оплачен</span>
-                {% elseif order.status == 3 %}
-                    <span class="text-danger">Переплата</span>
-                {% else %}
-                    <span class="text-success">Оплачен</span>
-                {% endif %}
-            </td>
-            <td>
-                <div class="d-flex">
-                    {% if order.status == 4 %}
-                        <a href="{{ path('app_order_show', {'id': order.id}) }}" class="btn btn-sm btn-outline-primary me-2">Просмотр</a>
-                    {% else %}
-                        <a href="{{ path('app_order_edit', {'id': order.id}) }}" class="btn btn-sm btn-outline-warning me-2">Корзина</a>
-                    {% endif %}
-                    <button
-                        type="button"
-                        class="btn btn-sm btn-outline-danger remove-item"
-                        data-id="{{ order.id }}"
-                        data-token="{{ csrf_token('delete' ~ order.id) }}"
-                        data-url="{{ path('app_order_delete', {'id': order.id}) }}"
-                        {% if order.payments|length > 0 %}disabled{% endif %}
-                    >
-                        Удалить
-                    </button>
-                </div>
-            </td>
-        </tr>
-    {% else %}
-        <tr>
-            <td colspan="7">Заказы ненайдены</td>
-        </tr>
-    {% endfor %}
-    </tbody>
-</table>
+{% block javascripts %}
+    {{ parent() }}
+    {{ encore_entry_script_tags('app') }}
+    
+    <script>
+        document.addEventListener('DOMContentLoaded', function() {
+            const root = document.getElementById('orders-search-root');
+            if (window.LiveSearchTable && window.OrdersTable) {
+                const reactRoot = window.ReactDOM.createRoot(root);
+                reactRoot.render(window.React.createElement(window.LiveSearchTable, {
+                    apiUrl: '/api/order/list',
+                    placeholder: 'Поиск по номеру заказа или имени клиента...',
+                    showCreateButton: false,
+                    TableComponent: window.OrdersTable,
+                    emptyMessage: 'Заказы не найдены'
+                }));
+            }
+        });
+    </script>
 {% endblock %}

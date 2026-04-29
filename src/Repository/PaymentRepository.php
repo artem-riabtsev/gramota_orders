@@ -17,87 +17,67 @@ class PaymentRepository extends ServiceEntityRepository
         parent::__construct($registry, Payment::class);
     }
 
-    public function recalculateOrderPaymentAmount(Order $order): void
+    public function findPaymentsWithPagination(?string $query, int $limit, int $offset): array
     {
-    $em = $this->getEntityManager();
-
-    $lineTotal = (float) $this->createQueryBuilder('p')
-        ->select('SUM(p.amount)')
-        ->where('p.order = :order')
-        ->setParameter('order', $order)
-        ->getQuery()
-        ->getSingleScalarResult();
-
-    $order->setTotalPaid($lineTotal);
-
-    $em->flush();
-    }
-
-    public function updateOrderPaymentAmount(int $paymentId, float $amountUpdated): void
-    {
-        $em = $this->getEntityManager();
-
-        $payment = $em->getRepository(Payment::class)->find($paymentId);
-
-        if (!$payment) {
-            throw new \RuntimeException("Payment not found: ID $paymentId");
-        }
-
-        $order = $payment->getOrder();
-
-        if (!$order) {
-            throw new \RuntimeException("Order not found for payment ID $paymentId");
-        }
-
-        $amountOld = $payment->getAmount();
-
-        $lineTotal = (float) $this->createQueryBuilder('p')
-            ->select('SUM(p.amount)')
-            ->where('IDENTITY(p.order) = :order_id')
-            ->setParameter('order_id', $order)
-            ->getQuery()
-            ->getSingleScalarResult();
-
-        $correctedAmount = $lineTotal - $amountOld + $amountUpdated;
-
-        $order->setTotalPaid($correctedAmount);
-
-        $em->flush();
-    }
-
-    public function findByOrderId(?string $query): array
-    {
-        $qb = $this->createQueryBuilder('c');
+        $qb = $this->createQueryBuilder('p')
+            ->orderBy('p.date', 'DESC')
+            ->setMaxResults($limit)
+            ->setFirstResult($offset);
 
         if ($query) {
-            $qb->where('IDENTITY(c.order) LIKE :q')
-            ->setParameter('q', '%' . $query . '%');
+            $qb->where('IDENTITY(p.order) LIKE :q')
+                ->setParameter('q', '%' . $query . '%');
         }
 
         return $qb->getQuery()->getResult();
     }
 
-    public function findLastMonthOrders(): array
+    public function countPaymentsBySearch(?string $query): int
     {
-        $oneMonthAgo = new \DateTime('-1 month');
+        $qb = $this->createQueryBuilder('p')
+            ->select('COUNT(p.id)');
 
-        return $this->createQueryBuilder('o')
-            ->where('o.date >= :oneMonthAgo')
-            ->setParameter('oneMonthAgo', $oneMonthAgo)
-            ->orderBy('o.date', 'DESC')
-            ->setMaxResults(50)
-            ->getQuery()
-            ->getResult();
+        if ($query) {
+            $qb->where('IDENTITY(p.order) LIKE :q')
+                ->setParameter('q', '%' . $query . '%');
+        }
+
+        return (int)$qb->getQuery()->getSingleScalarResult();
     }
 
-    public function findByDateRange(\DateTime $from, \DateTime $to): array
-    {
-        return $this->createQueryBuilder('p')
-            ->andWhere('p.date BETWEEN :from AND :to')
-            ->setParameter('from', $from->format('Y-m-d 00:00:00'))
-            ->setParameter('to', $to->format('Y-m-d 23:59:59'))
-            ->orderBy('p.date', 'DESC')
-            ->getQuery()
-            ->getResult();
-    }
+    // public function findByOrderId(?string $query): array
+    // {
+    //     $qb = $this->createQueryBuilder('c');
+
+    //     if ($query) {
+    //         $qb->where('IDENTITY(c.order) LIKE :q')
+    //             ->setParameter('q', '%' . $query . '%');
+    //     }
+
+    //     return $qb->getQuery()->getResult();
+    // }
+
+    // public function findLastMonthOrders(): array
+    // {
+    //     $oneMonthAgo = new \DateTime('-1 month');
+
+    //     return $this->createQueryBuilder('o')
+    //         ->where('o.date >= :oneMonthAgo')
+    //         ->setParameter('oneMonthAgo', $oneMonthAgo)
+    //         ->orderBy('o.date', 'DESC')
+    //         ->setMaxResults(50)
+    //         ->getQuery()
+    //         ->getResult();
+    // }
+
+    // public function findByDateRange(\DateTime $from, \DateTime $to): array
+    // {
+    //     return $this->createQueryBuilder('p')
+    //         ->andWhere('p.date BETWEEN :from AND :to')
+    //         ->setParameter('from', $from->format('Y-m-d 00:00:00'))
+    //         ->setParameter('to', $to->format('Y-m-d 23:59:59'))
+    //         ->orderBy('p.date', 'DESC')
+    //         ->getQuery()
+    //         ->getResult();
+    // }
 }

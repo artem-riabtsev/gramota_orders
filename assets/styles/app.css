@@ -1,0 +1,294 @@
+/* ======================================== */
+/* БАЗОВЫЕ СТИЛИ */
+/* ======================================== */
+
+* {
+    margin: 0;
+    padding: 0;
+    box-sizing: border-box;
+}
+
+body {
+    font-family: 'Inter', sans-serif;
+    background-color: #f4f7f6;
+    color: #2d3436;
+    overflow: hidden;
+}
+
+/* ======================================== */
+/* СТАТИЧЕСКАЯ ПАНЕЛЬ */
+/* ======================================== */
+
+.app-wrapper {
+    display: flex;
+    height: 100vh;
+    overflow: hidden;
+}
+
+.sidebar {
+    width: 260px;
+    flex-shrink: 0;
+    background: #1e293b;
+    color: white;
+    display: flex;
+    flex-direction: column;
+    position: relative;
+    z-index: 100;
+    overflow-y: auto;
+    height: 100vh;
+}
+
+.main-content {
+    flex: 1;
+    overflow-y: auto;
+    height: 100vh;
+    padding: 2rem;
+}
+
+/* Скроллбары */
+.main-content::-webkit-scrollbar {
+    width: 8px;
+}
+.main-content::-webkit-scrollbar-track {
+    background: #e9ecef;
+    border-radius: 4px;
+}
+.main-content::-webkit-scrollbar-thumb {
+    background: #adb5bd;
+    border-radius: 4px;
+}
+.main-content::-webkit-scrollbar-thumb:hover {
+    background: #6c757d;
+}
+
+.sidebar::-webkit-scrollbar {
+    width: 6px;
+}
+.sidebar::-webkit-scrollbar-track {
+    background: #0f172a;
+}
+.sidebar::-webkit-scrollbar-thumb {
+    background: #334155;
+    border-radius: 3px;
+}
+
+/* ======================================== */
+/* СТИЛИ МЕНЮ */
+/* ======================================== */
+
+:root {
+    --sidebar-bg: #1e293b;
+    --sidebar-active: rgba(255, 255, 255, 0.1);
+    --primary-indigo: #4f46e5;
+    --body-bg: #f4f7f6;
+}
+
+.sidebar .nav-link {
+    color: rgba(255, 255, 255, 0.7);
+    padding: 0.8rem 1.5rem;
+    border-radius: 8px;
+    margin: 0.2rem 0.8rem;
+    display: flex;
+    align-items: center;
+    transition: all 0.2s;
+}
+
+.sidebar .nav-link:hover,
+.sidebar .nav-link.active {
+    color: white;
+    background: var(--sidebar-active);
+}
+
+.sidebar .nav-link i {
+    margin-right: 10px;
+    font-size: 1.1rem;
+}
+
+.main-content.vh-100 {
+    padding: 0 !important;
+    overflow: hidden;
+}
+
+.login-container {
+    width: 100%;
+    max-width: 420px;
+    padding: 1.5rem;
+}
+
+/* ======================================== */
+/* КАРТОЧКИ И КНОПКИ */
+/* ======================================== */
+
+.card {
+    border: none;
+    box-shadow: 0 0.125rem 0.25rem rgba(0, 0, 0, 0.075);
+    border-radius: 12px;
+    transition: transform 0.25s ease, box-shadow 0.25s ease !important;
+}
+
+.card:hover {
+    transform: translateY(-5px) !important;
+    box-shadow: 0 1rem 3rem rgba(0, 0, 0, 0.1) !important;
+}
+
+.btn-primary {
+    background-color: var(--primary-indigo);
+    border: none;
+    padding: 0.6rem 1.2rem;
+    border-radius: 8px;
+    transition: all 0.2s ease-in-out !important;
+}
+
+.btn-primary:hover {
+    background-color: #4338ca;
+    transform: translateY(-1px);
+    filter: brightness(1.1);
+}
+
+/* ======================================== */
+/* СТИЛИ ДЛЯ ТАБЛИЦЫ ЗАКАЗОВ */
+/* ======================================== */
+
+.orders-table {
+    width: 100%;
+    table-layout: fixed;
+    border-collapse: collapse;
+}
+
+/* Фиксированная ширина колонок */
+.orders-table th:nth-child(1),
+.orders-table td:nth-child(1) { width: 70px; }
+
+.orders-table th:nth-child(2),
+.orders-table td:nth-child(2) { width: 100px; }
+
+.orders-table th:nth-child(3),
+.orders-table td:nth-child(3) { width: auto; }
+
+.orders-table th:nth-child(4),
+.orders-table td:nth-child(4) { width: 100px; text-align: right; }
+
+.orders-table th:nth-child(5),
+.orders-table td:nth-child(5) { width: 100px; text-align: right; }
+
+.orders-table th:nth-child(6),
+.orders-table td:nth-child(6) { width: 120px; }
+
+.orders-table th:nth-child(7),
+.orders-table td:nth-child(7) { width: 60px; text-align: right; }
+
+/* Отступы */
+.orders-table td:first-child { padding-left: 1.5rem; }
+.orders-table th:first-child { padding-left: 1.5rem; }
+.orders-table td:last-child { padding-right: 1.5rem; }
+.orders-table th:last-child { padding-right: 1.5rem; }
+
+/* Перенос длинных имен клиентов */
+.orders-table td:nth-child(3) {
+    white-space: normal;
+    word-break: break-word;
+    line-height: 1.3;
+}
+
+/* Выравнивание */
+.orders-table td:nth-child(4),
+.orders-table td:nth-child(5) {
+    text-align: right;
+}
+
+/* ======================================== */
+/* СТАТУСЫ */
+/* ======================================== */
+
+.status-badge {
+    display: inline-block;
+    padding: 0.25rem 0.75rem;
+    font-size: 0.75rem;
+    font-weight: 500;
+    border-radius: 20px;
+    white-space: nowrap;
+}
+
+.status-empty { background: #e9ecef; color: #6c757d; }
+.status-unpaid { background: #fff3cd; color: #856404; }
+.status-partial { background: #fff3cd; color: #d39e00; }
+.status-paid { background: #d1e7dd; color: #0f5132; }
+.status-overpaid { background: #f8d7da; color: #842029; }
+
+/* ======================================== */
+/* ССЫЛКИ */
+/* ======================================== */
+
+.order-link {
+    font-weight: 600;
+    color: #1e293b;
+    text-decoration: none;
+}
+
+.order-link:hover {
+    color: #4f46e5;
+    text-decoration: underline;
+}
+
+.customer-link {
+    color: #4b5563;
+    text-decoration: none;
+}
+
+.customer-link:hover {
+    color: #4f46e5;
+    text-decoration: underline;
+}
+
+/* ======================================== */
+/* ПАГИНАЦИЯ И ЗАГРУЗКА */
+/* ======================================== */
+
+.loading-spinner {
+    text-align: center;
+    padding: 2rem;
+}
+
+.loading-more {
+    text-align: center;
+    padding: 1rem;
+    color: #6c757d;
+    font-size: 0.875rem;
+}
+
+.loading-more .spinner-border {
+    width: 1rem;
+    height: 1rem;
+    margin-right: 0.5rem;
+}
+
+/* ======================================== */
+/* ТАБЛИЦЫ (общие) */
+/* ======================================== */
+
+.table th,
+.table td {
+    vertical-align: middle;
+}
+
+.table-responsive {
+    overflow-x: auto;
+}
+
+.table-responsive::-webkit-scrollbar {
+    height: 6px;
+}
+
+.table-responsive::-webkit-scrollbar-track {
+    background: #e9ecef;
+    border-radius: 3px;
+}
+
+.table-responsive::-webkit-scrollbar-thumb {
+    background: #adb5bd;
+    border-radius: 3px;
+}
+
+.table-responsive::-webkit-scrollbar-thumb:hover {
+    background: #6c757d;
+}

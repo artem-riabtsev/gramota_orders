@@ -25,7 +25,7 @@ class LoginFormAuthenticator extends AbstractLoginFormAuthenticator
     public function __construct(
         private readonly RouterInterface $router,
         private readonly UserRepository $userRepository
-        ) {}
+    ) {}
 
     public function supports(Request $request): bool
     {
@@ -35,14 +35,14 @@ class LoginFormAuthenticator extends AbstractLoginFormAuthenticator
 
     public function authenticate(Request $request): Passport
     {
-        $username = $request->request->get('username', '');
+        $username = $request->request->get('email', '');
         $password = $request->request->get('password', '');
         $csrfToken = $request->request->get('_csrf_token');
 
         return new Passport(
             new UserBadge($username, function ($userIdentifier) {
-                $user = $this->userRepository->findOneBy(['username' => $userIdentifier]);
-                
+                $user = $this->userRepository->findOneBy(['email' => $userIdentifier]);
+
                 if (!$user) {
                     throw new \Symfony\Component\Security\Core\Exception\UserNotFoundException();
                 }

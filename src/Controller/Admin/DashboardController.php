@@ -2,46 +2,34 @@
 
 namespace App\Controller\Admin;
 
-use EasyCorp\Bundle\EasyAdminBundle\Attribute\AdminDashboard;
+use App\Entity\Project;
+use App\Entity\User;
 use EasyCorp\Bundle\EasyAdminBundle\Config\Dashboard;
 use EasyCorp\Bundle\EasyAdminBundle\Config\MenuItem;
 use EasyCorp\Bundle\EasyAdminBundle\Controller\AbstractDashboardController;
 use Symfony\Component\HttpFoundation\Response;
-use EasyCorp\Bundle\EasyAdminBundle\Router\AdminUrlGenerator;
+use Symfony\Component\Routing\Attribute\Route;
 use Symfony\Component\Security\Http\Attribute\IsGranted;
-use App\Entity\Order;
-use App\Entity\Project;
 
 #[IsGranted('ROLE_ADMIN')]
-#[AdminDashboard(routePath: '/admin', routeName: 'admin')]
 class DashboardController extends AbstractDashboardController
 {
+    #[Route('/admin', name: 'admin')]
     public function index(): Response
     {
-
-        $adminUrlGenerator = $this->container->get(AdminUrlGenerator::class);
-        return $this->redirect($adminUrlGenerator->setController(\App\Controller\Admin\UserCrudController::class)->generateUrl());
+        return $this->render('admin/dashboard.html.twig');
     }
 
     public function configureDashboard(): Dashboard
     {
         return Dashboard::new()
-            ->setTitle('Gramota Orders')
-            ->setTextDirection('ltr')
-            ->renderContentMaximized()
-            ->renderSidebarMinimized()
-            ->disableDarkMode()
-            ->setDefaultColorScheme('auto');
+            ->setTitle('Gramota Orders - Администрирование');
     }
 
     public function configureMenuItems(): iterable
     {
-        yield MenuItem::linkToDashboard('Панель управления', 'fa fa-home');
-        yield MenuItem::section('Сущности');
-
-        yield MenuItem::linkToCrud('Пользователи', 'fa fa-users', \App\Entity\User::class);
-        yield MenuItem::linkToCrud('Заказы', 'fa fa-box', Order::class);
+        yield MenuItem::linkToDashboard('Дашборд', 'fa fa-home');
+        yield MenuItem::linkToCrud('Пользователи', 'fa fa-users', User::class);
         yield MenuItem::linkToCrud('Проекты', 'fa fa-folder', Project::class);
-      
     }
 }

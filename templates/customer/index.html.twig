@@ -1,62 +1,41 @@
 {% extends 'base.html.twig' %}
 
+{% block title %}Клиенты — Gramota CRM{% endblock %}
+
+{% block title_h2 %}Клиенты{% endblock %}
+
+{% block top_actions %}
+    <a href="{{ path('app_customer_new') }}" class="btn btn-primary shadow-sm fw-semibold">
+        <i class="bi bi-person-plus me-1"></i> Новый клиент
+    </a>
+{% endblock %}
 
 {% block content %}
-    <h1>Заказчики</h1>
+    <div id="customers-search-root"></div>
+{% endblock %}
 
-    {% include 'search/search_form.html.twig' %}
-    {% include 'modals/modal_delete.html.twig' %}
+{% block stylesheets %}
+    {{ parent() }}
+    {{ encore_entry_link_tags('app') }}
+{% endblock %}
 
-    <table class="table table-hover table-bordered align-middle">
-        <thead>
-            <tr>
-                <th>Id</th>
-                <th>ФИО</th>
-                <th>Email</th>
-                <th>Телефон</th>
-                <th>Действия</th>
-            </tr>
-        </thead>
-        <tbody>
-        {% if app.request.get('q') %}
-            {% for customer in customers %}
-                <tr>
-                    <td>{{ customer.id }}</td>
-                    <td>{{ customer.name }}</td>
-                    <td>{{ customer.email }}</td>
-                    <td>{{ customer.phone }}</td>
-                    <td>
-                        <div class="d-flex">
-                            <a href="{{ path('app_customer_show', {'id': customer.id}) }}" class="btn btn-sm btn-outline-primary me-2">Просмотр</a>
-                            <a href="{{ path('app_customer_edit', {'id': customer.id}) }}" class="btn btn-sm btn-outline-warning me-2">Редактировать</a>
-                            <form method="post" action="{{ path('app_customer_delete', {'id': customer.id}) }}">
-                                <input type="hidden" name="_token" value="{{ csrf_token('delete' ~ customer.id) }}">
-                                    {% if app.request.get('q') %}
-                                        <input type="hidden" name="q" value="{{ app.request.get('q') }}">
-                                    {% endif %}
-                                <button type="submit"
-                                        class="btn btn-sm btn-outline-danger remove-item"
-                                        data-id="{{ customer.id }}"
-                                        data-token="{{ csrf_token('delete' ~ customer.id) }}"
-                                        data-url="{{ path('app_customer_delete', {'id': customer.id}) }}"
-                                        {% if customer.orders|length > 0 %}disabled{% endif %}>
-                                    Удалить
-                                </button>
-                            </form>
-                        </div>
-                    </td>
-                </tr>
-            {% else %}
-                <tr>
-                    <td colspan="7">Заказчики ненайдены</td>
-                </tr>
-            {% endfor %}
-        {% else %}
-            <tr>
-                <td colspan="7">Поиск неосуществлен</td>
-            </tr>
-        {% endif %}
-        </tbody>
-    </table>
-
+{% block javascripts %}
+    {{ parent() }}
+    {{ encore_entry_script_tags('app') }}
+    
+    <script>
+        document.addEventListener('DOMContentLoaded', function() {
+            const root = document.getElementById('customers-search-root');
+            if (window.LiveSearchTable && window.CustomersTable) {
+                const reactRoot = window.ReactDOM.createRoot(root);
+                reactRoot.render(window.React.createElement(window.LiveSearchTable, {
+                    apiUrl: '/api/customer/list',
+                    placeholder: 'Поиск по имени, email или телефону...',
+                    showCreateButton: false,
+                    TableComponent: window.CustomersTable,
+                    emptyMessage: 'Клиенты не найдены'
+                }));
+            }
+        });
+    </script>
 {% endblock %}

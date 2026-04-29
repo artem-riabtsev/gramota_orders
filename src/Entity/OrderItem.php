@@ -2,12 +2,12 @@
 
 namespace App\Entity;
 
-use App\Repository\OrderItemRepository;
+use App\AppBundle\Validator\Constraints as AppAssert;
 use Doctrine\DBAL\Types\Types;
 use Doctrine\ORM\Mapping as ORM;
+use Brick\Money\Money;
 
-#[ORM\Entity(repositoryClass: OrderItemRepository::class)]
-#[ORM\Table(name: 'order_item')] 
+#[ORM\Entity()]
 class OrderItem
 {
     #[ORM\Id]
@@ -15,24 +15,26 @@ class OrderItem
     #[ORM\Column]
     private ?int $id = null;
 
-    #[ORM\ManyToOne(targetEntity: Order::class, inversedBy: 'orderItem')]
-    #[ORM\JoinColumn(name: 'order_id', referencedColumnName: 'id')]
-    private Order|null $order = null;
+    #[ORM\ManyToOne(targetEntity: Order::class, inversedBy: 'orderItems')]
+    #[ORM\JoinColumn(nullable: false)]
+    private Order $order;
 
-    #[ORM\ManyToOne(targetEntity: Product::class)]
-    #[ORM\JoinColumn(name: 'product_id', referencedColumnName: 'id', nullable: false)]
+    #[ORM\ManyToOne(targetEntity: Product::class, inversedBy: 'orderItems')]
+    #[ORM\JoinColumn(nullable: false)]
     private ?Product $product = null;
 
-    #[ORM\Column(name: 'quantity')]
-    private ?int $quantity = null;
+    #[ORM\Column]
+    private ?int $quantity = 1;
 
-    #[ORM\Column(name: 'price', type: Types::DECIMAL, precision: 10, scale: 2)]
-    private ?string $price = null;
+    #[AppAssert\MoneyPositiveOrZero(message: 'Введите положительное число или ноль')]
+    #[ORM\Column(type: Types::BIGINT)]
+    private ?string $price = '0';
 
-    #[ORM\Column(name: 'line_total', type: Types::DECIMAL, precision: 10, scale: 2)]
-    private ?string $lineTotal = null;
+    #[AppAssert\MoneyPositiveOrZero(message: 'Введите положительное число или ноль')]
+    #[ORM\Column(type: Types::BIGINT)]
+    private ?string $lineTotal = '0';
 
-    #[ORM\Column(name: 'description')]
+    #[ORM\Column]
     private ?string $description = null;
 
     public function getId(): ?int
@@ -45,7 +47,7 @@ class OrderItem
         return $this->product;
     }
 
-    public function setProduct(?Product $product): self
+    public function setProduct(Product $product): self
     {
         $this->product = $product;
         return $this;
@@ -68,35 +70,33 @@ class OrderItem
         return $this->description;
     }
 
-    public function setDescription(?string $description): static
+    public function setDescription(string $description): static
     {
         $this->description = $description;
 
         return $this;
     }
 
-    public function getPrice(): ?string
+    public function getPrice(): Money
     {
-        return $this->price;
+        return Money::ofMinor($this->price, 'RUB');
     }
-    
 
-    public function setPrice(string $price): static
+    public function setPrice(Money $price): static
     {
-        $this->price = $price;
-
+        $this->price = (string)$price->getMinorAmount();
         return $this;
     }
 
-    public function getLineTotal(): ?string
+    public function getLineTotal(): Money
     {
-        return $this->lineTotal;
+        return Money::ofMinor($this->lineTotal, 'RUB');
     }
 
-    public function setLineTotal(string $lineTotal): static
+    public function setLineTotal(Money $lineTotal): static
     {
-        $this->lineTotal = $lineTotal;
-
+        $this->lineTotal = (string)$lineTotal->getMinorAmount();
+        $this->getOrder()->culculateOrderTotal();
         return $this;
     }
 
@@ -105,11 +105,10 @@ class OrderItem
         return $this->order;
     }
 
-    public function setOrder(?Order $order): static
+    public function setOrder(Order $order): static
     {
         $this->order = $order;
 
         return $this;
     }
-
 }

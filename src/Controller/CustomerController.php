@@ -4,37 +4,24 @@ namespace App\Controller;
 
 use App\Entity\Customer;
 use App\Form\CustomerForm;
-use App\Repository\CustomerRepository;
 use Doctrine\ORM\EntityManagerInterface;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
 use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\HttpFoundation\Response;
 use Symfony\Component\Routing\Attribute\Route;
+use App\Config\OrderStatus;
 
 #[Route('/customer')]
 final class CustomerController extends AbstractController
 {
 
     #[Route(name: 'app_customer_index', methods: ['GET'])]
-    public function index(
-        Request $request,
-        CustomerRepository $customerRepository
-    ): Response {
-        $query = $request->query->get('q');
-
-        if ($query) {
-            $customers = $customerRepository->findByNameOrEmail($query);
-        } else {
-            $customers =[];
-        }
-
-        return $this->render('customer/index.html.twig', [
-            'customers' => $customers,
-            'query' => $query,
-        ]);
+    public function index(): Response
+    {
+        return $this->render('customer/index.html.twig');
     }
 
-    #[Route('/customer/new', name: 'app_customer_new')]
+    #[Route('/new', name: 'app_customer_new')]
     public function new(Request $request, EntityManagerInterface $em): Response
     {
         $from = $request->query->get('from');
@@ -51,6 +38,7 @@ final class CustomerController extends AbstractController
             $em->flush();
 
             $from = $request->getSession()->get('from');
+            $request->getSession()->remove('from');
             if ($from === 'order') {
                 return $this->redirectToRoute('app_order_new', [
                     'customer' => $customer->getId()
@@ -65,31 +53,18 @@ final class CustomerController extends AbstractController
         ]);
     }
 
-    #[Route('/select', name: 'app_customer_select')]
-    public function select(Request $request, CustomerRepository $customerRepository): Response
-    {
-        $query = $request->query->get('q');
-
-        if ($query) {
-            $customers = $customerRepository->findByNameOrEmail($query);
-        } else {
-            $customers = $customerRepository->findBy([], ['name' => 'ASC']);
-        }
-
-        return $this->render('customer/select.html.twig', [
-            'customers' => $customers,
-        ]);
-    }
-
     #[Route('/{id}', name: 'app_customer_show', methods: ['GET'], requirements: ['id' => '\d+'])]
     public function show(Customer $customer): Response
     {
-        $ordersGroups = [
-            ['name' => 'Неоплаченные', 'orders' => $customer->getOrders()->filter(fn($order) => $order->getStatus() === 1), 'color' => 'text-secondary'],
-            ['name' => 'Частично оплаченные', 'orders' => $customer->getOrders()->filter(fn($order) => $order->getStatus() === 2), 'color' => 'text-danger'],
-            ['name' => 'Переплаченные', 'orders' => $customer->getOrders()->filter(fn($order) => $order->getStatus() === 3), 'color' => 'text-danger'],
-            ['name' => 'Оплаченные', 'orders' => $customer->getOrders()->filter(fn($order) => $order->getStatus() === 4), 'color' => 'text-success'],
-        ];
+        $ordersGroups = [];
+
+        foreach (OrderStatus::cases() as $status) {
+            $ordersGroups[] = [
+                'name' => $status->label(),
+                'orders' => $customer->getOrders()->filter(fn($order) => $order->getStatus() === $status),
+                'color' => $status->color(),
+            ];
+        }
 
         return $this->render('customer/show.html.twig', [
             'customer' => $customer,
@@ -105,7 +80,6 @@ final class CustomerController extends AbstractController
 
         if ($form->isSubmitted() && $form->isValid()) {
             $entityManager->flush();
-
             return $this->redirectToRoute('app_customer_index', [], Response::HTTP_SEE_OTHER);
         }
 
@@ -114,25 +88,4 @@ final class CustomerController extends AbstractController
             'form' => $form,
         ]);
     }
-
-    #[Route('/{id}', name: 'app_customer_delete', methods: ['POST'])]
-    public function delete(Request $request, Customer $customer, EntityManagerInterface $entityManager): Response
-    {
-        $q = $request->request->get('q');
-
-        if ($this->isCsrfTokenValid('delete'.$customer->getId(), $request->getPayload()->getString('_token'))) {
-
-            if ($customer->getOrders()->count() > 0) {
-            $this->addFlash('error', 'Нельзя удалить заказчика, у которого есть заказы.');
-            return $this->redirectToRoute('app_customer_index');
-        }
-        
-            $entityManager->remove($customer);
-            $entityManager->flush();
-        }
-
-        return $this->redirectToRoute('app_customer_index', ['q' => $q], Response::HTTP_SEE_OTHER);
-    }
-
-
 }

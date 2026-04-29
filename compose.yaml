@@ -3,46 +3,42 @@ services:
     image: ${IMAGES_PREFIX:-}app-php
     restart: unless-stopped
     environment:
-      SERVER_NAME: "${SERVER_NAME:-localhost}, php:80"
+      SERVER_NAME: ${SERVER_NAME:-localhost}, php:80
       MERCURE_PUBLISHER_JWT_KEY: ${CADDY_MERCURE_JWT_SECRET:-!ChangeThisMercureHubJWTSecretKey!}
       MERCURE_SUBSCRIBER_JWT_KEY: ${CADDY_MERCURE_JWT_SECRET:-!ChangeThisMercureHubJWTSecretKey!}
+      # Run "composer require symfony/orm-pack" to install and configure Doctrine ORM
       DATABASE_URL: mysql://${MARIADB_USER:-local}:${MARIADB_PASSWORD:-local}@database:3306/${MARIADB_DATABASE:-local}?charset=utf8mb4
       MERCURE_URL: ${CADDY_MERCURE_URL:-http://php/.well-known/mercure}
       MERCURE_PUBLIC_URL: ${CADDY_MERCURE_PUBLIC_URL:-https://${SERVER_NAME:-localhost}:${HTTPS_PORT:-443}/.well-known/mercure}
       MERCURE_JWT_SECRET: ${CADDY_MERCURE_JWT_SECRET:-!ChangeThisMercureHubJWTSecretKey!}
+      # The two next lines can be removed after initial installation
       SYMFONY_VERSION: ${SYMFONY_VERSION:-}
       STABILITY: ${STABILITY:-stable}
-      APP_ENV: ${APP_ENV}
-      APP_DEBUG: ${APP_DEBUG}
     volumes:
       - caddy_data:/data
       - caddy_config:/config
-      - ./public:/app/public
-      - ./certs:/certs:ro
-
-  frankenphp:
-    # image: dunglas/frankenphp # Официальный образ FrankenPHP
-    build:
-      context: .
-      target: frankenphp_dev  
-    restart: unless-stopped
+      - ./var:/app/var
     ports:
-      - "80:80"
-      - "443:443"
-    environment:
-      SERVER_NAME: ${SERVER_NAME:-localhost}
-      # CADDY_HTTPS: "on"  # Включает автоматическую генерацию сертификатов для HTTPS
-    volumes:
-      - caddy_data:/data
-      - caddy_config:/config
-      - .:/app  # Монтируем папку public Symfony
-      - ./frankenphp/Caddyfile:/etc/frankenphp/Caddyfile
-      - ./certs:/certs:ro
-    depends_on:
-      - php
+      # HTTP
+      - target: 80
+        published: ${HTTP_PORT:-80}
+        protocol: tcp
+      # HTTPS
+      - target: 443
+        published: ${HTTPS_PORT:-443}
+        protocol: tcp
+      # HTTP/3
+      - target: 443
+        published: ${HTTP3_PORT:-443}
+        protocol: udp
 
+  # Mercure is installed as a Caddy module, prevent the Flex recipe from installing another service
+  ###> symfony/mercure-bundle ###
+  ###< symfony/mercure-bundle ###
+
+  ###> doctrine/doctrine-bundle ###
   database:
-    image: mariadb:10.6.21
+    image: mariadb:10.6.20
     restart: unless-stopped
     environment:
       MARIADB_ROOT_PASSWORD: root
@@ -51,6 +47,9 @@ services:
       MARIADB_PASSWORD: ${MARIADB_PASSWORD:-local}
     volumes:
       - database_data:/var/lib/mysql
+      # You may use a bind-mounted host directory instead, so that it is harder to accidentally remove the volume and lose all your data!
+      # - ./docker/db/data:/var/lib/mysql
+      - .:/home
 
   phpmyadmin:
     image: phpmyadmin
@@ -61,8 +60,13 @@ services:
       - PMA_HOST=database
       - PMA_USER=local
       - PMA_PASSWORD=local
+  ###< doctrine/doctrine-bundle ###
 
 volumes:
   caddy_data:
-  caddy_config:
-  database_data:
+  caddy_config: ###> symfony/mercure-bundle ###
+
+  ###< symfony/mercure-bundle ###
+
+  ###> doctrine/doctrine-bundle ###
+  database_data: ###< doctrine/doctrine-bundle ###

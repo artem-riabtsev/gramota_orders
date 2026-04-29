@@ -1,0 +1,29 @@
+{% extends 'base.html.twig' %}
+
+{% block title %}Добавление платежа{% endblock %}
+
+{% block title_h2 %}Добавление платежа{% endblock %}
+
+{% block stylesheets %}
+    {{ parent() }}
+    {{ encore_entry_link_tags('app') }}
+{% endblock %}
+
+{% block content %}
+    <div id="payment-new-root"></div>
+{% endblock %}
+
+{% block javascripts %}
+    {{ parent() }}
+    {{ encore_entry_script_tags('app') }}
+    
+    <script>
+        document.addEventListener('DOMContentLoaded', function() {
+            const root = document.getElementById('payment-new-root');
+            if (window.PaymentNew) {
+                const reactRoot = window.ReactDOM.createRoot(root);
+                reactRoot.render(window.React.createElement(window.PaymentNew));
+            }
+        });
+    </script>
+{% endblock %}

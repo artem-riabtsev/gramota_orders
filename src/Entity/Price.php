@@ -1,8 +1,11 @@
 <?php
 
 namespace App\Entity;
-use  App\Entity\Product;
+
+use App\AppBundle\Validator\Constraints as AppAssert;
+use App\Entity\Product;
 use App\Repository\PriceRepository;
+use Brick\Money\Money;
 use Doctrine\DBAL\Types\Types;
 use Doctrine\ORM\Mapping as ORM;
 
@@ -14,15 +17,17 @@ class Price
     #[ORM\Column]
     private ?int $id = null;
 
-    #[ORM\Column(length: 255)]
+    #[ORM\Column]
     private ?string $description = null;
 
-    #[ORM\Column(type: Types::DECIMAL, precision: 10, scale: 2)]
-    private ?string $price = null;
 
-    #[ORM\ManyToOne(targetEntity: Product::class)]
-    #[ORM\JoinColumn(name: 'product_id', referencedColumnName: 'id')]
-    private ?Product $product = null;
+    #[AppAssert\MoneyPositiveOrZero(message: 'Введите положительное число или ноль')]
+    #[ORM\Column(type: Types::BIGINT)]
+    private ?string $price = '0';
+
+    #[ORM\ManyToOne(targetEntity: Product::class, inversedBy: 'prices')]
+    #[ORM\JoinColumn(nullable: false)]
+    private Product $product;
 
     public function getId(): ?int
     {
@@ -41,15 +46,14 @@ class Price
         return $this;
     }
 
-    public function getPrice(): ?string
+    public function getPrice(): Money
     {
-        return $this->price;
+        return Money::ofMinor($this->price, 'RUB');
     }
 
-    public function setPrice(string $price): static
+    public function setPrice(Money $price): static
     {
-        $this->price = $price;
-
+        $this->price = (string)$price->getMinorAmount();
         return $this;
     }
 
@@ -58,7 +62,7 @@ class Price
         return $this->product;
     }
 
-    public function setProduct(?Product $product): static
+    public function setProduct(Product $product): static
     {
         $this->product = $product;
 

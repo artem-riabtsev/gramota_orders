@@ -1,0 +1,27 @@
+{% extends 'base.html.twig' %}
+
+{% block title %}Новый заказ{% endblock %}
+
+{% block stylesheets %}
+    {{ parent() }}
+    {{ encore_entry_link_tags('app') }}
+{% endblock %}
+
+{% block content %}
+    <div id="order-new-root"></div>
+{% endblock %}
+
+{% block javascripts %}
+    {{ parent() }}
+    {{ encore_entry_script_tags('app') }}
+    
+    <script>
+        document.addEventListener('DOMContentLoaded', function() {
+            const root = document.getElementById('order-new-root');
+            if (window.OrderNew) {
+                const reactRoot = window.ReactDOM.createRoot(root);
+                reactRoot.render(window.React.createElement(window.OrderNew));
+            }
+        });
+    </script>
+{% endblock %}
