@@ -124,144 +124,119 @@ export default function OrderShow({ orderId }) {
 
     return (
         <div>
-            {/* Компактная карточка заказа */}
+            {/* Оптимизированная карточка заказа */}
             <div className="card shadow-sm border-0 rounded-3 mb-4">
                 <div className="card-body py-3">
-                    <div className="row align-items-center">
-                        {/* Левая часть: номер и статус */}
-                        <div className="col-auto">
-                            <span className={`badge ${getStatusClass(order.status.value)}`}>
-                                {order.status.value === 2 ? (
-                                    <>Частич.<br />оплачен</>
-                                ) : (
-                                    getStatusLabel(order.status.value)
-                                )}
-                            </span>
-                        </div>
+                    {/* Первая строка: статус и дата */}
+                    <div className="d-flex flex-wrap align-items-center gap-3 mb-2">
+                        <span className={`status-badge ${getStatusClass(order.status.value)}`}>
+                            {getStatusLabel(order.status.value)}
+                        </span>
                         
-                        {/* Вертикальный разделитель */}
-                        <div className="col-auto">
-                            <div className="vr mx-2"></div>
-                        </div>
-                        
-                        {/* Дата с редактированием */}
-                        <div className="col-auto">
-                            {editingDate ? (
-                                <div className="d-flex align-items-center gap-2">
-                                    <input
-                                        type="date"
-                                        className="form-control form-control-sm"
-                                        value={newDate}
-                                        onChange={(e) => setNewDate(e.target.value)}
-                                        style={{ width: '150px' }}
-                                    />
-                                    <button 
-                                        className="btn btn-sm btn-success"
-                                        onClick={handleSaveDate}
-                                    >
-                                        <i className="bi bi-check"></i>
-                                    </button>
-                                    <button 
-                                        className="btn btn-sm btn-secondary"
-                                        onClick={() => setEditingDate(false)}
-                                    >
-                                        <i className="bi bi-x"></i>
-                                    </button>
-                                </div>
-                            ) : (
-                                <div className="d-flex align-items-center gap-2">
-                                    <span className="text-muted small">
-                                        <i className="bi bi-calendar3 me-1"></i>
-                                        {order.date}
-                                    </span>
-                                    <button 
-                                        className="btn btn-sm btn-outline-secondary"
-                                        onClick={() => setEditingDate(true)}
-                                        title="Изменить дату"
-                                        style={{ borderRadius: '6px', padding: '2px 6px' }}
-                                    >
-                                        <i className="bi bi-pencil small"></i>
-                                    </button>
-                                </div>
-                            )}
-                        </div>
-                        
-                        {/* Вертикальный разделитель */}
-                        <div className="col-auto">
-                            <div className="vr mx-2"></div>
-                        </div>
-                        
-                        {/* Клиент с email и телефоном */}
-                        <div className="col-auto">
-                            <div className="d-flex align-items-center gap-3">
-                                <div className="d-flex align-items-center gap-2">
-                                    <i className="bi bi-person text-muted small"></i>
-                                    <span className="small">{order.customer.name}</span>
-                                </div>
-                                {order.customer.email && (
-                                    <div className="d-flex align-items-center gap-2">
-                                        <i className="bi bi-envelope text-muted small"></i>
-                                        <span className="small">{order.customer.email}</span>
-                                    </div>
-                                )}
-                                {order.customer.phone && (
-                                    <div className="d-flex align-items-center gap-2">
-                                        <i className="bi bi-telephone text-muted small"></i>
-                                        <span className="small">{order.customer.phone}</span>
-                                    </div>
-                                )}
-                                <a 
-                                    href={`/customer/${order.customer.id}/edit`}
-                                    className="btn btn-sm btn-outline-secondary"
-                                    title="Редактировать заказчика"
-                                    style={{ borderRadius: '6px', padding: '2px 6px' }}
+                        {editingDate ? (
+                            <div className="d-flex align-items-center gap-2">
+                                <input
+                                    type="date"
+                                    className="form-control form-control-sm"
+                                    value={newDate}
+                                    onChange={(e) => setNewDate(e.target.value)}
+                                    style={{ width: '150px' }}
+                                />
+                                <button className="btn btn-sm btn-success" onClick={handleSaveDate}>
+                                    <i className="bi bi-check"></i>
+                                </button>
+                                <button className="btn btn-sm btn-secondary" onClick={() => setEditingDate(false)}>
+                                    <i className="bi bi-x"></i>
+                                </button>
+                            </div>
+                        ) : (
+                            <div className="d-flex align-items-center gap-2">
+                                <span className="text-muted small">
+                                    <i className="bi bi-calendar3 me-1"></i>
+                                    {order.date}
+                                </span>
+                                <button 
+                                    className="btn btn-sm btn-link text-secondary p-0"
+                                    onClick={() => setEditingDate(true)}
+                                    title="Изменить дату"
                                 >
                                     <i className="bi bi-pencil small"></i>
+                                </button>
+                            </div>
+                        )}
+                    </div>
+
+                    {/* Вторая строка: клиент */}
+                    <div className="d-flex flex-wrap align-items-center gap-3 mb-2 pb-1 border-bottom">
+                        <div className="d-flex align-items-center gap-2">
+                            <i className="bi bi-person text-muted small"></i>
+                            <span className="small fw-semibold">{order.customer.name}</span>
+                        </div>
+                        {order.customer.email && (
+                            <div className="d-flex align-items-center gap-2">
+                                <i className="bi bi-envelope text-muted small"></i>
+                                <a href={`mailto:${order.customer.email}`} className="small text-decoration-none">
+                                    {order.customer.email}
                                 </a>
                             </div>
-                        </div>
+                        )}
+                        {order.customer.phone && (
+                            <div className="d-flex align-items-center gap-2">
+                                <i className="bi bi-telephone text-muted small"></i>
+                                <a href={`tel:${order.customer.phone}`} className="small text-decoration-none">
+                                    {order.customer.phone}
+                                </a>
+                            </div>
+                        )}
+                        <a 
+                            href={`/customer/${order.customer.id}/edit`}
+                            className="btn btn-sm btn-link text-secondary p-0 ms-auto"
+                            title="Редактировать заказчика"
+                        >
+                            <i className="bi bi-pencil small"></i>
+                        </a>
+                    </div>
 
-                        <div className="col-auto">
-                            <button 
-                                className={`btn btn-sm ${order.items?.length === 0 ? 'btn-secondary' : 'btn-outline-danger'}`}
-                                onClick={async () => {
-                                    const response = await fetch(`/api/order/${orderId}/payment-document`);
-                                    const blob = await response.blob();
-                                    const url = window.URL.createObjectURL(blob);
-                                    const a = document.createElement('a');
-                                    a.href = url;
-                                    a.download = `payment_document_${orderId}.pdf`;
-                                    document.body.appendChild(a);
-                                    a.click();
-                                    document.body.removeChild(a);
-                                    window.URL.revokeObjectURL(url);
-                                }}
-                                disabled={order.items?.length === 0}
-                                title="Скачать платёжный документ"
-                            >
-                                <i className="bi bi-file-pdf me-1"></i> Платёжный документ
-                            </button>
-                        </div>
-                        
-                        {/* Суммы - выровнены вправо */}
-                        <div className="col text-end">
-                            <div className="d-flex justify-content-end gap-4">
-                                <div>
-                                    <span className="text-muted small">Сумма:</span>
-                                    <span className="fw-semibold ms-1">{order.orderTotal} ₽</span>
-                                </div>
-                                <div>
-                                    <span className="text-muted small">Оплачено:</span>
-                                    <span className="fw-semibold ms-1">{order.totalPaid} ₽</span>
-                                </div>
-                                <div>
-                                    <span className="text-muted small">Остаток:</span>
-                                    <span className="fw-semibold text-primary ms-1">
-                                        {(order.orderTotal - order.totalPaid).toFixed(2)} ₽
-                                    </span>
-                                </div>
+                    {/* Третья строка: суммы и кнопка PDF */}
+                    <div className="d-flex flex-wrap align-items-center justify-content-between gap-3 mt-2">
+                        <div className="d-flex flex-wrap gap-4">
+                            <div>
+                                <span className="text-muted small">Сумма:</span>
+                                <span className="fw-semibold ms-1">{order.orderTotal} ₽</span>
+                            </div>
+                            <div>
+                                <span className="text-muted small">Оплачено:</span>
+                                <span className="fw-semibold ms-1">{order.totalPaid} ₽</span>
+                            </div>
+                            <div>
+                                <span className="text-muted small">Остаток:</span>
+                                <span className="fw-semibold text-primary ms-1">
+                                    {(order.orderTotal - order.totalPaid).toFixed(2)} ₽
+                                </span>
                             </div>
                         </div>
+                        
+                        <button 
+                            className={`btn btn-sm ${order.items?.length === 0 ? 'btn-secondary' : 'btn-outline-danger'}`}
+                            onClick={async () => {
+                                const response = await fetch(`/api/order/${orderId}/payment-document`);
+                                const blob = await response.blob();
+                                const url = window.URL.createObjectURL(blob);
+                                const a = document.createElement('a');
+                                a.href = url;
+                                a.download = `payment_document_${orderId}.pdf`;
+                                document.body.appendChild(a);
+                                a.click();
+                                document.body.removeChild(a);
+                                window.URL.revokeObjectURL(url);
+                            }}
+                            disabled={order.items?.length === 0}
+                            title="Скачать платёжный документ"
+                        >
+                            <i className="bi bi-file-pdf me-1"></i> 
+                            <span className="d-none d-sm-inline">Платёжный документ</span>
+                            <span className="d-inline d-sm-none">PDF</span>
+                        </button>
                     </div>
                 </div>
             </div>
@@ -281,9 +256,9 @@ export default function OrderShow({ orderId }) {
                                 <tr>
                                     <th className="ps-4 py-2 small">Наименование</th>
                                     <th className="py-2 small">Продукт</th>
-                                    <th className="py-2 small" style={{width: '80px'}}>Кол-во</th>
-                                    <th className="py-2 small" style={{width: '80px'}}>Цена</th>
-                                    <th className="py-2 small" style={{width: '80px'}}>Сумма</th>
+                                    <th className="py-2 small text-end" style={{width: '80px'}}>Кол-во</th>
+                                    <th className="py-2 small text-end" style={{width: '90px'}}>Цена</th>
+                                    <th className="py-2 small text-end" style={{width: '100px'}}>Сумма</th>
                                     <th className="pe-4 py-2" style={{width: '70px'}}></th>
                                 </tr>
                             </thead>
@@ -292,20 +267,20 @@ export default function OrderShow({ orderId }) {
                                     <tr key={item.id}>
                                         <td className="ps-4 small">{item.description}</td>
                                         <td className="small">{item.product.description}</td>
-                                        <td className="small">{item.quantity}</td>
-                                        <td className="small">{item.price} ₽</td>
-                                        <td className="small">{item.lineTotal} ₽</td>
-                                        <td className="pe-4">
-                                            <div className="d-flex gap-1">
+                                        <td className="small text-end">{item.quantity}</td>
+                                        <td className="small text-end">{item.price} ₽</td>
+                                        <td className="small text-end fw-semibold">{item.lineTotal} ₽</td>
+                                        <td className="pe-4 text-end">
+                                            <div className="d-flex gap-1 justify-content-end">
                                                 <button 
-                                                    className="btn btn-sm btn-light text-primary border-0 py-0"
+                                                    className="btn btn-sm btn-link text-primary p-0"
                                                     onClick={() => handleEditItem(item)}
                                                     title="Редактировать"
                                                 >
                                                     <i className="bi bi-pencil small"></i>
                                                 </button>
                                                 <button 
-                                                    className="btn btn-sm btn-light text-danger border-0 py-0"
+                                                    className="btn btn-sm btn-link text-danger p-0"
                                                     onClick={() => deleteItem(item.id)}
                                                     title="Удалить"
                                                 >
